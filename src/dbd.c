@@ -1,3 +1,10 @@
+/*
+ * dbd.c
+ *
+ *  Created on: Sep 26, 2012
+ *      Author: Reyad Attiyat
+ */
+
 #include <httpd.h>
 #include <http_protocol.h>
 #include <http_config.h>
@@ -261,7 +268,7 @@ int sync_song(apr_pool_t * pool, db_config* dbd_config, music_file *song, apr_ti
 				//File is up to date
 				return 0;
 			}
-	}else if(num_errors=-2){
+	}else if(num_errors == -2){
 		//No file_path found so add new song
 		num_errors = insert_db_song(&song_id, pool, dbd_config, dbd_config->statements.add_song, song, file_mtime);
 		if (num_errors != 0){

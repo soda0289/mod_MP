@@ -1,3 +1,10 @@
+/*
+ * error_handler.c
+ *
+ *  Created on: Sep 26, 2012
+ *      Author: Reyad Attiyat
+ */
+
 #include <httpd.h>
 #include "dbd.h"
 #include "error_handler.h"

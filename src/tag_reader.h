@@ -2,7 +2,7 @@
  * tag_reader.h
  *
  *  Created on: Sep 18, 2012
- *      Author: reyad
+ *      Author: Reyad Attiyat
  */
 #include "error_handler.h"
 

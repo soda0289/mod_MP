@@ -2,7 +2,7 @@
  * error_handler.h
  *
  *  Created on: Oct 2, 2012
- *      Author: reyad
+ *      Author: Reyad Attiyat
  */
 
 #ifndef ERROR_HANDLER_H_

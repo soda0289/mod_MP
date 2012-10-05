@@ -2,7 +2,7 @@
  * error_handler.c
  *
  *  Created on: Sep 26, 2012
- *      Author: reyad
+ *      Author: Reyad Attiyat
  */
 #include "mod_mediaplayer.h"
 

@@ -1,3 +1,10 @@
+/*
+ * mod_mediaplayer.c
+ *
+ *  Created on: Sep 26, 2012
+ *      Author: Reyad Attiyat
+ */
+
 #include <httpd.h>
 #include <http_protocol.h>
 #include <http_config.h>
@@ -44,6 +51,7 @@ static void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	int status;
 	apr_status_t rv;
 	char error_message[255];
+	const char* dbd_error;
 
 	List* file_list;
 
@@ -56,13 +64,15 @@ static void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 
 	rv = connect_database(dir_sync->pool, &(dir_sync->srv_conf->dbd_config));
 	if(rv != APR_SUCCESS){
-		apr_strerror(rv, &error_message, (apr_size_t) 255);
-		add_error_list(dir_sync->error_messages, "Database error couldn't connect", &error_message);
+		apr_strerror(rv, (char*) &error_message[0], (apr_size_t) 255);
+		add_error_list(dir_sync->error_messages, "Database error couldn't connect", &error_message[0]);
 		return 0;
 	}
 	status = prepare_database(dir_sync->srv_conf->dbd_config, dir_sync->pool);
 	if(status != 0){
-		add_error_list(dir_sync->error_messages, "Database error couldn't prepare",apr_dbd_error(dir_sync->srv_conf->dbd_config->dbd_driver,dir_sync->srv_conf-> dbd_config->dbd_handle, status));
+		dbd_error = apr_dbd_error(dir_sync->srv_conf->dbd_config->dbd_driver,dir_sync->srv_conf-> dbd_config->dbd_handle, status);
+		strncpy(&error_message[0], dbd_error, strlen(dbd_error));
+		add_error_list(dir_sync->error_messages, "Database error couldn't prepare",&error_message[0]);
 		return 0;
 	}
 	read_dir(dir_sync->pool, file_list, dir_sync->srv_conf->external_directory, dir_sync->num_files,  dir_sync->error_messages);
@@ -95,7 +105,6 @@ static void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 }
 
 static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
-
 	apr_status_t rv;
 	apr_thread_t* thread_sync_dir;
 	mediaplayer_srv_cfg* srv_conf;
@@ -177,7 +186,7 @@ static int mediaplayer_handler(request_rec* r) {
   ap_rputs(
 	"<html><head><title>Reyad's Media Player</title></head>", r) ;
   ap_rputs("<body>", r) ;
-  ap_rprintf(r, "Progress %f\n<br \>", dir_sync->sync_progress);
+  ap_rprintf(r, "Progress %f\n<br />", dir_sync->sync_progress);
   int i;
   for( i = 0;error_messages->num_errors > i; i++){
 	  ap_rprintf(r, "ERROR: %s\n<br />", error_messages->errors[i]);
