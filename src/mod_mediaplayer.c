@@ -184,6 +184,9 @@ static int mediaplayer_handler(request_rec* r) {
   }
 
   ap_rprintf(r, "URI: %s %s<br />", r->unparsed_uri, r->uri);
+
+
+
   ap_rprintf(r, "Filename: %s", r->filename);
   ap_rputs("</body></html>", r) ;
 
