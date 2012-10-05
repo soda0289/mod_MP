@@ -1,0 +1,3 @@
+UPDATE Albums, Artists, Songs, links  
+SET Albums.name = "Test_Album", Artists.name="Test_artist", Songs.name="Test_Song", Songs.length = "100"  
+WHERE Songs.file_path = "/music/hello" AND links.artistid = Artists.id AND links.albumid = Albums.id AND links.songid = Songs.id;	
