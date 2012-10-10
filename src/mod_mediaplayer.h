@@ -12,12 +12,6 @@
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
 typedef struct {
-  const char* external_directory;
-  db_config* driver_config;
-} mediaplayer_dir_cfg ;
-
-
-typedef struct {
 	int enable;
 	const char* external_directory;
 	db_config* dbd_config;
@@ -33,3 +27,9 @@ typedef struct {
 	mediaplayer_srv_cfg* srv_conf;
 	error_messages_t* error_messages;
 }dir_sync_t;
+
+enum verbs{
+	SONGS = 0,
+	ALBUMS = 1,
+	ARTIST = 2
+};

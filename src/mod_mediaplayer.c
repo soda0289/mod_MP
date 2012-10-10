@@ -20,10 +20,6 @@
 #include "error_handler.h"
 #include <util_filter.h>
 
-static void* mediaplayer_config_dir(apr_pool_t* pool, char* x) {
-  return apr_pcalloc(pool, sizeof(mediaplayer_dir_cfg)) ;
-}
-
 static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){
 	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));
 
@@ -163,43 +159,124 @@ static int mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	}while ((s = s->next) != NULL);
 	return OK;
 }
+static int get_command_uri(request_rec* r){
+	int i;
+	char *strtok_last = NULL;
+	char* filename;
+	char* uri;
+	char* filename_parts = apr_palloc(r->pool, sizeof(char*) * 25);
+	char* uri_parts;
+	const char slash = '/';
+	//Reverse Search the file name string until first /. Compare that string to the start of uri to delete directory
+	//used in directive configuration.
+	//for(i =0, uri_parts[i] = apr_strtok(r->uri,&slash, &strtok_last);(uri_parts[i] != NULL && i <25); i++, uri_parts[i] = apr_strtok(NULL,&slash, &strtok_last));
+	uri = apr_pcalloc(r->pool, strlen(r->uri));
+	apr_cpystrn(uri, r->uri, strlen(r->uri));
+
+	filename = apr_pcalloc(r->pool, strlen(r->filename));
+	apr_cpystrn(filename, r->filename, strlen(r->filename));
+
+	uri_parts = apr_pcalloc(r->pool, strlen(r->uri));
+
+
+	return 0;
+}
+int static get_verb_noun(request_rec* r,char** verb, char** sortby, char** range){
+	int i;
+	int len = strlen(r->uri) +1;
+	int noun_char=0;
+	int noun_char2 = 0;
+	char* uri_cpy = apr_pstrdup(r->pool, r->uri);
+
+	//Break apart uri for each /
+	for(i=1; i<= len; i++){
+		if(uri_cpy[i] == '/' || uri_cpy[i] == '\0'){
+			uri_cpy[i] = '\0';
+			if(noun_char == 0){
+				*verb = &uri_cpy[1];
+				noun_char = i + 1;
+			}else if(noun_char > 0 && noun_char2 == 0){
+				*sortby = &uri_cpy[noun_char];
+				noun_char2 = i +1;
+			}else if(noun_char2 > 0){
+				*range = &uri_cpy[noun_char2];
+			}
+		}
+	}
+	ap_rprintf(r, "verb: %s sortby: %s range: %s\n", *verb, *sortby, *range);
+	if (apr_strnatcasecmp(*verb, "songs") == 0){
+		return 0;
+	}else
+	if (apr_strnatcasecmp(*verb, "albums") == 0){
+		return 1;
+	}else
+	if (apr_strnatcasecmp(*verb, "artists") == 0){
+		return 2;
+	}
+
+	return -1;
+}
+static int run_get_method(request_rec* r){
+	int i;
+	char* verb = NULL;
+	char* sortby = NULL;
+	char* range = NULL;
+	apr_table_t* results_table = NULL;
+	dir_sync_t* dir_sync;
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
+	dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
+	error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
+
+	ap_set_content_type(r, "application/json") ;
+	ap_rputs("{\n", r);
+	ap_rprintf(r, "\t\"Progress\" :  %.2f\n", dir_sync->sync_progress);
+	ap_rputs("\t\"Errors\" : {\n", r);
+	for( i = 0;error_messages->num_errors > i; i++){
+	  ap_rprintf(r, "\t\t\"%s\"", error_messages->errors[i]);
+	  if (i > 0){
+		  ap_rputs(",",r);
+	  }
+	  ap_rputs("\n",r);
+	}
+	ap_rputs("\t}\n", r);
+
+
+	switch(get_verb_noun(r, &verb, &sortby, &range)){
+	case SONGS:
+		select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range, sortby, range, &results_table);
+		ap_rprintf(r, "verb: %s sortby: %s range: %s\n", verb, sortby, range);
+		break;
+	case ALBUMS:
+		//query_db(srv_conf->dbd_config);
+		break;
+	case ARTIST:
+		//query_db(srv_conf->dbd_config);
+		break;
+	}
+
+	ap_rputs("}\n", r);
+
+	return OK;
+}
+
+static int run_post_method(request_rec* r){
+
+	return OK;
+}
 
 static int mediaplayer_handler(request_rec* r) {
-	dir_sync_t* dir_sync;
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
 
-  if ( !r->handler || strcmp(r->handler, "mediaplayer") ) {
-    return DECLINED ;   /* none of our business */
-  }
-  if ( r->method_number != M_GET &&  r->method_number != M_POST) {
-    return HTTP_METHOD_NOT_ALLOWED ;  /* Reject other methods */
-  }
-
-  mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
-
-  dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
-  error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
-
-
-  ap_set_content_type(r, "text/html;charset=ascii") ;
-  ap_rputs(
-	"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n", r) ;
-  ap_rputs(
-	"<html><head><title>Reyad's Media Player</title></head>", r) ;
-  ap_rputs("<body>", r) ;
-  ap_rprintf(r, "Progress %f\n<br />", dir_sync->sync_progress);
-  int i;
-  for( i = 0;error_messages->num_errors > i; i++){
-	  ap_rprintf(r, "ERROR: %s\n<br />", error_messages->errors[i]);
-  }
-
-  ap_rprintf(r, "URI: %s %s<br />", r->unparsed_uri, r->uri);
-
-
-
-  ap_rprintf(r, "Filename: %s", r->filename);
-  ap_rputs("</body></html>", r) ;
-
-  return OK ;
+	if(srv_conf->enable != 1){
+		return DECLINED;
+	}
+	if ( r->method_number == M_GET){
+		return run_get_method(r);
+	}
+	if (r->method_number == M_POST) {
+		return run_post_method(r);
+	}
+  return DECLINED;
 }
 
 /*Define Configuration file parameters*/
@@ -212,13 +289,13 @@ static const command_rec mediaplayer_cmds[] = {
 /* Hook our handler into Apache at startup */
 static void mediaplayer_hooks(apr_pool_t* pool) {
 	ap_hook_post_config(mediaplayer_post_config, NULL, NULL, APR_HOOK_MIDDLE);
-	//ap_hook_child_init(mediaplayer_child_init, NULL, NULL, APR_HOOK_MIDDLE);
+	ap_hook_child_init(mediaplayer_child_init, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_handler(mediaplayer_handler, NULL, NULL, APR_HOOK_MIDDLE) ;
 }
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module = {
         STANDARD20_MODULE_STUFF,
-        mediaplayer_config_dir,
+        NULL,
         NULL,
         mediaplayer_config_srv,
         NULL,
