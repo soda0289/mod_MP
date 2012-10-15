@@ -40,14 +40,15 @@ typedef struct {
 		apr_dbd_prepared_t *add_link;
 		apr_dbd_prepared_t* select_file_path;
 		apr_dbd_prepared_t* update_song;
-		apr_dbd_prepared_t* select_songs_range;
+		apr_dbd_prepared_t* select_songs_range[3];
 	}statements;
 
 }db_config;
 
+
 apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config);
 int prepare_database(db_config* dbd_config, apr_pool_t* pool);
 int sync_song(apr_pool_t * pool, db_config* dbd_config, music_file *song, apr_time_t file_mtime, error_messages_t* error_messages);
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* sort_by, char* range,apr_table_t**  results_table);
+int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range,apr_table_t**  results_table);
 
 #endif /* DBD_H_ */

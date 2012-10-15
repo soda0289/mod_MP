@@ -159,34 +159,15 @@ static int mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	}while ((s = s->next) != NULL);
 	return OK;
 }
-static int get_command_uri(request_rec* r){
-	int i;
-	char *strtok_last = NULL;
-	char* filename;
-	char* uri;
-	char* filename_parts = apr_palloc(r->pool, sizeof(char*) * 25);
-	char* uri_parts;
-	const char slash = '/';
-	//Reverse Search the file name string until first /. Compare that string to the start of uri to delete directory
-	//used in directive configuration.
-	//for(i =0, uri_parts[i] = apr_strtok(r->uri,&slash, &strtok_last);(uri_parts[i] != NULL && i <25); i++, uri_parts[i] = apr_strtok(NULL,&slash, &strtok_last));
-	uri = apr_pcalloc(r->pool, strlen(r->uri));
-	apr_cpystrn(uri, r->uri, strlen(r->uri));
 
-	filename = apr_pcalloc(r->pool, strlen(r->filename));
-	apr_cpystrn(filename, r->filename, strlen(r->filename));
-
-	uri_parts = apr_pcalloc(r->pool, strlen(r->uri));
-
-
-	return 0;
-}
-int static get_verb_noun(request_rec* r,char** verb, char** sortby, char** range){
+int get_verb_noun(request_rec* r,char** verb, int** sortby_int, char** range){
 	int i;
 	int len = strlen(r->uri) +1;
 	int noun_char=0;
 	int noun_char2 = 0;
+	char* sortby_uri;
 	char* uri_cpy = apr_pstrdup(r->pool, r->uri);
+	*sortby_int = apr_pcalloc(r->pool, sizeof(int));
 
 	//Break apart uri for each /
 	for(i=1; i<= len; i++){
@@ -196,14 +177,23 @@ int static get_verb_noun(request_rec* r,char** verb, char** sortby, char** range
 				*verb = &uri_cpy[1];
 				noun_char = i + 1;
 			}else if(noun_char > 0 && noun_char2 == 0){
-				*sortby = &uri_cpy[noun_char];
+				sortby_uri = &(uri_cpy[noun_char]);
 				noun_char2 = i +1;
 			}else if(noun_char2 > 0){
-				*range = &uri_cpy[noun_char2];
+				*range = &(uri_cpy[noun_char2]);
 			}
 		}
 	}
-	ap_rprintf(r, "verb: %s sortby: %s range: %s\n", *verb, *sortby, *range);
+	if (apr_strnatcasecmp(sortby_uri, "title") == 0){
+		**sortby_int =  0;
+	}else
+	if (apr_strnatcasecmp(sortby_uri, "album") == 0){
+		**sortby_int = 1;
+	}else
+	if (apr_strnatcasecmp(sortby_uri, "artist") == 0){
+		**sortby_int = 2;
+	}
+
 	if (apr_strnatcasecmp(*verb, "songs") == 0){
 		return 0;
 	}else
@@ -216,10 +206,18 @@ int static get_verb_noun(request_rec* r,char** verb, char** sortby, char** range
 
 	return -1;
 }
+
+static int print_song(void *rec, const char *key, const char *value){
+	request_rec* r = (request_rec*) rec;
+
+	ap_rprintf(r, "{\n%s %s\n }\n", key, value);
+	return 10;
+}
 static int run_get_method(request_rec* r){
 	int i;
+	int error_num;
 	char* verb = NULL;
-	char* sortby = NULL;
+	int* sortby_int = NULL;
 	char* range = NULL;
 	apr_table_t* results_table = NULL;
 	dir_sync_t* dir_sync;
@@ -241,10 +239,14 @@ static int run_get_method(request_rec* r){
 	ap_rputs("\t}\n", r);
 
 
-	switch(get_verb_noun(r, &verb, &sortby, &range)){
+	switch(get_verb_noun(r, &verb, &sortby_int, &range)){
 	case SONGS:
-		select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range, sortby, range, &results_table);
-		ap_rprintf(r, "verb: %s sortby: %s range: %s\n", verb, sortby, range);
+		error_num = select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range[*sortby_int], range, &results_table);
+		if(error_num == 0){
+			apr_table_do(print_song, r,results_table, NULL);
+		}else{
+			ap_rprintf(r, "error with selecting range (%d)",error_num);
+		}
 		break;
 	case ALBUMS:
 		//query_db(srv_conf->dbd_config);
