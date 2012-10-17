@@ -45,10 +45,15 @@ typedef struct {
 
 }db_config;
 
+typedef struct{
+	int row_count;
+	apr_table_t* results;
+}results_table_t;
+
 
 apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config);
 int prepare_database(db_config* dbd_config, apr_pool_t* pool);
 int sync_song(apr_pool_t * pool, db_config* dbd_config, music_file *song, apr_time_t file_mtime, error_messages_t* error_messages);
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range,apr_table_t**  results_table);
+int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range_lower, char* range_upper,results_table_t**  results_table);
 
 #endif /* DBD_H_ */

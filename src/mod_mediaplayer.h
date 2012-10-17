@@ -28,8 +28,30 @@ typedef struct {
 	error_messages_t* error_messages;
 }dir_sync_t;
 
-enum verbs{
-	SONGS = 0,
-	ALBUMS = 1,
-	ARTIST = 2
-};
+
+
+typedef struct{
+	enum {
+		SONGS = 0,
+		ALBUMS = 1,
+		ARTISTS = 2
+	}types;
+	enum {
+		ASC_TITLES= 0,
+		ASC_ALBUMS = 1,
+		ASC_ARTISTS = 2,
+		DSC_TITLES = 3,
+		DSC_ALBUMS = 4,
+		DSC_ARTISTS = 5
+	}sort_by;
+	char* range_lower;
+	char* range_upper;
+	results_table_t* results;
+}music_query;
+
+typedef struct{
+	error_messages_t* error_messages;
+	music_query* query;
+}mediaplayer_rec_cfg;
+
+char* json_escape_char(apr_pool_t* pool, const char* string);

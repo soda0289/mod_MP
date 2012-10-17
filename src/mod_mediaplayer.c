@@ -86,7 +86,7 @@ static void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 			  //Update or Insert song
 			  status = sync_song(dir_sync->pool, dir_sync->srv_conf->dbd_config, song, file_list->mtime, dir_sync->error_messages);
 			  if (status != 0){
-				  add_error_list(dir_sync->error_messages, "Failed to sync song:",  apr_psprintf(dir_sync->pool, "Song title: %s <br />Song artist: %s<br />song album:%s <br />song file path: %s",song->title, song->artist, song->album, song->file_path));
+				  add_error_list(dir_sync->error_messages, "Failed to sync song:",  apr_psprintf(dir_sync->pool, "Song title: %s Song artist: %s song album:%s song file path: %s",song->title, song->artist, song->album, song->file_path));
 			  }
 		  }else{
 			  //not a flac file
@@ -126,11 +126,15 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
 		if(srv_conf->enable && srv_conf->external_directory != NULL){
 			rv = apr_shm_create(&srv_conf->dir_sync_shm, sizeof(dir_sync_t), NULL, s->process->pool);
+
 			rv = apr_shm_create(&srv_conf->errors_shm, sizeof(error_messages_t), NULL, s->process->pool);
+
 			//Create thread to connect to database and synchronize
 
 			error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
 			error_messages->pool = pconf;
+			error_messages->error_table = apr_table_make(error_messages->pool, 256);
+
 			dir_sync_t*dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
 
 			dir_sync->pool = s->process->pool;
@@ -160,103 +164,162 @@ static int mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	return OK;
 }
 
-int get_verb_noun(request_rec* r,char** verb, int** sortby_int, char** range){
-	int i;
-	int len = strlen(r->uri) +1;
-	int noun_char=0;
-	int noun_char2 = 0;
-	char* sortby_uri;
+int get_music_query(request_rec* r,music_query* music){
+	char* query_nouns[4];
+	int i = 0;
 	char* uri_cpy = apr_pstrdup(r->pool, r->uri);
-	*sortby_int = apr_pcalloc(r->pool, sizeof(int));
+	char* uri_slash;
 
-	//Break apart uri for each /
-	for(i=1; i<= len; i++){
-		if(uri_cpy[i] == '/' || uri_cpy[i] == '\0'){
-			uri_cpy[i] = '\0';
-			if(noun_char == 0){
-				*verb = &uri_cpy[1];
-				noun_char = i + 1;
-			}else if(noun_char > 0 && noun_char2 == 0){
-				sortby_uri = &(uri_cpy[noun_char]);
-				noun_char2 = i +1;
-			}else if(noun_char2 > 0){
-				*range = &(uri_cpy[noun_char2]);
-			}
-		}
+	//Remove leading slash and add trailing slash if one doesn't exsits.
+	uri_cpy++;//Remove leading slash
+	if (uri_cpy[strlen(uri_cpy) - 1] != '/'){
+		uri_cpy = apr_pstrcat(r->pool, uri_cpy, "/", NULL);
 	}
-	if (apr_strnatcasecmp(sortby_uri, "title") == 0){
-		**sortby_int =  0;
-	}else
-	if (apr_strnatcasecmp(sortby_uri, "album") == 0){
-		**sortby_int = 1;
-	}else
-	if (apr_strnatcasecmp(sortby_uri, "artist") == 0){
-		**sortby_int = 2;
+	while ((uri_slash= strchr(uri_cpy, '/')) != NULL && i <=4){
+		 uri_slash[0] = '\0';
+		 query_nouns[i] = uri_cpy;
+		 uri_cpy = ++uri_slash;
+		 i++;
 	}
-
-	if (apr_strnatcasecmp(*verb, "songs") == 0){
-		return 0;
+	if (apr_strnatcasecmp(query_nouns[1], "songs") == 0){
+		music->types = SONGS;
 	}else
-	if (apr_strnatcasecmp(*verb, "albums") == 0){
-		return 1;
+	if (apr_strnatcasecmp(query_nouns[1], "albums") == 0){
+		music->types = ALBUMS;
 	}else
-	if (apr_strnatcasecmp(*verb, "artists") == 0){
-		return 2;
+	if (apr_strnatcasecmp(query_nouns[1], "artists") == 0){
+		music->types = ARTISTS;
+	}else{
+		return -2;
+		//Invlaid type
 	}
 
-	return -1;
+	if (apr_strnatcasecmp(query_nouns[2], "+titles") == 0){
+		music->sort_by = ASC_TITLES;
+	}else
+	if (apr_strnatcasecmp(query_nouns[2], "+albums") == 0){
+		music->sort_by = ASC_ALBUMS;
+	}else
+	if (apr_strnatcasecmp(query_nouns[2], "+artists") == 0){
+		music->sort_by = ASC_ARTISTS;
+	}else{
+		return -3;
+		//Invlaid sort
+	}
+
+	if((music->range_upper = strchr(query_nouns[3], '-')) != NULL) {
+		music->range_upper[0] = '\0';
+		music->range_upper++;
+		music->range_lower = &(query_nouns[3][0]);
+	}else{
+		return -4;
+		//Invalid range
+	}
+
+
+	return 0;
 }
 
-static int print_song(void *rec, const char *key, const char *value){
-	request_rec* r = (request_rec*) rec;
+static int run_music_query(request_rec* r, music_query* music){
+	int error_num;
+	//We should check if database is connected somewhere
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
+	error_num = select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range[music->sort_by], music->range_lower, music->range_upper, &(music->results));
 
-	ap_rprintf(r, "{\n%s %s\n }\n", key, value);
+	return error_num;
+}
+
+char* json_escape_char(apr_pool_t* pool, const char* string){
+	int i;
+	char* temp_string = apr_pstrdup(pool, string);
+	char* escaped_string = NULL;
+
+	for (i = 0; i < strlen(temp_string); i++){
+		if (temp_string[i] == '"'){
+			temp_string[i] = '\0';
+			escaped_string = apr_pstrcat(pool, string[0], "	&quot;", string[i+1], NULL);
+		}
+	}
+	if (escaped_string == NULL){
+		return temp_string;
+	}else{
+		return escaped_string;
+	}
+}
+static int print_error_json(void *rec, const char *key, const char *value){
+	request_rec* r = (request_rec*) rec;
+	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
+
+	ap_rprintf(r, "%s", value);
+	if (atoi(key) == (rec_cfg->error_messages->num_errors - 1)){
+		ap_rprintf(r, "\n");
+	}else{
+		ap_rprintf(r, ",\n");
+	}
 	return 10;
 }
-static int run_get_method(request_rec* r){
-	int i;
-	int error_num;
-	char* verb = NULL;
-	int* sortby_int = NULL;
-	char* range = NULL;
-	apr_table_t* results_table = NULL;
-	dir_sync_t* dir_sync;
+
+static int print_songs_json(void *rec, const char *key, const char *value){
+	request_rec* r = (request_rec*) rec;
+	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
+
+	ap_rprintf(r, "{\n%s\n }",  value);
+	if (atoi(key) == (rec_cfg->query->results->row_count - 1)){
+		ap_rprintf(r, "\n");
+	}else{
+		ap_rprintf(r, ",\n");
+	}
+	return 10;
+}
+
+int output_json(request_rec* r){
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
+	dir_sync_t* dir_sync;
 	dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
-	error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
+
+	int i;
+	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 
 	ap_set_content_type(r, "application/json") ;
-	ap_rputs("{\n", r);
-	ap_rprintf(r, "\t\"Progress\" :  %.2f\n", dir_sync->sync_progress);
-	ap_rputs("\t\"Errors\" : {\n", r);
-	for( i = 0;error_messages->num_errors > i; i++){
-	  ap_rprintf(r, "\t\t\"%s\"", error_messages->errors[i]);
-	  if (i > 0){
-		  ap_rputs(",",r);
-	  }
-	  ap_rputs("\n",r);
-	}
-	ap_rputs("\t}\n", r);
+	ap_rputs("{\n\t\"status\" : {", r);
+		ap_rprintf(r, "\t\"Progress\" :  \"%.2f\",\n", dir_sync->sync_progress);
 
-
-	switch(get_verb_noun(r, &verb, &sortby_int, &range)){
-	case SONGS:
-		error_num = select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range[*sortby_int], range, &results_table);
-		if(error_num == 0){
-			apr_table_do(print_song, r,results_table, NULL);
-		}else{
-			ap_rprintf(r, "error with selecting range (%d)",error_num);
+		ap_rputs("\"Errors\" : {", r);
+		if(!apr_is_empty_table(rec_cfg->error_messages->error_table)){
+			apr_table_do(print_error_json, r, rec_cfg->error_messages->error_table, NULL);
 		}
-		break;
-	case ALBUMS:
-		//query_db(srv_conf->dbd_config);
-		break;
-	case ARTIST:
-		//query_db(srv_conf->dbd_config);
-		break;
+		ap_rputs("\t}\n", r);
+	ap_rputs("\t}\n", r);
+	ap_rputs("\"songs\" : [", r);
+	if(!apr_is_empty_table(rec_cfg->query->results->results)){
+		apr_table_do(print_songs_json, r, rec_cfg->query->results->results, NULL);
+	}
+	ap_rputs(	"]}",r);
+	return 0;
+}
+
+static int run_get_method(request_rec* r){
+	int error_num;
+
+	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
+	rec_cfg->query = apr_pcalloc(r->pool, sizeof(music_query));
+
+	error_num = get_music_query(r, rec_cfg->query);
+	if (error_num != 0){
+		add_error_list(rec_cfg->error_messages, "Error with query", "blah");
+		return OK;
 	}
 
-	ap_rputs("}\n", r);
+	run_music_query(r, rec_cfg->query);
+
+	if (error_num != 0){
+		add_error_list(rec_cfg->error_messages, "Error running query", "blah");
+			return OK;
+	}
+
+
+
+	output_json(r);
 
 	return OK;
 }
@@ -268,10 +331,22 @@ static int run_post_method(request_rec* r){
 
 static int mediaplayer_handler(request_rec* r) {
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
+	error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
+	mediaplayer_rec_cfg* rec_cfg = apr_pcalloc(r->pool, sizeof(mediaplayer_rec_cfg));
+
+	//Copy error messages from shared memory
+	rec_cfg->error_messages =apr_pcalloc(r->pool, sizeof(error_messages_t));
+	rec_cfg->error_messages->error_table = apr_table_clone(r->pool, error_messages->error_table);
+	rec_cfg->error_messages->num_errors = error_messages->num_errors;
+	ap_set_module_config(r->request_config, &mediaplayer_module, rec_cfg) ;
+
+
 
 	if(srv_conf->enable != 1){
 		return DECLINED;
 	}
+	//Allow cross site xmlHTTPRequest
+	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 	if ( r->method_number == M_GET){
 		return run_get_method(r);
 	}

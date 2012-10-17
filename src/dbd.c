@@ -133,41 +133,31 @@ static char* get_insert_last_id (apr_pool_t * pool, db_config* dbd_config){
 		return id;
 }
 
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range,apr_table_t**  results_table){
+int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range_lower, char* range_upper,results_table_t**  results_table){
 
 	const char* Atributes[] = {"file_path", "title", "Artist", "Album", "length","track_no", "disc_no"};
 	int error_num;
-	int row_count;
-	char* range_upper = NULL, *range_lower = NULL;
+
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
 
-	if(range == NULL){
-		//No Range given
-		return -4;
-	}
-	if((range_upper = strchr(range, '-')) != NULL) {
-		range_upper[0] = '\0';
-		range_upper++;
-		range_lower = &range[0];
-	}
-
+	*results_table = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
 
 	error_num = apr_dbd_pvselect(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle,  &results, select_statment, 0, range_lower, range_upper);
 	if (error_num != 0){
 		return error_num;
 	}
-	*results_table = apr_table_make(dbd_config->pool, 6);
-	//Cylce throgh all of them to clear cursor
-	for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1);
+	(*results_table)->results = apr_table_make(dbd_config->pool, 6);
+	//Cycle through all of them to clear cursor
+	for ((*results_table)->row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1);
 			error_num != -1;
-			row_count++,error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1)) {
+			((*results_table)->row_count)++,error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1)) {
 			//only get first result
-					const char* key = apr_psprintf(dbd_config->pool, "\n\"%s\": \"%s\"", Atributes[0],apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
+					const char* key =  apr_itoa(dbd_config->pool, (*results_table)->row_count);
 					int i;
-					for(i = 1; i < apr_dbd_num_cols(dbd_config->dbd_driver, results); i++){
-						const char* value = apr_psprintf(dbd_config->pool, "\n\"%s\": \"%s\"", Atributes[i ],apr_dbd_get_entry (dbd_config->dbd_driver,  row, i));
-						apr_table_merge(*results_table, key, value);
+					for(i = 0; i < apr_dbd_num_cols(dbd_config->dbd_driver, results); i++){
+						const char* value = apr_psprintf(dbd_config->pool, "\"%s\": \"%s\"", Atributes[i ],apr_dbd_get_entry (dbd_config->dbd_driver,  row, i));
+						apr_table_merge((*results_table)->results, key, value);
 					}
 					//return error_num;
 		}
