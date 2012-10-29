@@ -14,8 +14,8 @@
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
-*  limitations under the License.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
 */
 
 #include <httpd.h>
@@ -30,6 +30,9 @@ typedef struct {
 	db_config* dbd_config;
 	apr_shm_t* dir_sync_shm;
 	apr_shm_t* errors_shm;
+	apr_global_mutex_t* dbd_mutex;
+	const char* mutex_name;
+	error_messages_t* error_messages;
 } mediaplayer_srv_cfg ;
 
 
@@ -37,8 +40,7 @@ typedef struct {
 	int* num_files;
 	apr_pool_t * pool;
 	float sync_progress;
-	mediaplayer_srv_cfg* srv_conf;
-	error_messages_t* error_messages;
+	server_rec*	s;
 }dir_sync_t;
 
 

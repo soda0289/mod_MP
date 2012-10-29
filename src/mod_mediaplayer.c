@@ -32,11 +32,14 @@
 #include "mod_mediaplayer.h"
 #include "error_handler.h"
 #include <util_filter.h>
+#include <http_log.h>
+#include "unixd.h"
 
 static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){
 	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));
 
-	//srv_conf->sync_progress = apr_pcalloc(s->process->pool, sizeof(int));
+	srv_conf->mutex_name ="/tmp/tmp22";
+
 	return srv_conf;
 }
 static const char* mediaplayer_set_enable (cmd_parms* cmd, void* cfg, int arg){
@@ -59,47 +62,71 @@ static void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	int files_synced = 0;
 	int status;
 	apr_status_t rv;
-	char error_message[255];
 	const char* dbd_error;
-
+	char error_message[256];
 	List* file_list;
 
 	music_file* song;
 
 	dir_sync_t* dir_sync = (dir_sync_t*) ptr;
 
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(dir_sync->s->module_config, &mediaplayer_module);
+
 	file_list = apr_pcalloc(dir_sync->pool, sizeof(List));
 	dir_sync->num_files = apr_pcalloc(dir_sync->pool, sizeof(int));
 
-	rv = connect_database(dir_sync->pool, &(dir_sync->srv_conf->dbd_config));
-	if(rv != APR_SUCCESS){
-		apr_strerror(rv, (char*) &error_message[0], (apr_size_t) 255);
-		add_error_list(dir_sync->error_messages, "Database error couldn't connect", &error_message[0]);
+	if(srv_conf->dbd_config->connected != 1){
+		add_error_list(srv_conf->error_messages, "Database not connected","ERROR ERROR");
 		return 0;
 	}
-	status = prepare_database(dir_sync->srv_conf->dbd_config, dir_sync->pool);
-	if(status != 0){
-		dbd_error = apr_dbd_error(dir_sync->srv_conf->dbd_config->dbd_driver,dir_sync->srv_conf-> dbd_config->dbd_handle, status);
-		strncpy(&error_message[0], dbd_error, strlen(dbd_error));
-		add_error_list(dir_sync->error_messages, "Database error couldn't prepare",&error_message[0]);
+	add_error_list(srv_conf->error_messages, "Thread started sucsefully","ERROR ERROR");
+
+
+
+	rv = apr_global_mutex_lock(srv_conf->dbd_mutex);
+	if (rv != APR_SUCCESS){
+		add_error_list(srv_conf->error_messages, "Couldn't Obtain lock on database", apr_strerror(rv, error_message, sizeof(error_message)));
 		return 0;
 	}
-	read_dir(dir_sync->pool, file_list, dir_sync->srv_conf->external_directory, dir_sync->num_files,  dir_sync->error_messages);
+	read_dir(dir_sync->pool, file_list, srv_conf->external_directory, dir_sync->num_files,  srv_conf->error_messages);
 
 	if ((file_list == NULL || dir_sync->num_files == NULL )&& (*dir_sync->num_files ) > 0 ){
-		add_error_list(dir_sync->error_messages, "Killing Sync Thread", "");
+		add_error_list(srv_conf->error_messages, "Killing Sync Thread", "");
+		rv = apr_global_mutex_unlock(srv_conf->dbd_mutex);
+		if (rv != APR_SUCCESS){
+			add_error_list(srv_conf->error_messages, "Couldn't unlock on database 1", apr_strerror(rv, error_message, sizeof(error_message)));
+		}
 		return 0;
 	}
-	apr_dbd_transaction_start(dir_sync->srv_conf->dbd_config->dbd_driver, dir_sync->pool, dir_sync->srv_conf->dbd_config->dbd_handle,&dir_sync->srv_conf->dbd_config->transaction);
+	status = apr_dbd_transaction_start(srv_conf->dbd_config->dbd_driver, dir_sync->pool, srv_conf->dbd_config->dbd_handle,&srv_conf->dbd_config->transaction);
+	if(status != 0){
+		dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
+		add_error_list(srv_conf->error_messages, "Database error start transaction", dbd_error);
+		rv = apr_global_mutex_unlock(srv_conf->dbd_mutex);
+		if (rv != APR_SUCCESS){
+			add_error_list(srv_conf->error_messages, "Couldn't unlock on database 2", apr_strerror(rv, error_message, sizeof(error_message)));
+		}
+		return 0;
+	}
 	while(file_list){
 		  song = apr_pcalloc(dir_sync->pool, sizeof(music_file));
 		  song->file_path = file_list->name;
 		  status = read_flac_level1(dir_sync->pool, song);
-		  if (status == 0&& song){
+		  if (status == 0 && song){
 			  //Update or Insert song
-			  status = sync_song(dir_sync->pool, dir_sync->srv_conf->dbd_config, song, file_list->mtime, dir_sync->error_messages);
+			  if (srv_conf->dbd_config->connected == 1){
+				  status = sync_song(srv_conf->dbd_config, song, file_list->mtime, srv_conf->error_messages);
+			  }else{
+				  //Lost connection kill threared
+				  add_error_list(srv_conf->error_messages, "Failed to sync song:",  "Lost connection to database");
+				  rv = apr_global_mutex_unlock(srv_conf->dbd_mutex);
+					if (rv != APR_SUCCESS){
+						add_error_list(srv_conf->error_messages, "Couldn't unlock on database 3", apr_strerror(rv, error_message, sizeof(error_message)));
+					}
+				  return 0;
+			  }
 			  if (status != 0){
-				  add_error_list(dir_sync->error_messages, "Failed to sync song:",  apr_psprintf(dir_sync->pool, "Song title: %s Song artist: %s song album:%s song file path: %s",song->title, song->artist, song->album, song->file_path));
+				  add_error_list(srv_conf->error_messages, "Failed to sync song:",  apr_psprintf(dir_sync->pool, "Song title: %s Song artist: %s song album:%s song file path: %s",song->title, song->artist, song->album, song->file_path));
 			  }
 		  }else{
 			  //not a flac file
@@ -109,7 +136,21 @@ static void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  files_synced++;
 		  file_list = file_list->next;
 	}
-	apr_dbd_transaction_end(dir_sync->srv_conf->dbd_config->dbd_driver, dir_sync->pool, dir_sync->srv_conf->dbd_config->transaction);
+	status = apr_dbd_transaction_end(srv_conf->dbd_config->dbd_driver, dir_sync->pool, srv_conf->dbd_config->transaction);
+	if(status != 0){
+		dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
+		add_error_list(srv_conf->error_messages, "Database error couldn't end transaction",dbd_error);
+		rv = apr_global_mutex_unlock(srv_conf->dbd_mutex);
+		if (rv != APR_SUCCESS){
+			add_error_list(srv_conf->error_messages, "Couldn't unlock on database 4", apr_strerror(rv, error_message, sizeof(error_message)));
+		}
+		return 0;
+	}
+	rv = apr_global_mutex_unlock(srv_conf->dbd_mutex);
+	if (rv != APR_SUCCESS){
+		add_error_list(srv_conf->error_messages, "Couldn't unlock on database 5", apr_strerror(rv, error_message, sizeof(error_message)));
+	}
+	add_error_list(srv_conf->error_messages, "Thread completed sucsefully","ERROR ERROR");
 	return 0;
 }
 
@@ -117,6 +158,9 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 	apr_status_t rv;
 	apr_thread_t* thread_sync_dir;
 	mediaplayer_srv_cfg* srv_conf;
+	int status;
+	const char* dbd_error;
+	char dbd_error_message[256];
 
     void *data = NULL;
     const char *userdata_key = "mediaplayer_post_config";
@@ -138,43 +182,87 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 	do{
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
 		if(srv_conf->enable && srv_conf->external_directory != NULL){
-			rv = apr_shm_create(&srv_conf->dir_sync_shm, sizeof(dir_sync_t), NULL, s->process->pool);
 
-			rv = apr_shm_create(&srv_conf->errors_shm, sizeof(error_messages_t), NULL, s->process->pool);
+			rv = apr_shm_create(&srv_conf->dir_sync_shm, sizeof(dir_sync_t), NULL, pconf);
+			if(rv != APR_SUCCESS){
+				ap_log_error(__FILE__,__LINE__, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
+				srv_conf->dir_sync_shm = NULL;
+				return HTTP_INTERNAL_SERVER_ERROR;
+			}
+			rv = apr_shm_create(&srv_conf->errors_shm, sizeof(error_messages_t), NULL, pconf);
+			if(rv != APR_SUCCESS){
+				ap_log_error(__FILE__,__LINE__, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
+				srv_conf->errors_shm = NULL;
+				return HTTP_INTERNAL_SERVER_ERROR;
+			}
 
 			//Create thread to connect to database and synchronize
-
-			error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
-			error_messages->pool = pconf;
-			error_messages->error_table = apr_table_make(error_messages->pool, 256);
-
 			dir_sync_t*dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
+			srv_conf->error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
 
-			dir_sync->pool = s->process->pool;
-			dir_sync->srv_conf = srv_conf ;
-			dir_sync->error_messages = error_messages;
+			rv = apr_global_mutex_create(&srv_conf->dbd_mutex, srv_conf->mutex_name, APR_LOCK_DEFAULT, pconf);
+			if(rv != APR_SUCCESS){
+				ap_log_error(__FILE__,__LINE__, APLOG_ERR, rv, s, "Error creating mutex %s!!!", srv_conf->mutex_name);
+				srv_conf->dbd_mutex = NULL;
+				return 0;
+			}
+
+			//Set up error_messages
+			srv_conf->error_messages->pool = pconf;
+			srv_conf->error_messages->error_table = apr_table_make(pconf, 256);
+
+
+			dir_sync->pool = pconf;
+			dir_sync->s =s;
+
+			rv = connect_database(pconf, &(srv_conf->dbd_config));
+			if(rv != APR_SUCCESS){
+				add_error_list(srv_conf->error_messages, "Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
+				return 0;
+			}
+			status = prepare_database(srv_conf->dbd_config);
+			if(status != 0){
+				dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
+				add_error_list(srv_conf->error_messages, "Database error couldn't prepare",dbd_error);
+				return 0;
+			}
+
+			srv_conf->dbd_config->connected = 1;
+
+
 			rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync, s->process->pool);
+			//apr_pool_cleanup_register(pconf, srv_conf->dbd_mutex,(void*) apr_global_mutex_destroy, apr_pool_cleanup_null);
 		}
 	}while ((s = s->next) != NULL);
+
+
 	return OK;
 }
 
 
 
-static int mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
-
+static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	apr_status_t rv;
 	mediaplayer_srv_cfg* srv_conf;
 
 	//Scan through every server and determine which one has directories to be synchronized
 	do{
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
-		if(srv_conf->enable && srv_conf->external_directory != NULL){
-
-
+		if(srv_conf->enable){
+			rv = apr_global_mutex_child_init(&srv_conf->dbd_mutex,srv_conf->mutex_name, child_pool);
+			if(rv != APR_SUCCESS){
+				ap_log_error(__FILE__,__LINE__, APLOG_CRIT, rv, s, "Error creating mutex for childs!!!");
+				srv_conf->dbd_mutex = NULL;
+			}
+#ifdef AP_NEED_SET_MUTEX_PERMS
+			rv = unixd_set_global_mutex_perms(srv_conf->dbd_mutex);
+			if(rv != APR_SUCCESS){
+				ap_log_error(__FILE__,__LINE__, APLOG_CRIT, rv, s, "Error creating setting permissions!!");
+				srv_conf->dbd_mutex = NULL;
+			}
+#endif
 		}
 	}while ((s = s->next) != NULL);
-	return OK;
 }
 
 int get_music_query(request_rec* r,music_query* music){
@@ -236,28 +324,27 @@ int get_music_query(request_rec* r,music_query* music){
 static int run_music_query(request_rec* r, music_query* music){
 	int error_num;
 	//We should check if database is connected somewhere
+
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
+
 	error_num = select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range[music->sort_by], music->range_lower, music->range_upper, &(music->results));
 
 	return error_num;
 }
 
 char* json_escape_char(apr_pool_t* pool, const char* string){
-	int i;
-	char* temp_string = apr_pstrdup(pool, string);
-	char* escaped_string = NULL;
 
-	for (i = 0; i < strlen(temp_string); i++){
-		if (temp_string[i] == '"'){
-			temp_string[i] = '\0';
-			escaped_string = apr_pstrcat(pool, string[0], "	&quot;", string[i+1], NULL);
+	int i;
+	char* escape_string = apr_pstrdup(pool, string);
+
+	for (i = 0; i < strlen(escape_string); i++){
+		if (escape_string[i] == '"'){
+			escape_string[i] = '\0';
+			escape_string = apr_pstrcat(pool, &escape_string[0], "\\\"", &escape_string[++i], NULL);
 		}
 	}
-	if (escaped_string == NULL){
-		return temp_string;
-	}else{
-		return escaped_string;
-	}
+
+	return escape_string;
 }
 static int print_error_json(void *rec, const char *key, const char *value){
 	request_rec* r = (request_rec*) rec;
@@ -287,13 +374,12 @@ static int print_songs_json(void *rec, const char *key, const char *value){
 
 int output_json(request_rec* r){
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
-	dir_sync_t* dir_sync;
-	dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
+	dir_sync_t* dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
 
-	int i;
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
-
+	//Apply header
 	ap_set_content_type(r, "application/json") ;
+	//Print Status
 	ap_rputs("{\n\t\"status\" : {", r);
 		ap_rprintf(r, "\t\"Progress\" :  \"%.2f\",\n", dir_sync->sync_progress);
 
@@ -301,10 +387,11 @@ int output_json(request_rec* r){
 		if(!apr_is_empty_table(rec_cfg->error_messages->error_table)){
 			apr_table_do(print_error_json, r, rec_cfg->error_messages->error_table, NULL);
 		}
-		ap_rputs("\t}\n", r);
 	ap_rputs("\t}\n", r);
+	ap_rputs("\t},\n", r);
+	//Print query
 	ap_rputs("\"songs\" : [", r);
-	if(!apr_is_empty_table(rec_cfg->query->results->results)){
+	if(rec_cfg->query->results != NULL && !apr_is_empty_table(rec_cfg->query->results->results)){
 		apr_table_do(print_songs_json, r, rec_cfg->query->results->results, NULL);
 	}
 	ap_rputs(	"]}",r);
@@ -313,21 +400,30 @@ int output_json(request_rec* r){
 
 static int run_get_method(request_rec* r){
 	int error_num;
-
+	const char* error_message;
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 	rec_cfg->query = apr_pcalloc(r->pool, sizeof(music_query));
+
+	if(srv_conf->dbd_config == NULL || srv_conf->dbd_mutex == NULL || srv_conf->dir_sync_shm == NULL || srv_conf->errors_shm == NULL){
+		//BIG Error
+		ap_rprintf(r, "something is wrong NULL vaue found");
+		return OK;
+	}
 
 	error_num = get_music_query(r, rec_cfg->query);
 	if (error_num != 0){
 		add_error_list(rec_cfg->error_messages, "Error with query", "blah");
-		return OK;
 	}
+	if(srv_conf->dbd_config->connected != 1){
+		add_error_list(rec_cfg->error_messages, "Database not connected","ERROR ERROR");
+	}else{
+		error_num = run_music_query(r, rec_cfg->query);
+		if (error_num != 0){
+			error_message = apr_dbd_error(srv_conf->dbd_config->dbd_driver, srv_conf->dbd_config->dbd_handle, error_num);
 
-	run_music_query(r, rec_cfg->query);
-
-	if (error_num != 0){
-		add_error_list(rec_cfg->error_messages, "Error running query", "blah");
-			return OK;
+			add_error_list(rec_cfg->error_messages, "Error running query", error_message);
+		}
 	}
 
 
@@ -343,21 +439,35 @@ static int run_post_method(request_rec* r){
 }
 
 static int mediaplayer_handler(request_rec* r) {
+	apr_status_t rv;
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
+	if(srv_conf->enable != 1){
+		return DECLINED;
+	}
 	error_messages_t* error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
 	mediaplayer_rec_cfg* rec_cfg = apr_pcalloc(r->pool, sizeof(mediaplayer_rec_cfg));
 
+
 	//Copy error messages from shared memory
+	//Create request error table
 	rec_cfg->error_messages =apr_pcalloc(r->pool, sizeof(error_messages_t));
 	rec_cfg->error_messages->error_table = apr_table_clone(r->pool, error_messages->error_table);
 	rec_cfg->error_messages->num_errors = error_messages->num_errors;
+	rec_cfg->error_messages->pool = r->pool;
 	ap_set_module_config(r->request_config, &mediaplayer_module, rec_cfg) ;
 
 
 
-	if(srv_conf->enable != 1){
-		return DECLINED;
+
+
+
+	rv = apr_global_mutex_trylock(srv_conf->dbd_mutex);
+	if( APR_STATUS_IS_EBUSY(rv)){
+		ap_rprintf(r, "Locked Up!");
+		return OK;
 	}
+	apr_global_mutex_lock(srv_conf->dbd_mutex);
+	apr_pool_cleanup_register(r->pool, srv_conf->dbd_mutex, (void*) apr_global_mutex_unlock, apr_pool_cleanup_null);
 	//Allow cross site xmlHTTPRequest
 	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 	if ( r->method_number == M_GET){

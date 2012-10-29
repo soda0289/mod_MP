@@ -75,7 +75,15 @@ mod_mediaplayer_la-mod_mediaplayer.lo: mod_mediaplayer.c \
  /usr/include/apr-1/apr_file_info.h /usr/include/apr-1/apr_errno.h \
  /usr/include/apr-1/apr_lib.h /usr/include/ctype.h tag_reader.h \
  error_handler.h mod_mediaplayer.h dbd.h /usr/include/apr-1/apr_strings.h \
- /usr/include/apr-1/apr_dbd.h /usr/include/httpd/util_filter.h
+ /usr/include/apr-1/apr_dbd.h /usr/include/httpd/util_filter.h \
+ /usr/include/httpd/http_log.h /usr/include/apr-1/apr_thread_proc.h \
+ /usr/include/syslog.h /usr/include/sys/syslog.h \
+ /usr/include/bits/syslog-path.h /usr/include/bits/syslog.h \
+ /usr/include/httpd/unixd.h /usr/include/httpd/http_config.h \
+ /usr/include/httpd/ap_listen.h /usr/include/apr-1/apr_proc_mutex.h \
+ /usr/include/apr-1/apr_global_mutex.h /usr/include/pwd.h \
+ /usr/include/grp.h /usr/include/sys/ipc.h /usr/include/bits/ipctypes.h \
+ /usr/include/bits/ipc.h
 
 /usr/include/httpd/httpd.h:
 
@@ -380,3 +388,35 @@ dbd.h:
 /usr/include/apr-1/apr_dbd.h:
 
 /usr/include/httpd/util_filter.h:
+
+/usr/include/httpd/http_log.h:
+
+/usr/include/apr-1/apr_thread_proc.h:
+
+/usr/include/syslog.h:
+
+/usr/include/sys/syslog.h:
+
+/usr/include/bits/syslog-path.h:
+
+/usr/include/bits/syslog.h:
+
+/usr/include/httpd/unixd.h:
+
+/usr/include/httpd/http_config.h:
+
+/usr/include/httpd/ap_listen.h:
+
+/usr/include/apr-1/apr_proc_mutex.h:
+
+/usr/include/apr-1/apr_global_mutex.h:
+
+/usr/include/pwd.h:
+
+/usr/include/grp.h:
+
+/usr/include/sys/ipc.h:
+
+/usr/include/bits/ipctypes.h:
+
+/usr/include/bits/ipc.h:
