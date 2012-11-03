@@ -1,4 +1,4 @@
-mod_mediaplayer_la_SOURCES = mod_mediaplayer.c mod_mediaplayer.h tag_reader.c tag_reader.h dbd.c dbd.h error_handler.c error_handler.h
+mod_mediaplayer_la_SOURCES = mod_mediaplayer.c mod_mediaplayer.h tag_reader.c tag_reader.h dbd.c dbd.h error_handler.c error_handler.h music_query.c music_query.h
 mod_mediaplayer_la_CFLAGS = -Wall ${MODULE_CFLAGS}
 mod_mediaplayer_la_LDFLAGS = -lpthread -lm -lrt -lssl -lcrypto -ldl -lFLAC -logg -rpath ${AP_LIBEXECDIR} -module -avoid-version ${MODULE_LDFLAGS}
 

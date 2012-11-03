@@ -78,7 +78,7 @@ mod_mediaplayer_la-tag_reader.lo: tag_reader.c /usr/include/httpd/httpd.h \
  /usr/include/FLAC/export.h /usr/include/FLAC/callback.h \
  /usr/include/FLAC/ordinals.h /usr/include/inttypes.h \
  /usr/include/FLAC/format.h /usr/include/FLAC/stream_decoder.h \
- tag_reader.h error_handler.h dbd.h
+ tag_reader.h error_handler.h dbd.h mod_mediaplayer.h music_query.h
 
 /usr/include/httpd/httpd.h:
 
@@ -395,3 +395,7 @@ tag_reader.h:
 error_handler.h:
 
 dbd.h:
+
+mod_mediaplayer.h:
+
+music_query.h:

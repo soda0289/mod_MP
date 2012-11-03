@@ -1,6 +1,5 @@
 /*
  * dbd.h
-
  *
  *  Created on: Sep 20, 2012
  *      Author: Reyad Attiyat
@@ -20,22 +19,15 @@
 */
 
 
+
+
 #ifndef DBD_H_
 #define DBD_H_
-#include <httpd.h>
-#include <http_protocol.h>
-#include <http_config.h>
-#include "apr_file_io.h"
-#include "apr_file_info.h"
-#include "apr_errno.h"
-#include "apr_general.h"
-#include "apr_lib.h"
-#include "apr_strings.h"
-#include "apr_dbd.h"
-#include "tag_reader.h"
-#include "error_handler.h"
 
-typedef struct {
+#include "mod_mediaplayer.h"
+
+
+typedef struct db_config_{
 	apr_pool_t* pool;
 	apr_dbd_t *dbd_handle;
 	const apr_dbd_driver_t *dbd_driver;
@@ -43,6 +35,7 @@ typedef struct {
 	const char* mysql_parms;
 	apr_dbd_transaction_t * transaction;
 	int connected;
+	error_messages_t* database_errors;
 	struct {
 		apr_dbd_prepared_t* select_last_id;
 		apr_dbd_prepared_t *add_song;
@@ -55,11 +48,16 @@ typedef struct {
 		apr_dbd_prepared_t* select_file_path;
 		apr_dbd_prepared_t* update_song;
 		apr_dbd_prepared_t* select_songs_range[4];
+		apr_dbd_prepared_t* select_songs_by_artist_id_range[4];
+		apr_dbd_prepared_t* select_songs_by_album_id_range[4];
+		apr_dbd_prepared_t* select_artists_range;
+		apr_dbd_prepared_t* select_albums_range;
+		apr_dbd_prepared_t* select_albums_by_artist_id_range;
 	}statements;
 
 }db_config;
 
-typedef struct{
+typedef struct results_table_t_ {
 	int row_count;
 	apr_table_t* results;
 }results_table_t;
@@ -68,6 +66,9 @@ typedef struct{
 apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config);
 int prepare_database(db_config* dbd_config);
 int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime, error_messages_t* error_messages);
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range_lower, char* range_upper,results_table_t**  results_table);
+int select_db_range(db_config* dbd_config, music_query* query);
+
+
 
 #endif /* DBD_H_ */
+

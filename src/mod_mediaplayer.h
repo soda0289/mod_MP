@@ -1,5 +1,5 @@
 /*
- * error_handler.c
+ * mod_mediaplayer.h
  *
  *  Created on: Sep 26, 2012
  *      Author: Reyad Attiyat
@@ -17,10 +17,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
 */
+#ifndef MOD_MEDIAPLAYER_H_
+#define MOD_MEDIAPLAYER_H_
 
 #include <httpd.h>
+#include <http_protocol.h>
+#include <http_config.h>
+#include "apr_file_io.h"
+#include "apr_file_info.h"
+#include "apr_errno.h"
+#include "apr_general.h"
+#include "apr_lib.h"
+#include "apr_buckets.h"
+#include "apr_strings.h"
+#include "apr_dbd.h"
+#include <stdlib.h>
+#include "tag_reader.h"
+#include "music_query.h"
 #include "dbd.h"
 #include "error_handler.h"
+
+typedef struct db_config_ db_config;
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
@@ -43,30 +60,11 @@ typedef struct {
 	server_rec*	s;
 }dir_sync_t;
 
-
-
-typedef struct{
-	enum {
-		SONGS = 0,
-		ALBUMS = 1,
-		ARTISTS = 2
-	}types;
-	enum {
-		ASC_TITLES= 0,
-		ASC_ALBUMS = 1,
-		ASC_ARTISTS = 2,
-		DSC_TITLES = 3,
-		DSC_ALBUMS = 4,
-		DSC_ARTISTS = 5
-	}sort_by;
-	char* range_lower;
-	char* range_upper;
-	results_table_t* results;
-}music_query;
-
 typedef struct{
 	error_messages_t* error_messages;
 	music_query* query;
 }mediaplayer_rec_cfg;
 
 char* json_escape_char(apr_pool_t* pool, const char* string);
+
+#endif

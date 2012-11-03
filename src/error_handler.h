@@ -20,6 +20,7 @@
 
 #ifndef ERROR_HANDLER_H_
 #define ERROR_HANDLER_H_
+
 typedef struct {
 	int num_errors;
 	apr_pool_t* pool;

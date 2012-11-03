@@ -18,19 +18,8 @@
  *  limitations under the License.
 */
 
-#include <httpd.h>
-#include <http_protocol.h>
-#include <http_config.h>
-#include "apr_file_io.h"
-#include "apr_file_info.h"
-#include "apr_errno.h"
-#include "apr_general.h"
-#include "apr_lib.h"
-#include "apr_strings.h"
-#include "apr_dbd.h"
-#include "dbd.h"
-#include "tag_reader.h"
 #include "mod_mediaplayer.h"
+
 
 apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config){
 	apr_status_t rv;
@@ -57,11 +46,13 @@ apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config){
 		//Run error function
 		return rv;
 	}
+	(*dbd_config)->connected = 1;
 	return rv;
 }
 
 int prepare_database(db_config* dbd_config){
 	int error_num;
+	const char* Sort_By_Table_Names[] = {"Songs.name", "Albums.name", "Artists.name"};
 
 	error_num = apr_dbd_set_dbname(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "mediaplayer");
 	if (error_num != 0){
@@ -106,8 +97,13 @@ int prepare_database(db_config* dbd_config){
 		return error_num;
 	}
 
+
+	/*
+	 * Select songs from database:
+	 * Use range, sortby and possibly id
+	 */
 	int i;
-	const char* Sort_By_Table_Names[] = {"Songs.name", "Albums.name", "Artists.name"};
+	//Select songs with no id
 	for (i = 0; i < 3; i++){
 		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
 		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_range[i]));
@@ -115,7 +111,45 @@ int prepare_database(db_config* dbd_config){
 			return error_num;
 		}
 	}
+	//Select songs with artist id
+	for (i = 0; i < 3; i++){
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Artists.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_by_artist_id_range[i]));
+		if (error_num != 0){
+			return error_num;
+		}
+	}
+	//Select songs with album id
+	for (i = 0; i < 3; i++){
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Albums.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_by_album_id_range[i]));
+		if (error_num != 0){
+			return error_num;
+		}
+	}
 
+
+	{
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Artists.id, Artists.name FROM Artists ORDER BY Artists.name LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_artists_range));
+		if (error_num != 0){
+			return error_num;
+		}
+	}
+	{
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums ORDER BY Albums.name LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_range));
+		if (error_num != 0){
+			return error_num;
+	}
+	}
+	{
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums JOIN links ON Albums.id = links.albumid WHERE links.artistid = %d AND links.track_no = 1  ORDER BY Albums.name LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_by_artist_id_range));
+		if (error_num != 0){
+			return error_num;
+		}
+	}
 	return error_num;
 }
 static char* get_insert_last_id (db_config* dbd_config){
@@ -147,17 +181,32 @@ static char* get_insert_last_id (db_config* dbd_config){
 		return id;
 }
 
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment,  char* range_lower, char* range_upper,results_table_t**  results_table){
+const char* get_full_column_name(db_config* dbd_config, music_query* query, apr_dbd_results_t* results, int col_num){
+	const char* mysql_name;
+	const char* song_col_name[] = {"file_path", "title", "Artist", "Album", "length","track_no", "disc_no"};
+	mysql_name = apr_dbd_get_name(dbd_config->dbd_driver,results, col_num);
+	if (query->types == SONGS){
+		return song_col_name[col_num];
+	}else{
+		return mysql_name;
+	}
 
-	const char* Atributes[] = {"file_path", "title", "Artist", "Album", "length","track_no", "disc_no"};
+}
+
+int select_db_range(db_config* dbd_config, music_query* query){
 	int error_num;
 
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
 
-	*results_table = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
+	query->results = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
 
-	error_num = apr_dbd_pvselect(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle,  &results, select_statment, 0, range_lower, range_upper);
+	//Check if id is set. If it is send it with select query
+	if (query->by_id.id_type > 0){
+		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle,  &results,query->statement, 0, query->by_id.id, query->range_lower, query->range_upper);
+	}else{
+		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle,  &results,query->statement, 0, query->range_lower, query->range_upper);
+	}
 	if (error_num != 0){
 		//check if not connected
 		if (error_num == 2013){
@@ -165,17 +214,19 @@ int select_db_range(db_config* dbd_config, apr_dbd_prepared_t* select_statment, 
 		}
 		return error_num;
 	}
-	(*results_table)->results = apr_table_make(dbd_config->pool, 6);
+	query->results->results = apr_table_make(dbd_config->pool, 6);
 	//Cycle through all of them to clear cursor
-	for ((*results_table)->row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1);
+	for (query->results->row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1);
 			error_num != -1;
-			((*results_table)->row_count)++,error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1)) {
+			(query->results->row_count)++,error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1)) {
 			//only get first result
-					const char* key =  apr_itoa(dbd_config->pool, (*results_table)->row_count);
+					const char* key =  apr_itoa(dbd_config->pool, query->results->row_count);
 					int i;
 					for(i = 0; i < apr_dbd_num_cols(dbd_config->dbd_driver, results); i++){
-						const char* value = apr_psprintf(dbd_config->pool, "\"%s\": \"%s\"", Atributes[i ], json_escape_char(dbd_config->pool, apr_dbd_get_entry (dbd_config->dbd_driver,  row, i)));
-						apr_table_merge((*results_table)->results, key, value);
+						//Since three tables all use the same name we must substitue for what it actually is
+
+						const char* value = apr_psprintf(dbd_config->pool, "\"%s\": \"%s\"", get_full_column_name(dbd_config,query,results, i), json_escape_char(dbd_config->pool, apr_dbd_get_entry (dbd_config->dbd_driver,  row, i)));
+						apr_table_merge(query->results->results, key, value);
 					}
 					//return error_num;
 		}

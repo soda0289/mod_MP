@@ -14,8 +14,8 @@
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
-*  limitations under the License.
+ *  See the License for the specific language governing permissions and
+ *   limitations under the License.
 */
 
 #include <httpd.h>
@@ -34,6 +34,7 @@
 #include <util_filter.h>
 #include <http_log.h>
 #include "unixd.h"
+
 
 static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){
 	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));
@@ -261,141 +262,11 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 				srv_conf->dbd_mutex = NULL;
 			}
 #endif
+			//Create new database connection for every fork
+			connect_database(child_pool, &srv_conf->dbd_config);
+			prepare_database(srv_conf->dbd_config);
 		}
 	}while ((s = s->next) != NULL);
-}
-
-int get_music_query(request_rec* r,music_query* music){
-	char* query_nouns[4];
-	int i = 0;
-	char* uri_cpy = apr_pstrdup(r->pool, r->uri);
-	char* uri_slash;
-
-	//Remove leading slash and add trailing slash if one doesn't exsits.
-	uri_cpy++;//Remove leading slash
-	if (uri_cpy[strlen(uri_cpy) - 1] != '/'){
-		uri_cpy = apr_pstrcat(r->pool, uri_cpy, "/", NULL);
-	}
-	while ((uri_slash= strchr(uri_cpy, '/')) != NULL && i <=4){
-		 uri_slash[0] = '\0';
-		 query_nouns[i] = uri_cpy;
-		 uri_cpy = ++uri_slash;
-		 i++;
-	}
-	if (apr_strnatcasecmp(query_nouns[1], "songs") == 0){
-		music->types = SONGS;
-	}else
-	if (apr_strnatcasecmp(query_nouns[1], "albums") == 0){
-		music->types = ALBUMS;
-	}else
-	if (apr_strnatcasecmp(query_nouns[1], "artists") == 0){
-		music->types = ARTISTS;
-	}else{
-		return -2;
-		//Invlaid type
-	}
-
-	if (apr_strnatcasecmp(query_nouns[2], "+titles") == 0){
-		music->sort_by = ASC_TITLES;
-	}else
-	if (apr_strnatcasecmp(query_nouns[2], "+albums") == 0){
-		music->sort_by = ASC_ALBUMS;
-	}else
-	if (apr_strnatcasecmp(query_nouns[2], "+artists") == 0){
-		music->sort_by = ASC_ARTISTS;
-	}else{
-		return -3;
-		//Invlaid sort
-	}
-
-	if((music->range_upper = strchr(query_nouns[3], '-')) != NULL) {
-		music->range_upper[0] = '\0';
-		music->range_upper++;
-		music->range_lower = &(query_nouns[3][0]);
-	}else{
-		return -4;
-		//Invalid range
-	}
-
-
-	return 0;
-}
-
-static int run_music_query(request_rec* r, music_query* music){
-	int error_num;
-	//We should check if database is connected somewhere
-
-	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
-
-	error_num = select_db_range(srv_conf->dbd_config, srv_conf->dbd_config->statements.select_songs_range[music->sort_by], music->range_lower, music->range_upper, &(music->results));
-
-	return error_num;
-}
-
-char* json_escape_char(apr_pool_t* pool, const char* string){
-
-	int i;
-	char* escape_string = apr_pstrdup(pool, string);
-
-	for (i = 0; i < strlen(escape_string); i++){
-		if (escape_string[i] == '"'){
-			escape_string[i] = '\0';
-			escape_string = apr_pstrcat(pool, &escape_string[0], "\\\"", &escape_string[++i], NULL);
-		}
-	}
-
-	return escape_string;
-}
-static int print_error_json(void *rec, const char *key, const char *value){
-	request_rec* r = (request_rec*) rec;
-	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
-
-	ap_rprintf(r, "%s", value);
-	if (atoi(key) == (rec_cfg->error_messages->num_errors - 1)){
-		ap_rprintf(r, "\n");
-	}else{
-		ap_rprintf(r, ",\n");
-	}
-	return 10;
-}
-
-static int print_songs_json(void *rec, const char *key, const char *value){
-	request_rec* r = (request_rec*) rec;
-	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
-
-	ap_rprintf(r, "{\n%s\n }",  value);
-	if (atoi(key) == (rec_cfg->query->results->row_count - 1)){
-		ap_rprintf(r, "\n");
-	}else{
-		ap_rprintf(r, ",\n");
-	}
-	return 10;
-}
-
-int output_json(request_rec* r){
-	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
-	dir_sync_t* dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
-
-	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
-	//Apply header
-	ap_set_content_type(r, "application/json") ;
-	//Print Status
-	ap_rputs("{\n\t\"status\" : {", r);
-		ap_rprintf(r, "\t\"Progress\" :  \"%.2f\",\n", dir_sync->sync_progress);
-
-		ap_rputs("\"Errors\" : {", r);
-		if(!apr_is_empty_table(rec_cfg->error_messages->error_table)){
-			apr_table_do(print_error_json, r, rec_cfg->error_messages->error_table, NULL);
-		}
-	ap_rputs("\t}\n", r);
-	ap_rputs("\t},\n", r);
-	//Print query
-	ap_rputs("\"songs\" : [", r);
-	if(rec_cfg->query->results != NULL && !apr_is_empty_table(rec_cfg->query->results->results)){
-		apr_table_do(print_songs_json, r, rec_cfg->query->results->results, NULL);
-	}
-	ap_rputs(	"]}",r);
-	return 0;
 }
 
 static int run_get_method(request_rec* r){

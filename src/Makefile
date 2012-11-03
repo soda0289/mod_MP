@@ -97,7 +97,8 @@ LTLIBRARIES = $(mod_LTLIBRARIES)
 mod_mediaplayer_la_LIBADD =
 am_mod_mediaplayer_la_OBJECTS = mod_mediaplayer_la-mod_mediaplayer.lo \
 	mod_mediaplayer_la-tag_reader.lo mod_mediaplayer_la-dbd.lo \
-	mod_mediaplayer_la-error_handler.lo
+	mod_mediaplayer_la-error_handler.lo \
+	mod_mediaplayer_la-music_query.lo
 mod_mediaplayer_la_OBJECTS = $(am_mod_mediaplayer_la_OBJECTS)
 mod_mediaplayer_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -269,7 +270,7 @@ target_vendor = unknown
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-mod_mediaplayer_la_SOURCES = mod_mediaplayer.c mod_mediaplayer.h tag_reader.c tag_reader.h dbd.c dbd.h error_handler.c error_handler.h
+mod_mediaplayer_la_SOURCES = mod_mediaplayer.c mod_mediaplayer.h tag_reader.c tag_reader.h dbd.c dbd.h error_handler.c error_handler.h music_query.c music_query.h
 mod_mediaplayer_la_CFLAGS = -Wall ${MODULE_CFLAGS}
 mod_mediaplayer_la_LDFLAGS = -lpthread -lm -lrt -lssl -lcrypto -ldl -lFLAC -logg -rpath ${AP_LIBEXECDIR} -module -avoid-version ${MODULE_LDFLAGS}
 mod_LTLIBRARIES = mod_mediaplayer.la
@@ -368,6 +369,7 @@ distclean-compile:
 include ./$(DEPDIR)/mod_mediaplayer_la-dbd.Plo
 include ./$(DEPDIR)/mod_mediaplayer_la-error_handler.Plo
 include ./$(DEPDIR)/mod_mediaplayer_la-mod_mediaplayer.Plo
+include ./$(DEPDIR)/mod_mediaplayer_la-music_query.Plo
 include ./$(DEPDIR)/mod_mediaplayer_la-tag_reader.Plo
 
 .c.o:
@@ -418,6 +420,13 @@ mod_mediaplayer_la-error_handler.lo: error_handler.c
 #	source='error_handler.c' object='mod_mediaplayer_la-error_handler.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -c -o mod_mediaplayer_la-error_handler.lo `test -f 'error_handler.c' || echo '$(srcdir)/'`error_handler.c
+
+mod_mediaplayer_la-music_query.lo: music_query.c
+	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -MT mod_mediaplayer_la-music_query.lo -MD -MP -MF $(DEPDIR)/mod_mediaplayer_la-music_query.Tpo -c -o mod_mediaplayer_la-music_query.lo `test -f 'music_query.c' || echo '$(srcdir)/'`music_query.c
+	$(am__mv) $(DEPDIR)/mod_mediaplayer_la-music_query.Tpo $(DEPDIR)/mod_mediaplayer_la-music_query.Plo
+#	source='music_query.c' object='mod_mediaplayer_la-music_query.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -c -o mod_mediaplayer_la-music_query.lo `test -f 'music_query.c' || echo '$(srcdir)/'`music_query.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
