@@ -46,7 +46,48 @@ function print_song_table(songs){
 	}
 }
 
-function loadSongs(a){
+function print_artists(artists){
+	var artists_div = document.getElementById("artists");
+	for(var i = 0; i < parseInt(artists.length, 10); i++){
+		
+		var bgcolor = (i%2 == 0)? "#222222" : "#666666";
+
+		var newcontent = document.createElement('div');
+		newcontent.style.backgroundColor= bgcolor;
+		newcontent.style.color = "orange";
+		newcontent.innerHTML += artists[i].name;
+		newcontent.onclick = (function (){
+			var artist_id = artist.id
+			return function(){
+				//clear albums
+				var albums_div = document.getElementById('albums');
+				var songs_div = document.getElementById('songs');
+				albums_div.innerHTML = "";
+				songs_div.innerHTML = "";
+				loadAlbums(0, artist_id);
+				loadSongs(0, artist_id, 0)
+			}
+			
+		})(artist = artists[i]);
+		artists_div.appendChild(newcontent);
+	}
+}
+
+function print_albums(albums){
+	var albums_div = document.getElementById("albums");
+	for(var i = 0; i < parseInt(albums.length, 10); i++){
+		
+		var bgcolor = (i%2 == 0)? "#222222" : "#666666";
+
+		var newcontent = document.createElement('div');
+		newcontent.style.backgroundColor= bgcolor;
+		newcontent.style.color = "orange";
+		newcontent.innerHTML += albums[i].name;
+		albums_div.appendChild(newcontent);
+	}
+}
+
+function loadSongs(a, artist_id, album_id){
 	//this code is so stupid
 	var upper = 100;
 
@@ -59,10 +100,17 @@ function loadSongs(a){
 
 
 	var lower = a * parseInt(upper,10);
-	var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString();
+	if (parseInt(artist_id) > 0){
+		var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString() + "/artist_id/" + artist_id;
+	}else if (parseInt(album_id) > 0){
+		var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString() + "/album_id/" + album_id;
+	}else {
+		var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString();
+	}
+	
 	xmlhttp.open("GET",url,true);
 	//Since each xmlhttp request is an array we pass the index of it to the new function
-	xmlhttp.onreadystatechange=function(index){
+	xmlhttp.onreadystatechange=function(index, art_id, al_id){
 		//we then must return a function that takes no parameters to satisfy onreadystatechange
 		return function(){
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
@@ -75,12 +123,11 @@ function loadSongs(a){
 				//Did the server list any results
 				if (parseInt(json_object.songs.length, 10) > 0){
 						print_song_table(json_object.songs);
-					}
-					
-					loadSongs(++index)
+						loadSongs(++index, art_id, al_id);
+				}
 			}
 		}
-	}(a);
+	}(a, artist_id, album_id);
 	xmlhttp.send();
 }
 
@@ -106,24 +153,14 @@ function loadArtists(a)
 		return function(){
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
 				try{
-					var myObj = JSON.parse(String(xmlhttp.responseText), null);
+					var json_object = JSON.parse(String(xmlhttp.responseText), null);
 				}catch (err){
 					alert("error: " + err + " on request number" + index);
 					return -1;
 				}
-				songs_div = document.getElementById("artists");
-				if (parseInt(myObj.artists.length, 10) > 0){
-				
-					for(var i = 0; i < parseInt(myObj.artists.length, 10); i++){
-						var bgcolor = (i%2 == 0)? "#222222" : "#666666";
-			
-						var newcontent = document.createElement('div');
-						newcontent.style.backgroundColor= bgcolor;
-						newcontent.style.color = "orange";
-						newcontent.innerHTML += "Artist: " + myObj.artists[i].name;
-						songs_div.appendChild(newcontent);
-					}
-					loadSongs(++index)
+				if (parseInt(json_object.artists.length, 10) > 0){
+					print_artists(json_object.artists);
+					loadArtists(++index);
 				}
 			}
 		}
@@ -131,7 +168,7 @@ function loadArtists(a)
 	xmlhttp.send();
 }
 
-function loadAlbums(a)
+function loadAlbums(a, id)
 {
 	//this code is so stupid
 	var upper = 100;
@@ -145,41 +182,36 @@ function loadAlbums(a)
 
 
 	var lower = a * parseInt(upper,10);
-	var url = "http://mp/music/albums/+titles/" + lower.toString() + "-" +  upper.toString();
+	if (parseInt(id) == 0 || id == undefined){
+		var url = "http://mp/music/albums/+titles/" + lower.toString() + "-" +  upper.toString();
+	} else {
+		var url = "http://mp/music/albums/+titles/" + lower.toString() + "-" +  upper.toString() + "/artist_id/" + id;
+	}
 	xmlhttp.open("GET",url,true);
 	//Since each xmlhttp request is an array we pass the index of it to the new function
-	xmlhttp.onreadystatechange=function(index){
+	xmlhttp.onreadystatechange=function(index,aid){
 		//we then must return a function that takes no parameters to satisfy onreadystatechange
 		return function(){
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
 				try{
-					var myObj = JSON.parse(String(xmlhttp.responseText), null);
+					var json_object = JSON.parse(String(xmlhttp.responseText), null);
 				}catch (err){
 					alert("error: " + err + " on request number" + index);
 					return -1;
 				}
-				songs_div = document.getElementById("albums");
-				if (parseInt(myObj.albums.length, 10) > 0){
 				
-					for(var i = 0; i < parseInt(myObj.albums.length, 10); i++){
-						var bgcolor = (i%2 == 0)? "#222222" : "#666666";
-			
-						var newcontent = document.createElement('div');
-						newcontent.style.backgroundColor= bgcolor;
-						newcontent.style.color = "orange";
-						newcontent.innerHTML += myObj.albums[i].name;
-						songs_div.appendChild(newcontent);
-					}
-					loadSongs(++index)
+				if (parseInt(json_object.albums.length, 10) > 0){
+					print_albums(json_object.albums);
+					loadAlbums(++index, aid);
 				}
 			}
 		}
-	}(a);
+	}(a, id);
 	xmlhttp.send();
 }
 function loadUI(){
-	loadSongs(0);
+	loadSongs(0, 0, 0);
 	loadArtists(0);
-	loadAlbums(0);
+	loadAlbums(0, 0);
 }
 window.onload = loadUI();
