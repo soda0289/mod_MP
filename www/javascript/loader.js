@@ -9,6 +9,7 @@ function print_song_table(songs){
 	if (songs_table == null){
 		songs_table = document.createElement('table');
 		songs_table.id = "songs_table";
+		songs_table.style.width = "100%";
 		songs_div.appendChild(songs_table);
 	}
 	
@@ -73,6 +74,33 @@ function print_artists(artists){
 	}
 }
 
+
+function music_query(hostname, num_results, type, sort_by, artist_id,album_id, print_results_function){
+	this.count = 0;
+	this.num_results = num_results;
+	
+	this.hostname = hostname;
+	this.type = type;
+	this.sort_by = sort_by;
+	this.artist_id = artist_id;
+	this.album_id = album_id
+	this.url = "http://" + hostname + "/music/" + type + "/" + sort_by + "/" + (this.count * num_results) + "-" + num_results;
+	//Check if artist_id or album_id is set
+	
+	if (this.type == "albums" && this.artist_id > 0){
+		this.url += "/artist_id/" + artist_id;
+	}
+	if (this.type == "songs" && (this.artist_id > 0 || this.album_id > 0)){
+		if (album_id > 0){
+			this.url += "/album_id/" + album_id;
+		}else if (artist_id > 0){
+			this.url += "/album_id/" + album_id;
+		}
+	}
+	
+	this.print_results = print_results_function;
+}
+
 function print_albums(albums){
 	var albums_div = document.getElementById("albums");
 	for(var i = 0; i < parseInt(albums.length, 10); i++){
@@ -83,13 +111,22 @@ function print_albums(albums){
 		newcontent.style.backgroundColor= bgcolor;
 		newcontent.style.color = "orange";
 		newcontent.innerHTML += albums[i].name;
+		newcontent.onclick = (function (){
+			var album_id = album.id;
+			return function(){
+				var songs_div = document.getElementById('songs');
+				songs_div.innerHTML = "";
+				loadSongs(0, 0, album_id);
+			}
+			
+		})(album = albums[i]);
 		albums_div.appendChild(newcontent);
 	}
 }
 
-function loadSongs(a, artist_id, album_id){
+function load_query(music_query){
 	//this code is so stupid
-	var upper = 100;
+	var upper = music_query.num_results;
 
 	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
 		var xmlhttp=new XMLHttpRequest();
@@ -99,18 +136,13 @@ function loadSongs(a, artist_id, album_id){
 	}
 
 
-	var lower = a * parseInt(upper,10);
-	if (parseInt(artist_id) > 0){
-		var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString() + "/artist_id/" + artist_id;
-	}else if (parseInt(album_id) > 0){
-		var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString() + "/album_id/" + album_id;
-	}else {
-		var url = "http://mp/music/songs/+titles/" + lower.toString() + "-" +  upper.toString();
-	}
+	var lower = music_query.count * parseInt(upper,10);
+	var url = music_query.url;
 	
 	xmlhttp.open("GET",url,true);
+	
 	//Since each xmlhttp request is an array we pass the index of it to the new function
-	xmlhttp.onreadystatechange=function(index, art_id, al_id){
+	xmlhttp.onreadystatechange=function(){
 		//we then must return a function that takes no parameters to satisfy onreadystatechange
 		return function(){
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
@@ -121,97 +153,39 @@ function loadSongs(a, artist_id, album_id){
 					return -1;
 				}
 				//Did the server list any results
-				if (parseInt(json_object.songs.length, 10) > 0){
-						print_song_table(json_object.songs);
-						loadSongs(++index, art_id, al_id);
-				}
-			}
-		}
-	}(a, artist_id, album_id);
-	xmlhttp.send();
-}
-
-function loadArtists(a)
-{
-	//this code is so stupid
-	var upper = 100;
-
-	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-		var xmlhttp=new XMLHttpRequest();
-	} else {// code for IE6, IE5
-		//should really error out
-	  	return -1;
-	}
-
-
-	var lower = a * parseInt(upper,10);
-	var url = "http://mp/music/artists/+titles/" + lower.toString() + "-" +  upper.toString();
-	xmlhttp.open("GET",url,true);
-	//Since each xmlhttp request is an array we pass the index of it to the new function
-	xmlhttp.onreadystatechange=function(index){
-		//we then must return a function that takes no parameters to satisfy onreadystatechange
-		return function(){
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
-				try{
-					var json_object = JSON.parse(String(xmlhttp.responseText), null);
-				}catch (err){
-					alert("error: " + err + " on request number" + index);
-					return -1;
-				}
-				if (parseInt(json_object.artists.length, 10) > 0){
-					print_artists(json_object.artists);
-					loadArtists(++index);
-				}
-			}
-		}
-	}(a);
-	xmlhttp.send();
-}
-
-function loadAlbums(a, id)
-{
-	//this code is so stupid
-	var upper = 100;
-
-	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
-		var xmlhttp=new XMLHttpRequest();
-	} else {// code for IE6, IE5
-		//should really error out
-	  	return -1;
-	}
-
-
-	var lower = a * parseInt(upper,10);
-	if (parseInt(id) == 0 || id == undefined){
-		var url = "http://mp/music/albums/+titles/" + lower.toString() + "-" +  upper.toString();
-	} else {
-		var url = "http://mp/music/albums/+titles/" + lower.toString() + "-" +  upper.toString() + "/artist_id/" + id;
-	}
-	xmlhttp.open("GET",url,true);
-	//Since each xmlhttp request is an array we pass the index of it to the new function
-	xmlhttp.onreadystatechange=function(index,aid){
-		//we then must return a function that takes no parameters to satisfy onreadystatechange
-		return function(){
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
-				try{
-					var json_object = JSON.parse(String(xmlhttp.responseText), null);
-				}catch (err){
-					alert("error: " + err + " on request number" + index);
-					return -1;
+				if (music_query.type == "songs"){
+					if (parseInt(json_object.songs.length, 10) > 0){
+						music_query.print_results(json_object.songs);
+						music_query.count++;
+						load_query(music_query);
+					}
+				}else if(music_query.type == "artists"){
+					if (parseInt(json_object.artists.length, 10) > 0){
+						music_query.print_results(json_object.artists);
+						music_query.count++;
+						load_query(music_query);
+					}
+				}else if(music_query.type == "albums"){
+					if (parseInt(json_object.albums.length, 10) > 0){
+						music_query.print_results(json_object.albums);
+						music_query.count++;
+						load_query(music_query);
+					}	
 				}
 				
-				if (parseInt(json_object.albums.length, 10) > 0){
-					print_albums(json_object.albums);
-					loadAlbums(++index, aid);
-				}
 			}
 		}
-	}(a, id);
+	}(music_query);
 	xmlhttp.send();
 }
+
 function loadUI(){
-	loadSongs(0, 0, 0);
-	loadArtists(0);
-	loadAlbums(0, 0);
+	var songs_query = new music_query("mp", 100, "songs", "+titles", 0, 0, print_song_table);
+	var artists_query = new music_query("mp", 100, "artists", "+names", 0, 0, print_artists);
+	var albums_query = new music_query("mp", 100, "albums", "+names", 0, 0, print_albums);
+	
+	load_query(songs_query);
+	load_query(artists_query);
+	load_query(albums_query);
 }
 window.onload = loadUI();
