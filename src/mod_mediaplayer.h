@@ -33,10 +33,10 @@
 #include "apr_dbd.h"
 #include <stdlib.h>
 #include "tag_reader.h"
-#include "music_query.h"
+
 #include "dbd.h"
 #include "error_handler.h"
-
+#include "music_query.h"
 typedef struct db_config_ db_config;
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module;

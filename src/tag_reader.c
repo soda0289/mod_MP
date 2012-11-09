@@ -57,7 +57,7 @@ void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, cha
 				comment_length = comment_entry->length - (comment_value - (char*)comment_entry->entry);
 				*feild = apr_pstrmemdup(pool, comment_value, comment_length);
 			}else{
-				//make a comma seperated list
+				//make a comma separated list
 			}
 			//free(comment_value);
 		}
@@ -88,15 +88,14 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 
 		 //Check what type of block we have Picture, Comment
 		 switch ( FLAC__metadata_simple_iterator_get_block_type(iter) ){
-
-		 case FLAC__METADATA_TYPE_VORBIS_COMMENT:{
-			 find_vorbis_comment_entry(pool, block, "TITLE", &song->title);
-			 find_vorbis_comment_entry(pool, block, "ARTIST", &song->artist);
-			 find_vorbis_comment_entry(pool, block, "ALBUM", &song->album);
-			 find_vorbis_comment_entry(pool, block, "TRACKNUMBER", &song->track_no);
-			 find_vorbis_comment_entry(pool, block, "DISCNUMBER", &song->disc_no);
-	         break;
-		 }
+			 case FLAC__METADATA_TYPE_VORBIS_COMMENT:{
+				 find_vorbis_comment_entry(pool, block, "TITLE", &song->title);
+				 find_vorbis_comment_entry(pool, block, "ARTIST", &song->artist);
+				 find_vorbis_comment_entry(pool, block, "ALBUM", &song->album);
+				 find_vorbis_comment_entry(pool, block, "TRACKNUMBER", &song->track_no);
+				 find_vorbis_comment_entry(pool, block, "DISCNUMBER", &song->disc_no);
+				 break;
+			 }
 	     }
 		 FLAC__metadata_object_delete(block) ;
 	 }

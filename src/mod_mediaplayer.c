@@ -245,7 +245,9 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	apr_status_t rv;
 	mediaplayer_srv_cfg* srv_conf;
-
+	int status;
+	const char* dbd_error;
+	char dbd_error_message[256];
 	//Scan through every server and determine which one has directories to be synchronized
 	do{
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
@@ -263,8 +265,16 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 			}
 #endif
 			//Create new database connection for every fork
-			connect_database(child_pool, &srv_conf->dbd_config);
-			prepare_database(srv_conf->dbd_config);
+			rv = connect_database(child_pool, &(srv_conf->dbd_config));
+			if(rv != APR_SUCCESS){
+				add_error_list(srv_conf->error_messages, "Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
+			}else{
+				status = prepare_database(srv_conf->dbd_config);
+				if(status != 0){
+					dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
+					add_error_list(srv_conf->error_messages, "Database error couldn't prepare",dbd_error);
+				}
+			}
 		}
 	}while ((s = s->next) != NULL);
 }
@@ -278,17 +288,18 @@ static int run_get_method(request_rec* r){
 
 	if(srv_conf->dbd_config == NULL || srv_conf->dbd_mutex == NULL || srv_conf->dir_sync_shm == NULL || srv_conf->errors_shm == NULL){
 		//BIG Error
-		ap_rprintf(r, "something is wrong NULL vaue found");
+		ap_rprintf(r, "something is wrong NULL value found");
 		return OK;
 	}
 
 	error_num = get_music_query(r, rec_cfg->query);
+	//Check if Query is ok
 	if (error_num != 0){
 		add_error_list(rec_cfg->error_messages, "Error with query", "blah");
-	}
-	if(srv_conf->dbd_config->connected != 1){
-		add_error_list(rec_cfg->error_messages, "Database not connected","ERROR ERROR");
-	}else{
+	//Check if Database is connected
+	}else if(srv_conf->dbd_config->connected != 1){
+		add_error_list(rec_cfg->error_messages, "Database Error","Database is not connected.");
+	}else{//Everything is OK
 		error_num = run_music_query(r, rec_cfg->query);
 		if (error_num != 0){
 			error_message = apr_dbd_error(srv_conf->dbd_config->dbd_driver, srv_conf->dbd_config->dbd_handle, error_num);
@@ -298,9 +309,11 @@ static int run_get_method(request_rec* r){
 	}
 
 
-
-	output_json(r);
-
+	if (rec_cfg->query->types == PLAY){
+		//No output that is done in the play_song function
+	}else{
+		output_json(r);
+	}
 	return OK;
 }
 

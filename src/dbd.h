@@ -25,6 +25,7 @@
 #define DBD_H_
 
 #include "mod_mediaplayer.h"
+#include "music_query.h"
 
 
 typedef struct db_config_{
@@ -50,9 +51,9 @@ typedef struct db_config_{
 		apr_dbd_prepared_t* select_songs_range[4];
 		apr_dbd_prepared_t* select_songs_by_artist_id_range[4];
 		apr_dbd_prepared_t* select_songs_by_album_id_range[4];
-		apr_dbd_prepared_t* select_artists_range;
-		apr_dbd_prepared_t* select_albums_range;
-		apr_dbd_prepared_t* select_albums_by_artist_id_range;
+		apr_dbd_prepared_t* select_artists_range[2];
+		apr_dbd_prepared_t* select_albums_range[2];
+		apr_dbd_prepared_t* select_albums_by_artist_id_range[2];
 	}statements;
 
 }db_config;
@@ -67,6 +68,7 @@ apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config);
 int prepare_database(db_config* dbd_config);
 int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime, error_messages_t* error_messages);
 int select_db_range(db_config* dbd_config, music_query* query);
+int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
 
 
 

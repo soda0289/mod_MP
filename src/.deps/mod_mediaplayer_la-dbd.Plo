@@ -75,7 +75,7 @@ mod_mediaplayer_la-dbd.lo: dbd.c mod_mediaplayer.h \
  /usr/include/apr-1/apr_file_info.h /usr/include/apr-1/apr_errno.h \
  /usr/include/apr-1/apr_lib.h /usr/include/ctype.h \
  /usr/include/apr-1/apr_strings.h /usr/include/apr-1/apr_dbd.h \
- tag_reader.h error_handler.h music_query.h dbd.h
+ tag_reader.h error_handler.h dbd.h music_query.h
 
 mod_mediaplayer.h:
 
@@ -377,6 +377,6 @@ tag_reader.h:
 
 error_handler.h:
 
-music_query.h:
-
 dbd.h:
+
+music_query.h:

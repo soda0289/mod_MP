@@ -2,7 +2,7 @@ function play_song(song_id){
 	alert(song_id);
 }
 
-function print_song_table(songs){
+function print_song_table(songs, queries){
 	
 	songs_div = document.getElementById("songs");
 	var songs_table = document.getElementById("songs_table");
@@ -47,7 +47,7 @@ function print_song_table(songs){
 	}
 }
 
-function print_artists(artists){
+function print_artists(artists, queries){
 	var artists_div = document.getElementById("artists");
 	for(var i = 0; i < parseInt(artists.length, 10); i++){
 		
@@ -63,45 +63,35 @@ function print_artists(artists){
 				//clear albums
 				var albums_div = document.getElementById('albums');
 				var songs_div = document.getElementById('songs');
+				//Stop running queries
+				queries.songs_query.running = 0;
+				queries.albums_query.running = 0;
 				albums_div.innerHTML = "";
 				songs_div.innerHTML = "";
-				loadAlbums(0, artist_id);
-				loadSongs(0, artist_id, 0)
+				
+				//Create two new queries
+				var songs_query = new music_query("mp", 1000, "songs", "+titles", artist_id, 0, print_song_table);
+				var albums_query = new music_query("mp", 100, "albums", "+albums", artist_id, 0, print_albums);
+				
+				songs_query.queries = queries;
+				albums_query.queries = queries;
+				
+				//Update ui
+				queries.songs_query = songs_query;
+				queries.albums_query = albums_query;
+
+				
+				load_query(songs_query);
+				load_query(albums_query);
+				
 			}
 			
-		})(artist = artists[i]);
+		})(artist = artists[i], queries);
 		artists_div.appendChild(newcontent);
 	}
 }
 
-
-function music_query(hostname, num_results, type, sort_by, artist_id,album_id, print_results_function){
-	this.count = 0;
-	this.num_results = num_results;
-	
-	this.hostname = hostname;
-	this.type = type;
-	this.sort_by = sort_by;
-	this.artist_id = artist_id;
-	this.album_id = album_id
-	this.url = "http://" + hostname + "/music/" + type + "/" + sort_by + "/" + (this.count * num_results) + "-" + num_results;
-	//Check if artist_id or album_id is set
-	
-	if (this.type == "albums" && this.artist_id > 0){
-		this.url += "/artist_id/" + artist_id;
-	}
-	if (this.type == "songs" && (this.artist_id > 0 || this.album_id > 0)){
-		if (album_id > 0){
-			this.url += "/album_id/" + album_id;
-		}else if (artist_id > 0){
-			this.url += "/album_id/" + album_id;
-		}
-	}
-	
-	this.print_results = print_results_function;
-}
-
-function print_albums(albums){
+function print_albums(albums, queries){
 	var albums_div = document.getElementById("albums");
 	for(var i = 0; i < parseInt(albums.length, 10); i++){
 		
@@ -115,17 +105,62 @@ function print_albums(albums){
 			var album_id = album.id;
 			return function(){
 				var songs_div = document.getElementById('songs');
+				//Stop running quieres
+				queries.songs_query.running = 0;
 				songs_div.innerHTML = "";
-				loadSongs(0, 0, album_id);
+				var songs_query = new music_query("mp", 1000, "songs", "+titles", 0, album_id, print_song_table);
+				
+				//Update ui
+				queries.songs_query = songs_query;
+				
+				load_query(songs_query);
 			}
 			
-		})(album = albums[i]);
+		})(album = albums[i], queries);
 		albums_div.appendChild(newcontent);
 	}
 }
 
+
+function music_query(hostname, num_results, type, sort_by, artist_id,album_id, print_results_function){
+	this.running = 1;
+	this.count = 0;
+	this.num_results = num_results;
+	
+	this.hostname = hostname;
+	this.type = type;
+	this.sort_by = sort_by;
+	this.artist_id = artist_id;
+	this.album_id = album_id
+	this.set_url = function (){
+		this.upper = (this.count * this.num_results).toString();
+		this.url = "http://" + this.hostname + "/music/" + this.type + "/" + this.sort_by + "/" + this.upper + "-" + this.num_results;
+		//Check if artist_id or album_id is set
+		
+		if (this.type == "albums" && this.artist_id > 0){
+			this.url += "/artist_id/" + artist_id;
+		}
+		if (this.type == "songs" && (this.artist_id > 0 || this.album_id > 0)){
+			if (album_id > 0){
+				this.url += "/album_id/" + album_id;
+			}else if (artist_id > 0){
+				this.url += "/artist_id/" + artist_id;
+			}
+		}
+	}
+
+	this.print_results = print_results_function;
+}
+
+function music_ui(songs_query, artists_query, albums_query){
+	this.songs_query = songs_query;
+	this.artists_query = artists_query;
+	this.albums_query = albums_query;
+}
+
 function load_query(music_query){
-	//this code is so stupid
+	
+	music_query.set_url();
 	var upper = music_query.num_results;
 
 	if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -152,25 +187,28 @@ function load_query(music_query){
 					alert("error: " + err + " on request number" + index);
 					return -1;
 				}
+				//Is the query running
 				//Did the server list any results
-				if (music_query.type == "songs"){
-					if (parseInt(json_object.songs.length, 10) > 0){
-						music_query.print_results(json_object.songs);
-						music_query.count++;
-						load_query(music_query);
+				if(music_query.running == 1){
+					if (music_query.type == "songs"){
+						if (parseInt(json_object.songs.length, 10) > 0){
+							music_query.print_results(json_object.songs, music_query.queries);
+							music_query.count++;
+							load_query(music_query);
+						}
+					}else if(music_query.type == "artists"){
+						if (parseInt(json_object.artists.length, 10) > 0){
+							music_query.print_results(json_object.artists, music_query.queries);
+							music_query.count++;
+							load_query(music_query);
+						}
+					}else if(music_query.type == "albums"){
+						if (parseInt(json_object.albums.length, 10) > 0){
+							music_query.print_results(json_object.albums, music_query.queries);
+							music_query.count++;
+							load_query(music_query);
+						}	
 					}
-				}else if(music_query.type == "artists"){
-					if (parseInt(json_object.artists.length, 10) > 0){
-						music_query.print_results(json_object.artists);
-						music_query.count++;
-						load_query(music_query);
-					}
-				}else if(music_query.type == "albums"){
-					if (parseInt(json_object.albums.length, 10) > 0){
-						music_query.print_results(json_object.albums);
-						music_query.count++;
-						load_query(music_query);
-					}	
 				}
 				
 			}
@@ -180,9 +218,17 @@ function load_query(music_query){
 }
 
 function loadUI(){
-	var songs_query = new music_query("mp", 100, "songs", "+titles", 0, 0, print_song_table);
-	var artists_query = new music_query("mp", 100, "artists", "+names", 0, 0, print_artists);
-	var albums_query = new music_query("mp", 100, "albums", "+names", 0, 0, print_albums);
+	var songs_query = new music_query("mp", 1000, "songs", "+titles", 0, 0, print_song_table);
+	var artists_query = new music_query("mp", 100, "artists", "+artists", 0, 0, print_artists);
+	var albums_query = new music_query("mp", 100, "albums", "+albums", 0, 0, print_albums);
+	
+	var music_queries = new music_ui(songs_query, artists_query, albums_query);
+	
+	
+	songs_query.queries = music_queries;
+	artists_query.queries = music_queries;
+	albums_query.queries = music_queries;
+	
 	
 	load_query(songs_query);
 	load_query(artists_query);

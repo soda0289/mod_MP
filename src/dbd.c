@@ -62,6 +62,10 @@ int prepare_database(db_config* dbd_config){
 	if (error_num != 0){
 		return error_num;
 	}
+	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT file_path FROM Songs WHERE id=%d;",NULL, &(dbd_config->statements.select_song));
+	if (error_num != 0){
+		return error_num;
+	}
 	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT id FROM Artists WHERE name=%s;",NULL, &(dbd_config->statements.select_artist));
 	if (error_num != 0){
 		return error_num;
@@ -127,25 +131,29 @@ int prepare_database(db_config* dbd_config){
 			return error_num;
 		}
 	}
-
-
-	{
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Artists.id, Artists.name FROM Artists ORDER BY Artists.name LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_artists_range));
+	for (i = 0;i < 2; i++){
+		const char* order;
+		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Artists.id, Artists.name FROM Artists ORDER BY Artists.name ",order, " LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_artists_range[i]));
 		if (error_num != 0){
 			return error_num;
 		}
 	}
-	{
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums ORDER BY Albums.name LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_range));
+	for (i = 0;i < 2; i++){
+		const char* order;
+		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums ORDER BY Albums.name ", order, " LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_range[i]));
 		if (error_num != 0){
 			return error_num;
+		}
 	}
-	}
-	{
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums JOIN links ON Albums.id = links.albumid WHERE links.artistid = %d AND links.track_no = 1  ORDER BY Albums.name LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_by_artist_id_range));
+	for (i = 0;i < 2; i++){
+		const char* order;
+		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums JOIN links ON Albums.id = links.albumid WHERE links.artistid = %d AND links.track_no = 1  ORDER BY Albums.name ",  order, " LIMIT %d, %d;", NULL);
+		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_by_artist_id_range[i]));
 		if (error_num != 0){
 			return error_num;
 		}
@@ -302,6 +310,31 @@ static int update_song(db_config* dbd_config, music_file* song, apr_time_t mtime
 	return 0;
 }
 
+int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select){
+	int error_num = 0;
+	int row_count;
+	apr_dbd_results_t* results = NULL;
+	apr_dbd_row_t *row = NULL;
+	apr_pool_t* pool = dbd_config->pool;
+
+	//*id = apr_pcalloc(pool, 255);
+		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0, id);
+		if (error_num != 0){
+			return error_num;
+		}
+		//Cylce throgh all of them to clear cursor
+		for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
+				error_num != -1;
+				row_count++, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
+				//only get first result
+						*file_path = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
+						return error_num ;
+			}
+			if (*file_path == NULL || strcmp(*file_path, "") == 0){
+				return -2;
+			}
+	return error_num;
+}
 
 
 static int get_id(char** id, db_config* dbd_config, char* title, apr_dbd_prepared_t* select){
