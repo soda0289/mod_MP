@@ -43,7 +43,7 @@ typedef struct {
 
 }flac_file;
 
-int read_flac_file (flac_file** flac, char* file_path);
+int read_flac_file (flac_file** flac, const char* file_path);
 long process_flac_file(void *in, float **buffer, int samples);
 
 #endif /* PLAY_SONG_H_ */

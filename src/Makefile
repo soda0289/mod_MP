@@ -99,7 +99,8 @@ am_mod_mediaplayer_la_OBJECTS = mod_mediaplayer_la-mod_mediaplayer.lo \
 	mod_mediaplayer_la-tag_reader.lo mod_mediaplayer_la-dbd.lo \
 	mod_mediaplayer_la-error_handler.lo \
 	mod_mediaplayer_la-music_query.lo mod_mediaplayer_la-flac.lo \
-	mod_mediaplayer_la-ogg_encode.lo
+	mod_mediaplayer_la-ogg_encode.lo \
+	mod_mediaplayer_la-dir_sync.lo
 mod_mediaplayer_la_OBJECTS = $(am_mod_mediaplayer_la_OBJECTS)
 mod_mediaplayer_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -271,7 +272,7 @@ target_vendor = unknown
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-mod_mediaplayer_la_SOURCES = mod_mediaplayer.c mod_mediaplayer.h tag_reader.c tag_reader.h dbd.c dbd.h error_handler.c error_handler.h music_query.c music_query.h flac.c flac.h ogg_encode.c ogg_encode.h
+mod_mediaplayer_la_SOURCES = mod_mediaplayer.c mod_mediaplayer.h tag_reader.c tag_reader.h dbd.c dbd.h error_handler.c error_handler.h music_query.c music_query.h flac.c flac.h ogg_encode.c ogg_encode.h dir_sync.c dir_sync.h
 mod_mediaplayer_la_CFLAGS = -Wall ${MODULE_CFLAGS}
 mod_mediaplayer_la_LDFLAGS = -lpthread -lm -lrt -lssl -lcrypto -ldl -lFLAC -logg -lvorbisenc -lvorbis -rpath ${AP_LIBEXECDIR} -module -avoid-version ${MODULE_LDFLAGS}
 mod_LTLIBRARIES = mod_mediaplayer.la
@@ -368,6 +369,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/mod_mediaplayer_la-dbd.Plo
+include ./$(DEPDIR)/mod_mediaplayer_la-dir_sync.Plo
 include ./$(DEPDIR)/mod_mediaplayer_la-error_handler.Plo
 include ./$(DEPDIR)/mod_mediaplayer_la-flac.Plo
 include ./$(DEPDIR)/mod_mediaplayer_la-mod_mediaplayer.Plo
@@ -444,6 +446,13 @@ mod_mediaplayer_la-ogg_encode.lo: ogg_encode.c
 #	source='ogg_encode.c' object='mod_mediaplayer_la-ogg_encode.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -c -o mod_mediaplayer_la-ogg_encode.lo `test -f 'ogg_encode.c' || echo '$(srcdir)/'`ogg_encode.c
+
+mod_mediaplayer_la-dir_sync.lo: dir_sync.c
+	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -MT mod_mediaplayer_la-dir_sync.lo -MD -MP -MF $(DEPDIR)/mod_mediaplayer_la-dir_sync.Tpo -c -o mod_mediaplayer_la-dir_sync.lo `test -f 'dir_sync.c' || echo '$(srcdir)/'`dir_sync.c
+	$(am__mv) $(DEPDIR)/mod_mediaplayer_la-dir_sync.Tpo $(DEPDIR)/mod_mediaplayer_la-dir_sync.Plo
+#	source='dir_sync.c' object='mod_mediaplayer_la-dir_sync.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -c -o mod_mediaplayer_la-dir_sync.lo `test -f 'dir_sync.c' || echo '$(srcdir)/'`dir_sync.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

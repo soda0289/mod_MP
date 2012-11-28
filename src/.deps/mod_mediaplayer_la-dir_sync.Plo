@@ -1,11 +1,10 @@
-mod_mediaplayer_la-music_query.lo: music_query.c mod_mediaplayer.h \
- /usr/include/httpd/httpd.h /usr/include/httpd/ap_config.h \
- /usr/include/apr-1/apr.h /usr/include/apr-1/apr-x86_64.h \
- /usr/include/sys/types.h /usr/include/features.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/time.h \
+mod_mediaplayer_la-dir_sync.lo: dir_sync.c /usr/include/httpd/httpd.h \
+ /usr/include/httpd/ap_config.h /usr/include/apr-1/apr.h \
+ /usr/include/apr-1/apr-x86_64.h /usr/include/sys/types.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/time.h \
  /usr/lib/gcc/x86_64-redhat-linux/4.7.2/include/stddef.h \
  /usr/include/endian.h /usr/include/bits/endian.h \
  /usr/include/bits/byteswap.h /usr/include/sys/select.h \
@@ -73,11 +72,9 @@ mod_mediaplayer_la-music_query.lo: music_query.c mod_mediaplayer.h \
  /usr/include/httpd/util_filter.h /usr/include/httpd/http_config.h \
  /usr/include/httpd/util_cfgtree.h /usr/include/apr-1/apr_file_io.h \
  /usr/include/apr-1/apr_file_info.h /usr/include/apr-1/apr_errno.h \
- /usr/include/apr-1/apr_lib.h /usr/include/ctype.h \
- /usr/include/apr-1/apr_strings.h /usr/include/apr-1/apr_dbd.h \
- tag_reader.h error_handler.h dbd.h music_query.h ogg_encode.h dir_sync.h
-
-mod_mediaplayer.h:
+ /usr/include/apr-1/apr_lib.h /usr/include/ctype.h tag_reader.h \
+ error_handler.h mod_mediaplayer.h /usr/include/apr-1/apr_strings.h \
+ /usr/include/apr-1/apr_dbd.h dbd.h music_query.h dir_sync.h
 
 /usr/include/httpd/httpd.h:
 
@@ -369,18 +366,18 @@ mod_mediaplayer.h:
 
 /usr/include/ctype.h:
 
-/usr/include/apr-1/apr_strings.h:
-
-/usr/include/apr-1/apr_dbd.h:
-
 tag_reader.h:
 
 error_handler.h:
 
+mod_mediaplayer.h:
+
+/usr/include/apr-1/apr_strings.h:
+
+/usr/include/apr-1/apr_dbd.h:
+
 dbd.h:
 
 music_query.h:
-
-ogg_encode.h:
 
 dir_sync.h:

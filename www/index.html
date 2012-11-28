@@ -9,11 +9,18 @@
 	</div>
 	<div id="right" style="float: right; width: 75%">
 		<div id="top" style=" height:25%;">
-			<div id="artists" style="float: left; width:50%; height:100%; overflow:scroll;">artists</div>
-			<div id="albums" style="float: right; width:50%; height:100%; overflow:scroll;">albums</div>
+			<div id="player" style="width:100%; height: 25%">
+				<audio id="audio_player"></audio>
+				<object data="svg/play.svg" type="image/svg+xml"></object>
+				<object data="svg/previous.svg" type="image/svg+xml"></object>
+				<object data="svg/next.svg" type="image/svg+xml"></object>
+				<object data="svg/shuffle.svg" type="image/svg+xml"></object>
+			</div>
+			<div id="artists" style="float: left; width:50%; height:75%; overflow:scroll;">artists</div>
+			<div id="albums" style="float: right; width:50%; height:75%; overflow:scroll;">albums</div>
 		</div>
 		<div id="bottom" style=" height:75%;">
-			<div id="songs" style="width:100%; height:100%; overflow:scroll;">songs</div>
+			<div id="songs" style="float: left; width:100%; height:100%; overflow:scroll;">songs</div>
 		</div>
 	</div>
 </div>

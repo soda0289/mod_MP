@@ -66,7 +66,7 @@ typedef struct results_table_t_ {
 
 apr_status_t connect_database(apr_pool_t* pool, db_config** dbd_config);
 int prepare_database(db_config* dbd_config);
-int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime, error_messages_t* error_messages);
+int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime);
 int select_db_range(db_config* dbd_config, music_query* query);
 int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
 

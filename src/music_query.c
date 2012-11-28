@@ -20,6 +20,7 @@
 
 #include "mod_mediaplayer.h"
 #include "ogg_encode.h"
+#include "dir_sync.h"
 
 
 int get_music_query(request_rec* r,music_query* music){
@@ -210,15 +211,22 @@ int output_json(request_rec* r){
 
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 	//Apply header
+	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 	ap_set_content_type(r, "application/json") ;
+
 	//Print Status
 	ap_rputs("{\n\t\"status\" : {", r);
 		ap_rprintf(r, "\t\"Progress\" :  \"%.2f\",\n", dir_sync->sync_progress);
 
-		ap_rputs("\"Errors\" : [", r);
-		if(!apr_is_empty_table(rec_cfg->error_messages->error_table)){
-			apr_table_do(print_error_json, r, rec_cfg->error_messages->error_table, NULL);
+		ap_rputs("\"Errors\" : [\n", r);
+			//Print Errors
+	int i;
+	for (i =0;i < rec_cfg->error_messages->num_errors; i++){
+		ap_rprintf(r, "\t{\"type\" : %d,\n\t\"header\" : \"%s\",\n\t\"message\" : \"%s\"}\n", rec_cfg->error_messages->messages[i].type, rec_cfg->error_messages->messages[i].header, rec_cfg->error_messages->messages[i].message);
+		if (i+1 != rec_cfg->error_messages->num_errors){
+			ap_rputs(",",r);
 		}
+	}
 	ap_rputs("]", r);
 	ap_rputs("},\n", r);
 	//Print query

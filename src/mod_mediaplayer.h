@@ -46,19 +46,11 @@ typedef struct {
 	const char* external_directory;
 	db_config* dbd_config;
 	apr_shm_t* dir_sync_shm;
+	const char* dir_sync_shm_file;
 	apr_shm_t* errors_shm;
-	apr_global_mutex_t* dbd_mutex;
-	const char* mutex_name;
+	const char* errors_shm_file;
 	error_messages_t* error_messages;
 } mediaplayer_srv_cfg ;
-
-
-typedef struct {
-	int* num_files;
-	apr_pool_t * pool;
-	float sync_progress;
-	server_rec*	s;
-}dir_sync_t;
 
 typedef struct{
 	error_messages_t* error_messages;

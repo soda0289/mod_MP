@@ -80,7 +80,7 @@ int prepare_database(db_config* dbd_config){
 	if (error_num != 0){
 		return error_num;
 	}
-	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT mtime FROM Songs WHERE file_path=%s", NULL, &(dbd_config->statements.select_file_path));
+	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT mtime FROM Songs WHERE file_path = %s", NULL, &(dbd_config->statements.select_file_path));
 	if (error_num != 0){
 		return error_num;
 	}
@@ -109,7 +109,7 @@ int prepare_database(db_config* dbd_config){
 	int i;
 	//Select songs with no id
 	for (i = 0; i < 3; i++){
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.id, Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
 		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_range[i]));
 		if (error_num != 0){
 			return error_num;
@@ -117,7 +117,7 @@ int prepare_database(db_config* dbd_config){
 	}
 	//Select songs with artist id
 	for (i = 0; i < 3; i++){
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Artists.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.id, Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Artists.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
 		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_by_artist_id_range[i]));
 		if (error_num != 0){
 			return error_num;
@@ -125,12 +125,13 @@ int prepare_database(db_config* dbd_config){
 	}
 	//Select songs with album id
 	for (i = 0; i < 3; i++){
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Albums.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.id, Songs.file_path, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Albums.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
 		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_by_album_id_range[i]));
 		if (error_num != 0){
 			return error_num;
 		}
 	}
+	//Select all artists
 	for (i = 0;i < 2; i++){
 		const char* order;
 		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
@@ -140,6 +141,7 @@ int prepare_database(db_config* dbd_config){
 			return error_num;
 		}
 	}
+	//Select all albums
 	for (i = 0;i < 2; i++){
 		const char* order;
 		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
@@ -149,10 +151,11 @@ int prepare_database(db_config* dbd_config){
 			return error_num;
 		}
 	}
+	//Select all albums with artist id
 	for (i = 0;i < 2; i++){
 		const char* order;
 		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums JOIN links ON Albums.id = links.albumid WHERE links.artistid = %d AND links.track_no = 1  ORDER BY Albums.name ",  order, " LIMIT %d, %d;", NULL);
+		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums JOIN links ON Albums.id = links.albumid WHERE links.artistid = %d GROUP BY Albums.id, Albums.name ORDER BY Albums.name ",  order, " LIMIT %d, %d;", NULL);
 		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_by_artist_id_range[i]));
 		if (error_num != 0){
 			return error_num;
@@ -160,38 +163,37 @@ int prepare_database(db_config* dbd_config){
 	}
 	return error_num;
 }
-static char* get_insert_last_id (db_config* dbd_config){
-	int no_errors = 0;
+int get_insert_last_id (char** id, db_config* dbd_config){
+	int error_num = 0;
 	int row_count;
 	apr_pool_t* pool = dbd_config->pool;
-
-	char* id = NULL;
-	const char* error_message = NULL;
 
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
 
 	//Get id of new title
-		no_errors = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, dbd_config->statements.select_last_id, 0);
-		if (no_errors != 0){
-			error_message = apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, no_errors);
-			//ap_rputs(error_message,r);
-		}
-		//If it does cylce throgh all of them to clear cursor
-		for (row_count = 0, no_errors = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
-				no_errors != -1;
-				row_count++,no_errors = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
-				//only get first result
-				if(row_count == 0){
-					id = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0 ));
-				}
-		}
-		return id;
+	error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, dbd_config->statements.select_last_id, 0);
+	if (error_num != 0){
+		add_error_list(dbd_config->database_errors, ERROR, "DBD insert_db_song error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		return error_num;
+	}
+	//If it does cylce throgh all of them to clear cursor
+	for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
+			error_num != -1;
+			row_count++,error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
+			//only get first result
+				*id = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0 ));
+	}
+	if (*id == NULL || strcmp(*id, "") == 0){
+		return -2;
+	}
+
+		return 0;
 }
 
 const char* get_full_column_name(db_config* dbd_config, music_query* query, apr_dbd_results_t* results, int col_num){
 	const char* mysql_name;
-	const char* song_col_name[] = {"file_path", "title", "Artist", "Album", "length","track_no", "disc_no"};
+	const char* song_col_name[] = {"id", "file_path", "title", "Artist", "Album", "length","track_no", "disc_no"};
 	mysql_name = apr_dbd_get_name(dbd_config->dbd_driver,results, col_num);
 	if (query->types == SONGS){
 		return song_col_name[col_num];
@@ -220,6 +222,7 @@ int select_db_range(db_config* dbd_config, music_query* query){
 		if (error_num == 2013){
 			dbd_config->connected = 0;
 		}
+		add_error_list(dbd_config->database_errors, ERROR, "DBD select_db_range error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
 		return error_num;
 	}
 	query->results->results = apr_table_make(dbd_config->pool, 6);
@@ -249,8 +252,9 @@ static int insert_db_artist(char** id, db_config* dbd_config, apr_dbd_prepared_t
 
 	//Create new title
 	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, query, song->artist);
-	if (error_num != 0){
-		*id = get_insert_last_id(dbd_config);
+
+	if (error_num == 0){
+		error_num = get_insert_last_id(id, dbd_config);
 	}
 	return error_num;
 }
@@ -262,8 +266,8 @@ static int insert_db_album(char** id, db_config* dbd_config, apr_dbd_prepared_t*
 
 	//Create new title
 	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, query, song->album);
-	if (error_num != 0){
-		*id = get_insert_last_id(dbd_config);
+	if (error_num == 0){
+		error_num = get_insert_last_id(id, dbd_config);
 	}
 	return error_num;
 }
@@ -276,7 +280,7 @@ static int insert_db_song(char** id, db_config* dbd_config, apr_dbd_prepared_t* 
 	//Create new title
 	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, query, song->title, "aaa", song->file_path,apr_itoa(pool, song->length),  apr_ltoa(pool,mtime), apr_itoa(pool, 0));
 	if (error_num == 0){
-		*id = get_insert_last_id(dbd_config);
+		error_num = get_insert_last_id(id, dbd_config);
 	}
 	return error_num;
 }
@@ -294,6 +298,10 @@ static int insert_db_links(db_config* dbd_config, apr_dbd_prepared_t* query, mus
 		song->disc_no = apr_itoa(pool, 0);
 	}
 	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, dbd_config->statements.add_link,artist_id,album_id,song_id,apr_itoa(pool,  feature),song->track_no,song->disc_no);
+	if (error_num != 0){
+			add_error_list(dbd_config->database_errors, ERROR, "DBD insert_db_links error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+			return error_num;
+	}
 	return error_num;
 }
 
@@ -304,9 +312,10 @@ static int update_song(db_config* dbd_config, music_file* song, apr_time_t mtime
 	apr_pool_t* pool = dbd_config->pool;
 
 	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, dbd_config->statements.update_song,song->album,song->title, apr_itoa(pool,  song->length), pool, song->track_no, song->disc_no, apr_ltoa(pool,(long) mtime));
-					if (error_num != 0){
-						return error_num;
-					}
+	if (error_num != 0){
+		add_error_list(dbd_config->database_errors, ERROR, "DBD update_song error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		return error_num;
+	}
 	return 0;
 }
 
@@ -317,23 +326,23 @@ int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_pre
 	apr_dbd_row_t *row = NULL;
 	apr_pool_t* pool = dbd_config->pool;
 
-	//*id = apr_pcalloc(pool, 255);
-		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0, id);
-		if (error_num != 0){
-			return error_num;
+	error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0, id);
+	if (error_num != 0){
+		add_error_list(dbd_config->database_errors, ERROR, "DBD get file_path error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		return error_num;
+	}
+	//Cylce throgh all of them to clear cursor
+	for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
+			error_num != -1;
+			row_count++, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
+			//only get first result
+					*file_path = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
 		}
-		//Cylce throgh all of them to clear cursor
-		for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
-				error_num != -1;
-				row_count++, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
-				//only get first result
-						*file_path = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
-						return error_num ;
-			}
-			if (*file_path == NULL || strcmp(*file_path, "") == 0){
-				return -2;
-			}
-	return error_num;
+		if (*file_path == NULL || strcmp(*file_path, "") == 0){
+			return -2;
+		}
+	//Return success since we have file_path
+	return 0;
 }
 
 
@@ -344,26 +353,28 @@ static int get_id(char** id, db_config* dbd_config, char* title, apr_dbd_prepare
 	apr_dbd_row_t *row = NULL;
 	apr_pool_t* pool = dbd_config->pool;
 
-	//*id = apr_pcalloc(pool, 255);
-		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0, title);
-		if (error_num != 0){
-			return error_num;
+	error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0, title);
+	if (error_num != 0){
+		add_error_list(dbd_config->database_errors, ERROR, "DBD get id error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		return error_num;
+	}
+	//Cylce throgh all of them to clear cursor
+	for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
+			error_num != -1;
+			row_count++, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
+			//only get first result
+					*id = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
 		}
-		//Cylce throgh all of them to clear cursor
-		for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
-				error_num != -1;
-				row_count++, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
-				//only get first result
-						*id = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
-						return error_num ;
-			}
-			if (*id == NULL || strcmp(*id, "") == 0){
-				return -2;
-			}
-	return error_num;
+		if (*id == NULL || strcmp(*id, "") == 0){
+			return -2;
+		}
+		//Return success since we have file_path
+	return 0;
 }
 
-static int get_mtime(apr_time_t* mtime, db_config* dbd_config, char* file_path, apr_dbd_prepared_t* select){
+
+//should be static
+int get_mtime(apr_time_t* mtime, db_config* dbd_config, const char* file_path, apr_dbd_prepared_t* select){
 	int error_num = 0;
 	int row_count;
 
@@ -373,29 +384,29 @@ static int get_mtime(apr_time_t* mtime, db_config* dbd_config, char* file_path, 
 	apr_pool_t* pool = dbd_config->pool;
 
 	if (file_path != NULL){
-
-		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0,  apr_dbd_escape(dbd_config->dbd_driver,dbd_config->pool, file_path, dbd_config->dbd_handle));
+		error_num = apr_dbd_pvselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0,  file_path);
 		if (error_num != 0){
+			add_error_list(dbd_config->database_errors, ERROR, "DBD get mtime error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
 			return error_num;
 		}
 		//Cylce throgh all of them to clear cursor
 		for (row_count = 0, error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
 				error_num != -1;
 				row_count++,error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
-				//only get first result
 						*mtime = (apr_time_t) apr_atoi64(apr_dbd_get_entry (dbd_config->dbd_driver,  row, 0));
-						return error_num;
-			}
-			if (*mtime == 0 || row_count == 0){
-				return -2;
-			}
-		}else{
-			return -3;
 		}
+		if (*mtime == 0 || row_count == 0){
+			return -2;
+		}
+	}else{
+			add_error_list(dbd_config->database_errors, ERROR, "DBD get mtime error", "NO file path");
+			return -3;
+			//No file path
+	}
 	return 0;
 }
 
-int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime, error_messages_t* error_messages){
+int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime){
 	char* artist_id = NULL;
 	char* album_id = NULL;
 	char* song_id = NULL;
@@ -416,8 +427,8 @@ int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime, er
 					//Report error
 					error_message = apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num);
 
-					add_error_list(error_messages, apr_psprintf(pool,"DBD update  error(%d): %s", error_num,(char *) error_message), "dsdsdds");
-					return 1;
+					add_error_list(dbd_config->database_errors, ERROR, apr_psprintf(pool,"DBD update  error(%d): %s", error_num,(char *) error_message), "dsdsdds");
+					return -12;
 				}
 			}else if(file_mtime == db_mtime){
 				//File is up to date
@@ -427,51 +438,54 @@ int sync_song(db_config* dbd_config, music_file *song, apr_time_t file_mtime, er
 		//No file_path found so add new song
 		error_num = insert_db_song(&song_id, dbd_config, dbd_config->statements.add_song, song, file_mtime);
 		if (error_num != 0){
-			add_error_list(error_messages, "DBD insert_song error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-			return -1;
+			add_error_list(dbd_config->database_errors, ERROR, "DBD insert_song error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+			return -11;
 		}
+
+		//Find Artist ID
 		error_num = get_id(&artist_id, dbd_config, song->artist, dbd_config->statements.select_artist);
 		if (error_num  == -2){
 			error_num = insert_db_artist(&artist_id, dbd_config, dbd_config->statements.add_artist, song);
 			if (error_num != 0){
-				add_error_list(error_messages,   apr_psprintf(pool,"DBD insert artist error(%d):", error_num), apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-				return -1;
+				add_error_list(dbd_config->database_errors, ERROR,   apr_psprintf(pool,"DBD insert artist error(%d):", error_num), apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+				return -10;
 			}
 		}else if(error_num != 0){
-			add_error_list(error_messages,  apr_psprintf(pool,"DBD get artist id error(%d):", error_num), apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-			return -1;
+			add_error_list(dbd_config->database_errors, ERROR,  apr_psprintf(pool,"DBD get artist id error(%d):", error_num), apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+			return -9;
 		}
+
+		//Find Album ID
 		error_num = get_id(&album_id, dbd_config, song->album, dbd_config->statements.select_album);
 		if(error_num == -2){
 			error_num=  insert_db_album(&album_id, dbd_config, dbd_config->statements.add_album, song);
 			if (error_num != 0){
-				add_error_list(error_messages, "DBD insert_album error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-				return -1;
+				add_error_list(dbd_config->database_errors, ERROR, "DBD insert_album error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+				return -8;
 			}
 		}else if (error_num != 0){
-			add_error_list(error_messages, "DBD album get id error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-			return -1;
+			add_error_list(dbd_config->database_errors, ERROR, "DBD album get id error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+			return -2;
 		}
 
-			if (artist_id != NULL && album_id != NULL && song_id != NULL){
-				error_num = insert_db_links(dbd_config, dbd_config->statements.add_link, song, artist_id, album_id, song_id);
-				if (error_num != 0){
-					//error_message = apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num);
-					add_error_list(error_messages, "DBD insert_song error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-					return -1;
-				}
-			}else{
-				//add_error_list(error_messages, "DBD link error:", apr_psprintf(pool, "artist_id: %s album_id=%s song_id=%s", artist_id, album_id, song_id));
-				return -1;
+
+		if (artist_id != NULL && album_id != NULL && song_id != NULL){
+			error_num = insert_db_links(dbd_config, dbd_config->statements.add_link, song, artist_id, album_id, song_id);
+			if (error_num != 0){
+				add_error_list(dbd_config->database_errors, ERROR, "DBD insert_link error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+				return -3;
 			}
+		}else{
+			add_error_list(dbd_config->database_errors, ERROR, "DBD link NULL error:", apr_psprintf(pool, "artist_id: %s album_id=%s song_id=%s", artist_id, album_id, song_id));
+			return -4;
+		}
 	}else if(error_num == 2013){
-		add_error_list(error_messages, "DBD not connected", apr_psprintf(pool, "(%d) (%s)",error_num, song->file_path));
+		add_error_list(dbd_config->database_errors, ERROR, "DBD not connected", apr_psprintf(pool, "(%d) (%s)",error_num, song->file_path));
 		dbd_config->connected = 0;
-		return -1;
+		return -5;
 	}else{
-		add_error_list(error_messages, "DBD get mtime error", apr_psprintf(pool, "(%d) (%s)",error_num, song->file_path));
-		return -1;
+		add_error_list(dbd_config->database_errors, ERROR, "DBD get mtime error", apr_psprintf(pool, "(%d) (%s)",error_num, song->file_path));
+		return -6;
 	}
 	return 0;
 }
-

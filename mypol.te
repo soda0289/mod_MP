@@ -1,0 +1,69 @@
+
+module mypol 1.0;
+
+require {
+	type user_tmp_t;
+	type unconfined_t;
+	type mssql_port_t;
+	type user_home_dir_t;
+	type file_t;
+	type httpd_t;
+	type default_t;
+	type user_home_t;
+	type public_content_rw_t;
+	type mysqld_port_t;
+	type nfs_t;
+	class process signal;
+	class tcp_socket name_connect;
+	class dir { write search read create open getattr add_name };
+	class file { execute read lock create write getattr open };
+	class shm { read write unix_read unix_write associate };
+}
+
+#============= httpd_t ==============
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t default_t:dir { write read create add_name };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t default_t:file { write execute read lock create open getattr };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t file_t:dir { read getattr open search };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t file_t:file { read getattr open };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t mssql_port_t:tcp_socket name_connect;
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t mysqld_port_t:tcp_socket name_connect;
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t nfs_t:dir { read search open };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t public_content_rw_t:dir write;
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t unconfined_t:process signal;
+allow httpd_t unconfined_t:shm { read write };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t unconfined_t:shm { unix_read unix_write associate };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t user_home_dir_t:dir { search getattr };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t user_home_t:dir { search getattr };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t user_home_t:file { read write };
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t user_tmp_t:dir write;
+#!!!! This avc is allowed in the current policy
+
+allow httpd_t user_tmp_t:file execute;

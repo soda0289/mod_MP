@@ -84,7 +84,7 @@ mod_mediaplayer_la-mod_mediaplayer.lo: mod_mediaplayer.c \
  /usr/include/apr-1/apr_proc_mutex.h \
  /usr/include/apr-1/apr_global_mutex.h /usr/include/pwd.h \
  /usr/include/grp.h /usr/include/sys/ipc.h /usr/include/bits/ipctypes.h \
- /usr/include/bits/ipc.h
+ /usr/include/bits/ipc.h dir_sync.h
 
 /usr/include/httpd/httpd.h:
 
@@ -423,3 +423,5 @@ music_query.h:
 /usr/include/bits/ipctypes.h:
 
 /usr/include/bits/ipc.h:
+
+dir_sync.h:

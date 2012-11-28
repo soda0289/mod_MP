@@ -21,12 +21,24 @@
 #ifndef ERROR_HANDLER_H_
 #define ERROR_HANDLER_H_
 
+enum error_type{
+	ERROR = 0,
+	DEBUG,
+	WARN
+};
+
+typedef struct {
+	enum error_type type;
+	char header[255] ;
+	char message[255];
+}error_message_t;
+
 typedef struct {
 	int num_errors;
-	apr_pool_t* pool;
-	apr_table_t*	error_table;
+	//Create error memory table
+	error_message_t messages[1024];
 }error_messages_t;
 
-int add_error_list(error_messages_t* error_messages,const char* message_type,const char* message);
+int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message);
 
 #endif /* ERROR_HANDLER_H_ */

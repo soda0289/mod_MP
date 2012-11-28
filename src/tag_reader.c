@@ -100,6 +100,11 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 		 FLAC__metadata_object_delete(block) ;
 	 }
 	 FLAC__metadata_simple_iterator_delete(iter);
+
+	 if (song->title == NULL){
+		 return -1;
+	 }
+
 	return 0;
 }
 /*
@@ -175,7 +180,7 @@ List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* cou
 	rv = apr_dir_open(&dir, dir_path, pool);
 	if (rv != 0){
 		 apr_strerror(rv, (char *)&errorbuf, 255);
-		add_error_list(error_messages, apr_psprintf(pool, "Error opening directory (%s) (%d)", dir_path, rv), errorbuf);
+		add_error_list(error_messages, ERROR,apr_psprintf(pool, "Error opening directory (%s) (%d)", dir_path, rv), errorbuf);
 		return NULL;
 	}
 	  //Read file is directory

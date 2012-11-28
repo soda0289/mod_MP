@@ -92,7 +92,11 @@ void resize_buffer(flac_file *flac, int newchannels, int newsamples)
         for (i = 0; i < flac->channels; i++)
             free(flac->buf[i]);
 
-        flac->buf = realloc(flac->buf, sizeof(float*) * newchannels);
+        if(flac->buf != NULL){
+        	free(flac->buf);
+        }
+
+        flac->buf = malloc(sizeof(float*) * newchannels);
         flac->channels = newchannels;
 
     }
@@ -150,7 +154,7 @@ FLAC__StreamDecoderWriteStatus flac_write(const FLAC__StreamDecoder *decoder, co
 }
 
 
-int read_flac_file (flac_file** flac, char* file_path){
+int read_flac_file (flac_file** flac, const char* file_path){
 	FLAC__StreamDecoderInitStatus status;
 	*flac = (flac_file*) malloc(sizeof(flac_file));//Should use apr pool
 
@@ -159,12 +163,26 @@ int read_flac_file (flac_file** flac, char* file_path){
 	(*flac)->samples = 0;
 	(*flac)->total_samples = 0;
 	(*flac)->rate = 0;
+	(*flac)->buf = NULL;
 
 	status = FLAC__stream_decoder_init_file((*flac)->stream_decoder, file_path, flac_write, flac_metadata, flac_errors, (*flac));
+
 	FLAC__stream_decoder_process_until_end_of_metadata((*flac)->stream_decoder);
 	FLAC__stream_decoder_process_single((*flac)->stream_decoder);
 
 
 
 	return 0;
+}
+
+void close_flac(flac_file* flac){
+	int i;
+    for (i = 0; i < flac->channels; i++){
+        free(flac->buf[i]);
+    }
+    free(flac->buf);
+
+    FLAC__stream_decoder_finish(flac->stream_decoder);
+    FLAC__stream_decoder_delete(flac->stream_decoder);
+    free(flac);
 }

@@ -66,14 +66,20 @@ int play_song(db_config* dbd_config, request_rec* r, music_query* music){
 	//Pick right decoder
 
 	//Flac
-	if (status == 0){
-		read_flac_file(&flac, file_path);
-		//ap_rprintf(r, "%s",file_path);
-	}else{
-		//ap_rprintf(r,"Error with get_file_path");
+	if (status != 0){
+		ap_rprintf(r,"Error with get_file_path");
+		return -1;
 	}
-
+	status = read_flac_file(&flac, file_path);
+	if (status != 0){
+		ap_rprintf(r,"Error with read_file_path");
+		close_flac(flac);
+		return -1;
+	}
+//Set headers
+	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 	ap_set_content_type(r, "audio/ogg") ;
+	//apr_table_add(r->headers_out, "X-Content-Duration", "306");
 
 	vorbis_encode_init_vbr(&v_info,flac->channels, flac->rate, 0);
 
@@ -135,14 +141,14 @@ int play_song(db_config* dbd_config, request_rec* r, music_query* music){
         }
     }
 
-	//Clean up enocder
+	//Clean up encoder
 	ogg_stream_clear(&ogg_stream);
 
 	vorbis_block_clear(&vorbis_block);
 	vorbis_dsp_clear(&vorbis_dsp);
 	vorbis_info_clear(&v_info);
 
-
+	close_flac(flac);
 
 	return 0;
 }
