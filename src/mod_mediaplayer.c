@@ -142,6 +142,8 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
 		if(srv_conf->enable){
+			//Create shared memory
+
 			//Reattach shared memory
 			apr_shm_attach(&(srv_conf->dir_sync_shm), srv_conf->dir_sync_shm_file, child_pool);
 			apr_shm_attach(&(srv_conf->errors_shm), srv_conf->errors_shm_file, child_pool);
@@ -182,18 +184,6 @@ static int run_get_method(request_rec* r){
 		add_error_list(rec_cfg->error_messages, ERROR,"Database Error","Database is not connected.");
 	}else{//Everything is OK
 		error_num = run_music_query(r, rec_cfg->query);
-		if (error_num != 0){
-			error_message = apr_dbd_error(srv_conf->dbd_config->dbd_driver, srv_conf->dbd_config->dbd_handle, error_num);
-
-			add_error_list(rec_cfg->error_messages, ERROR,"Error running query", error_message);
-		}
-	}
-
-
-	if (rec_cfg->query->types == PLAY){
-		//No output that is done in the play_song function
-	}else{
-		output_json(r);
 	}
 	return OK;
 }

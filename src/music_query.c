@@ -22,12 +22,30 @@
 #include "ogg_encode.h"
 #include "dir_sync.h"
 
+static inline void set_query_parameter(enum parameter_types type, char* parameter_string, music_query* music){
+	music->query_parameters[type].query_paramter_string = parameter_string;
+	music->query_parameters[type].parameter_value = NULL;
+}
 
 int get_music_query(request_rec* r,music_query* music){
-	char* query_nouns[6] = {0};
+	//How many options can we pass in uri
+	/*
+	 * query_nouns[0] Application (music, video,files)
+	 * query_nouns[1]  Query Type
+	 * Query Parameters * 2 if every parameter is set
+	 */
+	char* query_nouns[NUM_QUERY_PARAMETERS * 2 + 2] = {0};
+
 	int i = 0;
+	int noun_num, parameter_num;
+
 	char* uri_cpy = apr_pstrdup(r->pool, r->uri);
 	char* uri_slash;
+
+	//Add error messages to query
+	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
+	music->error_messages = rec_cfg->error_messages;
+
 
 	//Remove leading slash and add trailing slash if one doesn't exsits.
 	uri_cpy++;//Remove leading slash
@@ -36,31 +54,111 @@ int get_music_query(request_rec* r,music_query* music){
 	}
 
 	//Fill array query_nouns with uri parts
-	while ((uri_slash= strchr(uri_cpy, '/')) != NULL && i <= (sizeof(query_nouns) / sizeof(char*))){
+	while ((uri_slash= strchr(uri_cpy, '/')) != NULL && i <= NUM_QUERY_PARAMETERS){
 		 uri_slash[0] = '\0';
 		 query_nouns[i] = uri_cpy;
 		 uri_cpy = ++uri_slash;
 		 i++;
 	}
 	//Check if we get the minimum amount of data for a query
-	if(query_nouns[0] == NULL || query_nouns[1] == NULL || query_nouns[2] == NULL){
+	if(query_nouns[0] == NULL || query_nouns[1] == NULL){
 		return -1;
 	}
 
-	//Find what table to get
+	//Find type of query
 	if (apr_strnatcasecmp(query_nouns[1], "songs") == 0){
-		music->types = SONGS;
+		music->type = SONGS;
 	}else if (apr_strnatcasecmp(query_nouns[1], "albums") == 0){
-		music->types = ALBUMS;
+		music->type = ALBUMS;
 	}else if (apr_strnatcasecmp(query_nouns[1], "artists") == 0){
-		music->types = ARTISTS;
+		music->type = ARTISTS;
 	}else if(apr_strnatcasecmp(query_nouns[1], "play") == 0){
-		music->types = PLAY;
+		music->type = PLAY;
+	}else if(apr_strnatcasecmp(query_nouns[1], "transcode") == 0){
+			music->type = TRANSCODE;
 	}else{
 		return -2;
 		//Invlaid type
 	}
 
+	if(i < 4){
+		return 0;
+	}
+
+/*
+ * 	SONG_ID =0,
+	SONG_NAME,
+	ARTIST_ID,
+	ARTIST_NAME,
+	ALBUM_ID,
+	ALBUM_NAME,
+	ALBUM_YEAR,
+	SOURCE_TYPE,
+	SOURCE_ID,
+	SORT_BY
+ */
+	set_query_parameter(SONG_ID, "song_id", music);
+	set_query_parameter(SONG_NAME, "song_name", music);
+	set_query_parameter(ARTIST_ID, "artist_id", music);
+	set_query_parameter(ARTIST_NAME, "artist_name", music);
+	set_query_parameter(ALBUM_ID, "album_id", music);
+	set_query_parameter(ALBUM_NAME, "album_name", music);
+	set_query_parameter(ALBUM_YEAR, "album_year", music);
+	set_query_parameter(SOURCE_TYPE, "source_type", music);
+	set_query_parameter(SOURCE_ID, "source_id", music);
+	set_query_parameter(SORT_BY,"sort_by", music);
+	set_query_parameter(ROWCOUNT,"row_count", music);
+	set_query_parameter(OFFSET,"offset", music);
+
+
+	for(noun_num = 2; noun_num+1 < i; noun_num += 2){
+		for(parameter_num = 0; parameter_num < NUM_QUERY_PARAMETERS; parameter_num++){
+			if(apr_strnatcasecmp(query_nouns[noun_num],music->query_parameters[parameter_num].query_paramter_string) == 0){
+				music->query_parameters[parameter_num].parameter_value = query_nouns[noun_num+1];
+				music->query_parameters_set |= 1 << parameter_num;
+			}
+		}
+	}
+	//Change artist_name/album_name and add percent sign
+	if(music->query_parameters_set & (1 <<ALBUM_NAME) ){
+		if(music->query_parameters[ALBUM_NAME].parameter_value){
+			music->query_parameters[ALBUM_NAME].parameter_value = apr_pstrcat(r->pool, music->query_parameters[ALBUM_NAME].parameter_value,"%",NULL);
+		}
+	}
+	if(music->query_parameters_set & (1 << ARTIST_NAME)){
+		if(music->query_parameters[ARTIST_NAME].parameter_value){
+			music->query_parameters[ARTIST_NAME].parameter_value = apr_pstrcat(r->pool, music->query_parameters[ARTIST_NAME].parameter_value,"%",NULL);
+		}
+	}
+
+	//Change sorty_by parameter to SQL command
+	if(music->query_parameters_set & (1 << SORT_BY)){
+
+		if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "+titles") == 0){
+			music->query_parameters[SORT_BY].parameter_value = "Songs.name ASC";
+		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "+albums") == 0){
+			music->query_parameters[SORT_BY].parameter_value = "Albums.name ASC";
+		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "+artists") == 0){
+			music->query_parameters[SORT_BY].parameter_value = "Artists.name ASC";
+		}else 	if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "-titles") == 0){
+			music->query_parameters[SORT_BY].parameter_value = "Song.name DSC";
+		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "-albums") == 0){
+			music->query_parameters[SORT_BY].parameter_value = "Albums.name DSC";
+		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "-artists") == 0){
+			music->query_parameters[SORT_BY].parameter_value = "Artists.name DSC";
+		}else{
+			//Unset the SORT_BY
+			music->query_parameters_set &= ~(1 << SORT_BY);
+			return -3;
+			//Invalid sort by
+		}
+	}
+
+
+
+
+	/*
+	//Should we find sorting method
 	if (music->types == PLAY){
 		music->by_id.id = query_nouns[2];
 		music->by_id.id_type = SONGS;
@@ -83,32 +181,7 @@ int get_music_query(request_rec* r,music_query* music){
 			return -3;
 			//Invlaid sort
 		}
-
-		//Find what range to display Upper: where to start Lower: how many rows to display
-		if((music->range_upper = strchr(query_nouns[3], '-')) != NULL) {
-			music->range_upper[0] = '\0';
-			music->range_upper++;
-			music->range_lower = &(query_nouns[3][0]);
-		}else{
-			return -4;
-			//Invalid range
-		}
-	}
-	//Find which id to restrict on
-	if (query_nouns[4] != NULL && query_nouns[5] != NULL){
-	if (apr_strnatcasecmp(query_nouns[4], "artist_id") == 0){
-		music->by_id.id_type = ARTISTS;
-		music->by_id.id = query_nouns[5];
-	}else
-	if (apr_strnatcasecmp(query_nouns[4], "album_id") == 0){
-		music->by_id.id_type = ALBUMS;
-		music->by_id.id  = query_nouns[5];
-	}else{
-		return -5;
-		//Invalid id
-	}
-	}
-
+*/
 
 	return 0;
 }
@@ -118,51 +191,37 @@ int run_music_query(request_rec* r, music_query* music){
 	//We should check if database is connected somewhere
 
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module);
+	error_num = select_db_range(srv_conf->dbd_config, music);
 
-	//set correct prepared statement
-	switch(music->types){
-	    case PLAY:
-	    	play_song(srv_conf->dbd_config, r, music);
-	    	break;
-		case SONGS:
-			if (music->by_id.id_type == SONGS){
-				music->statement = srv_conf->dbd_config->statements.select_songs_range[music->sort_by];
-			}else if (music->by_id.id_type == ALBUMS){
-				music->statement = srv_conf->dbd_config->statements.select_songs_by_album_id_range[music->sort_by];
-			}else if (music->by_id.id_type == ARTISTS){
-				music->statement = srv_conf->dbd_config->statements.select_songs_by_artist_id_range[music->sort_by];
-			}
+	switch(music->type){
+		case SONGS:{
+			output_json(r);
 			break;
-		case ARTISTS:
-			if (music->sort_by == ASC_ARTISTS){
-				music->statement = srv_conf->dbd_config->statements.select_artists_range[0];
-			}else if  (music->sort_by == DSC_ARTISTS){
-				music->statement = srv_conf->dbd_config->statements.select_artists_range[1];
-			}
+		}
+		case ALBUMS:{
+			output_json(r);
 			break;
-		case ALBUMS:
-			if (music->by_id.id_type == ARTISTS){
-				if (music->sort_by == ASC_ALBUMS){
-					music->statement = srv_conf->dbd_config->statements.select_albums_by_artist_id_range[0];
-				}else if  (music->sort_by == DSC_ALBUMS){
-					music->statement = srv_conf->dbd_config->statements.select_albums_by_artist_id_range[1];
-				}
-			}else{
-				if (music->sort_by == ASC_ALBUMS){
-					music->statement  = srv_conf->dbd_config->statements.select_albums_range[0];
-				}else if  (music->sort_by == DSC_ALBUMS){
-					music->statement  = srv_conf->dbd_config->statements.select_albums_range[1];
-				}
-			}
+		}
+		case ARTISTS:{
+			output_json(r);
 			break;
+		}
+		case SOURCES:{
+			output_json(r);
+			break;
+		}
+		case PLAY:{
+			break;
+		}
+		case TRANSCODE:{
+			break;
+		}
+		default:{
+			output_json(r);
+						break;
+		}
 	}
-	if (music->statement != NULL){
-		error_num = select_db_range(srv_conf->dbd_config, music);
-	}else{
-		//No statement
-		error_num = -1;
-	}
-	return error_num;
+	return OK;
 }
 
 char* json_escape_char(apr_pool_t* pool, const char* string){
@@ -179,29 +238,16 @@ char* json_escape_char(apr_pool_t* pool, const char* string){
 
 	return escape_string;
 }
-static int print_error_json(void *rec, const char *key, const char *value){
-	request_rec* r = (request_rec*) rec;
-	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
-
-	ap_rprintf(r, "{\n%s\n }", value);
-	if (atoi(key) == (rec_cfg->error_messages->num_errors - 1)){
-		ap_rprintf(r, "");
-	}else{
-		ap_rprintf(r, ",\n");
-	}
-	return 10;
-}
 
 static int print_songs_json(void *rec, const char *key, const char *value){
 	request_rec* r = (request_rec*) rec;
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 
-	ap_rprintf(r, "{\n%s\n }",  value);
-	if (atoi(key) == (rec_cfg->query->results->row_count - 1)){
-		ap_rprintf(r, "");
-	}else{
-		ap_rprintf(r, ",\n");
+	ap_rprintf(r, "{%s}",  value);
+	if (--(rec_cfg->query->results->song_count) > 0){
+		ap_rprintf(r, ",");
 	}
+	ap_rprintf(r, "\n");
 	return 10;
 }
 
@@ -230,7 +276,7 @@ int output_json(request_rec* r){
 	ap_rputs("]", r);
 	ap_rputs("},\n", r);
 	//Print query
-	switch(rec_cfg->query->types){
+	switch(rec_cfg->query->type){
 		case SONGS:
 			ap_rputs("\"songs\" : [", r);
 			break;
@@ -242,8 +288,9 @@ int output_json(request_rec* r){
 			break;
 	}
 
-	if(rec_cfg->query->results != NULL && !apr_is_empty_table(rec_cfg->query->results->results)){
-		apr_table_do(print_songs_json, r, rec_cfg->query->results->results, NULL);
+	if(rec_cfg->query->results != NULL && !apr_is_empty_table(rec_cfg->query->results->song_results)){
+		apr_table_do(print_songs_json, r, rec_cfg->query->results->song_results, NULL);
+		//apr_table_do(print_songs_json, r, rec_cfg->query->results->song_results, NULL);
 	}
 	ap_rputs(	"]}",r);
 	return 0;

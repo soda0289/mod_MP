@@ -24,8 +24,26 @@
 
 #include "error_handler.h"
 
+enum FILE_TYPE{
+	MP3 = 0,
+	FLAC = 1,
+	OGG = 2
+};
+
+typedef struct song_tags{
+	const char* tag_name;
+	char** tag_dest;
+}song_tags;
+
+typedef struct{
+	char* path;
+	enum FILE_TYPE type;
+	char* type_string;
+	int quality;
+	apr_time_t mtime;
+}file_t;
+
 typedef struct {
-	char* file_path;
 	char* title;
 	char* artist;
 	char* album;
@@ -34,11 +52,11 @@ typedef struct {
 	int   length;
 	//char** feature;
 
+	file_t file;
 } music_file;
 
 struct List{
-	char* name;
-	apr_time_t mtime;
+	file_t file;
 	struct List* next;
 };
 
@@ -51,5 +69,6 @@ typedef struct{
 
 List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* count, error_messages_t* error_messages);
 int read_flac_level1(apr_pool_t* pool, music_file* song);
+int read_ogg(apr_pool_t* pool, music_file* song);
 
 #endif /* TAG_READER_H_ */

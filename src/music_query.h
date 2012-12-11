@@ -22,32 +22,50 @@
 #ifndef MUSIC_QUERY_H_
 #define MUSIC_QUERY_H_
 #include "apr_dbd.h"
+#include "error_handler.h"
+
+#define NUM_QUERY_TYPES  6
+#define NUM_QUERY_PARAMETERS  12
+
+enum query_types{
+	SONGS = 0,
+	ALBUMS,
+	ARTISTS,
+	SOURCES,
+	TRANSCODE,
+	PLAY
+};
+
+enum parameter_types {
+	SONG_ID =0,
+	SONG_NAME,
+	ARTIST_ID,
+	ARTIST_NAME,
+	ALBUM_ID,
+	ALBUM_NAME,
+	ALBUM_YEAR,
+	SOURCE_TYPE,
+	SOURCE_ID,
+	SORT_BY,
+	ROWCOUNT,
+	OFFSET
+};
 
 typedef struct results_table_t_ results_table_t;
 
 typedef struct{
-	enum {
-		SONGS = 0,
-		ALBUMS,
-		ARTISTS,
-		PLAY
-	}types;
-	enum {
-		ASC_TITLES= 0,
-		ASC_ALBUMS,
-		ASC_ARTISTS,
-		DSC_TITLES,
-		DSC_ALBUMS,
-		DSC_ARTISTS
-	}sort_by;
-	struct{
-		int id_type; //Use types enum
-		char* id;
-	}by_id;
-	char* range_lower;
-	char* range_upper;
+	char* query_paramter_string;
+	char* parameter_value;
+}query_parameters_t;
+
+typedef struct{
+	enum query_types type;
+	//One for each query_paramter type
+	//Binary flag for each parameter
+	unsigned int query_parameters_set;
+	query_parameters_t query_parameters[NUM_QUERY_PARAMETERS];
 	results_table_t* results;
-	apr_dbd_prepared_t* statement;
+	error_messages_t* error_messages;
 }music_query;
 
 int run_music_query(request_rec* r, music_query* music);

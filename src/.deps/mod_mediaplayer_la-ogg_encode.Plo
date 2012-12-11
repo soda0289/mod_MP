@@ -73,11 +73,11 @@ mod_mediaplayer_la-ogg_encode.lo: ogg_encode.c /usr/include/httpd/httpd.h \
  /usr/include/httpd/util_cfgtree.h /usr/include/vorbis/vorbisenc.h \
  /usr/include/vorbis/codec.h /usr/include/ogg/ogg.h \
  /usr/include/ogg/os_types.h /usr/include/ogg/config_types.h \
- /usr/include/inttypes.h music_query.h /usr/include/apr-1/apr_dbd.h dbd.h \
- mod_mediaplayer.h /usr/include/apr-1/apr_file_io.h \
+ /usr/include/inttypes.h music_query.h /usr/include/apr-1/apr_dbd.h \
+ error_handler.h dbd.h mod_mediaplayer.h /usr/include/apr-1/apr_file_io.h \
  /usr/include/apr-1/apr_file_info.h /usr/include/apr-1/apr_errno.h \
  /usr/include/apr-1/apr_lib.h /usr/include/ctype.h \
- /usr/include/apr-1/apr_strings.h tag_reader.h error_handler.h flac.h \
+ /usr/include/apr-1/apr_strings.h tag_reader.h flac.h \
  /usr/include/FLAC/metadata.h /usr/include/FLAC/export.h \
  /usr/include/FLAC/callback.h /usr/include/FLAC/ordinals.h \
  /usr/include/FLAC/format.h /usr/include/FLAC/stream_decoder.h
@@ -378,6 +378,8 @@ music_query.h:
 
 /usr/include/apr-1/apr_dbd.h:
 
+error_handler.h:
+
 dbd.h:
 
 mod_mediaplayer.h:
@@ -395,8 +397,6 @@ mod_mediaplayer.h:
 /usr/include/apr-1/apr_strings.h:
 
 tag_reader.h:
-
-error_handler.h:
 
 flac.h:
 

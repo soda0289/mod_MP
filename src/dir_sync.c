@@ -25,7 +25,6 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	int status;
 	apr_status_t rv;
 	const char* dbd_error;
-	char error_message[256];
 	List* file_list;
 
 	music_file* song;
@@ -72,27 +71,54 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		add_error_list(dir_sync->error_messages,ERROR, "Database error start transaction", dbd_error);
 		return 0;
 	}
-	while(file_list){
+	while(file_list->file.path){
 		  song = apr_pcalloc(dir_sync->pool, sizeof(music_file));
-		  song->file_path = file_list->name;
-		  status = read_flac_level1(dir_sync->pool, song);
+		  song->file = file_list->file;
+		  switch(song->file.type){
+		  	  case FLAC:{
+		  		status = read_flac_level1(dir_sync->pool, song);
+		  		if (status == 0){
+		  			song->file.type_string = "flac";
+		  		}
+		  		break;
+		  	  }
+		  	  case OGG:{
+		  		status = read_ogg(dir_sync->pool, song);
+		  		if (status == 0){
+		  			song->file.type_string = "ogg";
+		  		}
+		  		break;
+		  	  }
+		  	  case MP3:{
+		  		  //not supported yet
+		  		  //status = read_id3(dir_sync->pool,song);
+		  		  status = 5;
+			  		if (status == 0){
+			  			song->file.type_string = "mp3";
+			  		}
+			  	break;
+		  	  }
+		  	 default:{
+		  		  status = -1;
+		  		  break;
+		  	  }
+		  }
+
 		  if (status == 0 && song){
 			  //Update or Insert song
 			  if (dbd_config->connected == 1){
-				  status = sync_song(dbd_config, song, file_list->mtime);
+				  status = sync_song(dbd_config, song);
+				  if (status != 0){
+					  add_error_list(dir_sync->error_messages, ERROR, apr_psprintf(dir_sync->pool,"Failed to sync song:"),  apr_psprintf(dir_sync->pool, "(%d) Song title: %s Song artist: %s song album:%s song file path: %s",status, song->title, song->artist, song->album, song->file.path));
+				  }
 			  }else{
 				  //Lost connection kill thread
 				  add_error_list(dir_sync->error_messages, ERROR, "Failed to sync song:",  "Lost connection to database");
 				  return 0;
 			  }
-			  if (status != 0){
-				  add_error_list(dir_sync->error_messages, ERROR, "Failed to sync song:",  apr_psprintf(dir_sync->pool, "(%d) Song title: %s Song artist: %s song album:%s song file path: %s",status, song->title, song->artist, song->album, song->file_path));
-			  }
-		  }else{
-			  //not a flac file
 		  }
 		  //Calculate the percent of files synchronized
-		  dir_sync->sync_progress =(float) files_synced*100 / *(dir_sync->num_files);
+		  dir_sync->sync_progress =(float) files_synced*100 / (*(dir_sync->num_files) - 1);
 		  files_synced++;
 		  file_list = file_list->next;
 	}
@@ -102,6 +128,6 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		add_error_list(dir_sync->error_messages, ERROR, "Database error couldn't end transaction",dbd_error);
 		return 0;
 	}
-	add_error_list(dir_sync->error_messages, DEBUG, "Thread completed sucsefully","ERROR ERROR");
+	add_error_list(dir_sync->error_messages, DEBUG, "Thread DIR Sync completed successfully",":)");
 	return 0;
 }

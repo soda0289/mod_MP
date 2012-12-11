@@ -23,6 +23,8 @@
 
 #include "FLAC/metadata.h"
 #include "FLAC/stream_decoder.h"
+#include "apr.h"
+#include "apr_general.h"
 
 typedef struct {
 	FLAC__StreamDecoder* stream_decoder;
@@ -31,7 +33,7 @@ typedef struct {
     short channels;
     int rate;
     int samples;
-    long total_samples; /* per channel, of course */
+    long total_samples; // per channel
 
     int eos; //End of stream
 
@@ -43,7 +45,7 @@ typedef struct {
 
 }flac_file;
 
-int read_flac_file (flac_file** flac, const char* file_path);
+int read_flac_file (flac_file** flac, const char* file_path, apr_pool_t* pool);
 long process_flac_file(void *in, float **buffer, int samples);
 
 #endif /* PLAY_SONG_H_ */

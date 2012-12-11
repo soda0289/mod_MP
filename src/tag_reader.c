@@ -32,9 +32,13 @@
 #include <stdlib.h>
 #include "FLAC/metadata.h"
 #include "FLAC/stream_decoder.h"
+#include "vorbis/vorbisfile.h"
 #include "tag_reader.h"
 #include "dbd.h"
 #include "error_handler.h"
+
+
+
 
 void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, char* entry, char** feild){
 	FLAC__StreamMetadata_VorbisComment       *comment;
@@ -71,7 +75,7 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 	if (song == NULL){
 		return 1;
 	}
-	file_path = song->file_path;
+	file_path = song->file.path;
 	if (!file_path){
 		return 1;
 	}
@@ -94,6 +98,13 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 				 find_vorbis_comment_entry(pool, block, "ALBUM", &song->album);
 				 find_vorbis_comment_entry(pool, block, "TRACKNUMBER", &song->track_no);
 				 find_vorbis_comment_entry(pool, block, "DISCNUMBER", &song->disc_no);
+				 break;
+			 }
+			 case
+			 FLAC__METADATA_TYPE_STREAMINFO :{
+				 FLAC__StreamMetadata_StreamInfo* stream_info;
+				 stream_info = (FLAC__StreamMetadata_StreamInfo*)block;
+				 song->length = stream_info->total_samples / stream_info->sample_rate;
 				 break;
 			 }
 	     }
@@ -162,6 +173,73 @@ static music_file* read_flac_level0(request_rec* r, char* file_path){
 	return song;
 }
 */
+int read_ogg(apr_pool_t* pool, music_file* song){
+	const int NUM_TAGS = 5;
+	song_tags saved_tags[NUM_TAGS];
+	saved_tags[0].tag_name = "TITLE";
+	(saved_tags[0].tag_dest) = &(song->title);
+	saved_tags[1].tag_name = "ARTIST";
+	(saved_tags[1].tag_dest) = &(song->artist);
+	saved_tags[2].tag_name = "ALBUM";
+	(saved_tags[2].tag_dest) = &(song->album);
+	saved_tags[3].tag_name = "TRACKNUMBER";
+	(saved_tags[3].tag_dest) = &(song->track_no);
+	saved_tags[4].tag_name = "DISCNUMBER";
+	(saved_tags[4].tag_dest) = &(song->disc_no);
+
+	char* strtok_state;
+	char* comment;
+	char* comment_name;
+	char* comment_value;
+
+
+	int i, tag, status;
+
+	OggVorbis_File vorbis_file;
+	vorbis_comment *vc = NULL;
+
+	status = ov_fopen(song->file.path, &vorbis_file);
+	if (status != 0){
+		return 2;
+	}
+	vc = ov_comment(&vorbis_file, -1);
+	if (vc == NULL){
+		return 1;
+	}
+
+	for(i =0; i < vc->comments; i++){
+		for(tag = 0; tag < NUM_TAGS; tag++){
+			comment = apr_pstrmemdup(pool,vc->user_comments[i], vc->comment_lengths[i]);
+			comment_name = apr_strtok(comment, "=", &strtok_state);
+			comment_value = apr_strtok(NULL, "=", &strtok_state);
+			if (apr_strnatcasecmp(comment_name,saved_tags[tag].tag_name) == 0){
+				*(saved_tags[tag].tag_dest) = comment_value;
+			}
+		}
+	}
+
+	ov_clear(&vorbis_file);
+
+	return 0;
+}
+
+static int get_file_ext(apr_pool_t* pool, const char* file_path){
+	int length = strlen(file_path);
+	for(; length > 0; length--){
+		if(file_path[length] == '.'){
+			if(apr_strnatcasecmp((const char*)&file_path[length+1],"flac") == 0){
+				return FLAC;
+			}else if(apr_strnatcasecmp((const char*)&file_path[length+1],"ogg") == 0){
+				return OGG;
+			}else if(apr_strnatcasecmp((const char*)&file_path[length+1],"mp3") == 0){
+				return MP3;
+			}
+			break;
+		}
+	}
+	//Not known file extention
+	return -1;
+}
 
 List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* count, error_messages_t* error_messages){
 	apr_status_t rv;
@@ -172,11 +250,6 @@ List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* cou
 
 	char* file_path;
 
-	  /*rv = apr_dbd_close(dbd_driver, dbd_handle);
-	  if (rv != APR_SUCCESS){
-		  ap_rputs(apr_strerror(rv, errorbuf, 255), r) ;
-	  }
-	*/
 	rv = apr_dir_open(&dir, dir_path, pool);
 	if (rv != 0){
 		 apr_strerror(rv, (char *)&errorbuf, 255);
@@ -200,8 +273,9 @@ List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* cou
 		if (filef.filetype == APR_REG){
 			(*count)++;
 			List* file_list_new  = apr_pcalloc(pool, sizeof(List));
-			file_list->name = file_path;
-			file_list->mtime = filef.mtime;
+			file_list->file.path = file_path;
+			file_list->file.mtime = filef.mtime;
+			file_list->file.type  = get_file_ext(pool,file_path);
 			file_list->next = file_list_new;
 			file_list = file_list_new;
 		}

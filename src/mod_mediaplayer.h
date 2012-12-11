@@ -41,6 +41,17 @@ typedef struct db_config_ db_config;
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
+
+typedef struct{
+	char* song_id;
+	float progress;
+}decoding_t;
+
+typedef struct{
+	decoding_t decoding[10];
+}decoding_quene_t;
+
+
 typedef struct {
 	int enable;
 	const char* external_directory;
@@ -50,6 +61,7 @@ typedef struct {
 	apr_shm_t* errors_shm;
 	const char* errors_shm_file;
 	error_messages_t* error_messages;
+
 } mediaplayer_srv_cfg ;
 
 typedef struct{
