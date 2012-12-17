@@ -25,9 +25,9 @@ int add_error_list(error_messages_t* error_messages, enum error_type type, const
 		return -1;
 	}
 		error_messages->messages[error_messages->num_errors].type = type;
-		strncpy(error_messages->messages[error_messages->num_errors].header, error_header, 255);
+		strncpy(error_messages->messages[error_messages->num_errors].header, error_header, MAX_ERROR_SIZE);
 		//Add one to num errors
-		strncpy(error_messages->messages[error_messages->num_errors++].message ,error_message, 255);
+		strncpy(error_messages->messages[error_messages->num_errors++].message ,error_message, MAX_ERROR_SIZE);
 
 	return 0;
 }

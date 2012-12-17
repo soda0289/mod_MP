@@ -141,11 +141,11 @@ int get_music_query(request_rec* r,music_query* music){
 		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "+artists") == 0){
 			music->query_parameters[SORT_BY].parameter_value = "Artists.name ASC";
 		}else 	if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "-titles") == 0){
-			music->query_parameters[SORT_BY].parameter_value = "Song.name DSC";
+			music->query_parameters[SORT_BY].parameter_value = "Songs.name DESC";
 		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "-albums") == 0){
-			music->query_parameters[SORT_BY].parameter_value = "Albums.name DSC";
+			music->query_parameters[SORT_BY].parameter_value = "Albums.name DESC";
 		}else if (apr_strnatcasecmp(music->query_parameters[SORT_BY].parameter_value, "-artists") == 0){
-			music->query_parameters[SORT_BY].parameter_value = "Artists.name DSC";
+			music->query_parameters[SORT_BY].parameter_value = "Artists.name DESC";
 		}else{
 			//Unset the SORT_BY
 			music->query_parameters_set &= ~(1 << SORT_BY);

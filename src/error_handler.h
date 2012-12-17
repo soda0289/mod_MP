@@ -20,6 +20,7 @@
 
 #ifndef ERROR_HANDLER_H_
 #define ERROR_HANDLER_H_
+#define MAX_ERROR_SIZE 1024
 
 enum error_type{
 	ERROR = 0,
@@ -29,8 +30,8 @@ enum error_type{
 
 typedef struct {
 	enum error_type type;
-	char header[255] ;
-	char message[255];
+	char header[MAX_ERROR_SIZE] ;
+	char message[MAX_ERROR_SIZE];
 }error_message_t;
 
 typedef struct {

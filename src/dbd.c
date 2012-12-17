@@ -126,7 +126,6 @@ int prepare_database(db_config* dbd_config){
 	 * Source Type,
 	 * Artist ID,
 	 * Album ID
-	 *
 	 */
 	set_columns_table_dependencies(SONGS,dbd_config, "links.track_no, links.disc_no", "links",NULL);
 	set_columns_table_dependencies(SONGS,dbd_config,"links.songid, Songs.length", "Songs ON links.songid = Songs.id","links.songid");
@@ -136,7 +135,7 @@ int prepare_database(db_config* dbd_config){
 
 	set_columns_table_dependencies(ALBUMS,dbd_config,"links.albumid", "links","links.albumid");
 	set_columns_table_dependencies(ALBUMS,dbd_config,"Albums.name", "Albums ON links.albumid = Albums.id", NULL);
-	set_columns_table_dependencies(ALBUMS,dbd_config,"links.artistid, Artists.name", "Artists ON links.artistid = Artists.id", "links.artistid");
+	set_columns_table_dependencies(ALBUMS,dbd_config,"links.artistid, Artists.name", "Artists ON links.artistid = Artists.id", NULL);
 
 	set_columns_table_dependencies(ARTISTS,dbd_config,"links.artistid", "links", "links.artistid");
 	set_columns_table_dependencies(ARTISTS,dbd_config,"links.albumid, Albums.name", "Albums ON links.albumid = Albums.id", "links.albumid");
@@ -149,152 +148,9 @@ int prepare_database(db_config* dbd_config){
 
 	set_columns_table_dependencies(TRANSCODE,dbd_config,"Sources.id, Sources.type, Sources.quality, Sources.path","Sources", NULL);
 
-
-
-	int num_query_types;
-	unsigned int num_parameter_combos;
-	for(num_query_types = 0; num_query_types < NUM_QUERY_TYPES; num_query_types++){
-		int num_tables;
-		const char* select_columns = NULL;
-		const char* tables = NULL;
-		const char* group_by = NULL;
-
-		for(num_tables = 0; num_tables < dbd_config->num_column_dep[num_query_types]; num_tables++){
-			select_columns = (select_columns) ? apr_pstrcat(dbd_config->pool,select_columns, ", ",dbd_config->column_table_dep[num_query_types][num_tables].columns,NULL) : dbd_config->column_table_dep[num_query_types][num_tables].columns;
-			tables = (tables) ? apr_pstrcat(dbd_config->pool, tables," LEFT JOIN ",dbd_config->column_table_dep[num_query_types][num_tables].table_dependcy,NULL)  : dbd_config->column_table_dep[num_query_types][num_tables].table_dependcy;
-			if (dbd_config->column_table_dep[num_query_types][num_tables].group_by_columns){
-				group_by = (group_by) ? apr_pstrcat(dbd_config->pool,", ", dbd_config->column_table_dep[num_query_types][num_tables].group_by_columns ,NULL) :   dbd_config->column_table_dep[num_query_types][num_tables].group_by_columns;
-			}
-		}
-
-		for(num_parameter_combos = 0;num_parameter_combos < (1 << NUM_QUERY_PARAMETERS);num_parameter_combos++){
-			char* where =NULL;
-
-			//Setup type specific parameters
-			switch(num_query_types){
-				case SONGS:{
-
-					if(num_parameter_combos & (1<<ALBUM_ID)){
-						const char* album_id = "Albums.id = %d";
-						if (where == NULL){
-							where = album_id;
-						}else{
-							where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
-						}
-					}
-					if(num_parameter_combos & (1<<ALBUM_NAME)){
-											const char* album_id = "Albums.name LIKE %s";
-											where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
-					}
-					if(num_parameter_combos & (1<<ARTIST_ID)){
-						const char* album_id = "Artists.id = %d";
-						if (where == NULL){
-							where = album_id;
-						}else{
-							where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
-						}
-					}
-					if(num_parameter_combos & (1<<ARTIST_NAME)){
-											const char* album_id = "Artists.name LIKE %s";
-											where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
-					}
-					if(num_parameter_combos & (1<<SOURCE_TYPE)){
-						const char* album_id = "Sources.type= %s";
-						if (where == NULL){
-							where = album_id;
-						}else{
-							where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
-						}
-					}
-					break;
-				}
-			}
-			if(select_columns && tables){
-				const char* select_statement = NULL;
-				if(num_parameter_combos == 0 || where){
-						select_statement = apr_psprintf(dbd_config->pool,"SELECT %s FROM %s",select_columns,tables);
-				}
-				if(where){
-					select_statement = apr_pstrcat(dbd_config->pool,select_statement," WHERE ",where,NULL);
-				}
-				/*
-				if(num_parameter_combos & (1 << ROWCOUNT)){
-					select_statement = apr_pstrcat(dbd_config->pool,select_statement," LIMIT %d", NULL);
-					if(num_parameter_combos & (1 << OFFSET)){
-						select_statement = apr_pstrcat(dbd_config->pool,select_statement," OFFSET %d", NULL);
-					}
-				}
-				*/
-				if(select_statement){
-					error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, select_statement,apr_pstrcat(dbd_config->pool,apr_itoa(dbd_config->pool,num_query_types ),"#",apr_itoa(dbd_config->pool,(int)num_parameter_combos),NULL), &(dbd_config->statements.select_by_range[num_query_types][num_parameter_combos]));
-					if (error_num != 0){
-						return error_num;
-					}
-				}
-			}
-		}
-	}
-
-
-/*
-	int i;
-	//Select songs with no id
-	for (i = 0; i < 3; i++){
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.id, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_range[i]));
-		if (error_num != 0){
-			return error_num;
-		}
-	}
-	//Select songs with artist id
-	for (i = 0; i < 3; i++){
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.id, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Artists.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_by_artist_id_range[i]));
-		if (error_num != 0){
-			return error_num;
-		}
-	}
-	//Select songs with album id
-	for (i = 0; i < 3; i++){
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Songs.id, Songs.name, Artists.name, Albums.name, Songs.length, links.track_no, links.disc_no FROM links LEFT JOIN Songs ON links.songid = Songs.id LEFT JOIN Artists ON links.artistid = Artists.id LEFT JOIN Albums ON links.albumid = Albums.id WHERE Albums.id = %d ORDER BY ", Sort_By_Table_Names[i]," LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_songs_by_album_id_range[i]));
-		if (error_num != 0){
-			return error_num;
-		}
-	}
-	//Select all artists
-	for (i = 0;i < 2; i++){
-		const char* order;
-		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Artists.id, Artists.name FROM Artists ORDER BY Artists.name ",order, " LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_artists_range[i]));
-		if (error_num != 0){
-			return error_num;
-		}
-	}
-	//Select all albums
-	for (i = 0;i < 2; i++){
-		const char* order;
-		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums ORDER BY Albums.name ", order, " LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_range[i]));
-		if (error_num != 0){
-			return error_num;
-		}
-	}
-	//Select all albums with artist id
-	for (i = 0;i < 2; i++){
-		const char* order;
-		((i+1) % 2) ? (order = "ASC") : (order = "DESC");
-		const char* statement_string = apr_pstrcat(dbd_config->pool, "SELECT Albums.id, Albums.name FROM Albums JOIN links ON Albums.id = links.albumid WHERE links.artistid = %d GROUP BY Albums.id, Albums.name ORDER BY Albums.name ",  order, " LIMIT %d, %d;", NULL);
-		error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, statement_string,NULL, &(dbd_config->statements.select_albums_by_artist_id_range[i]));
-		if (error_num != 0){
-			return error_num;
-		}
-	}
-	*/
 	return error_num;
 }
+
 int get_insert_last_id (char** id, db_config* dbd_config){
 	int error_num = 0;
 	int row_count;
@@ -325,6 +181,10 @@ int get_insert_last_id (char** id, db_config* dbd_config){
 
 const char* get_full_column_name(db_config* dbd_config, music_query* query, apr_dbd_results_t* results, int col_num){
 	const char* mysql_name;
+	char str_tok_state;
+
+	//mysql_name = apr_strtok(dbd_config->columns,",",&str_tok_state);
+
 	const char* song_col_name[] = {"id","title", "Artist", "Album", "length","track_no", "disc_no", "source_id", "source_type","source_quality","unkown"};
 	mysql_name = apr_dbd_get_name(dbd_config->dbd_driver,results, col_num);
 	if (query->type == SONGS){
@@ -335,16 +195,197 @@ const char* get_full_column_name(db_config* dbd_config, music_query* query, apr_
 
 }
 
+int generate_sql_statement(db_config* dbd_config, music_query* query){
+	int num_tables;
+	int error_num;
+	int query_par;
+	int num_query_parameters = __builtin_popcount(query->query_parameters_set);
+	char* select_columns = NULL;
+	char* tables = NULL;
+	char* group_by = NULL;
+	char* where = NULL;
+
+	for(num_tables = 0; num_tables < dbd_config->num_column_dep[query->type]; num_tables++){
+		select_columns = (select_columns) ? apr_pstrcat(dbd_config->pool,select_columns, ", ",dbd_config->column_table_dep[query->type][num_tables].columns,NULL) : dbd_config->column_table_dep[query->type][num_tables].columns;
+		tables = (tables) ? apr_pstrcat(dbd_config->pool, tables," LEFT JOIN ",dbd_config->column_table_dep[query->type][num_tables].table_dependcy,NULL)  : dbd_config->column_table_dep[query->type][num_tables].table_dependcy;
+		if (dbd_config->column_table_dep[query->type][num_tables].group_by_columns){
+			group_by = (group_by) ? apr_pstrcat(dbd_config->pool,group_by,", ", dbd_config->column_table_dep[query->type][num_tables].group_by_columns ,NULL) :   dbd_config->column_table_dep[query->type][num_tables].group_by_columns;
+		}
+	}
+
+
+		switch(query->type){
+			case SONGS:{
+
+				if(query->query_parameters_set & (1<<ALBUM_ID)){
+					const char* album_id = "Albums.id = %d";
+					if (where == NULL){
+						where = album_id;
+					}else{
+						where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+					}
+				}
+				if(query->query_parameters_set & (1<<ALBUM_NAME)){
+										const char* album_id = "Albums.name LIKE %s";
+										where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
+				}
+				if(query->query_parameters_set & (1<<ARTIST_ID)){
+					const char* album_id = "Artists.id = %d";
+					if (where == NULL){
+						where = album_id;
+					}else{
+						where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+					}
+				}
+				if(query->query_parameters_set & (1<<ARTIST_NAME)){
+										const char* album_id = "Artists.name LIKE %s";
+										where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
+				}
+				if(query->query_parameters_set & (1<<SOURCE_TYPE)){
+					const char* album_id = "Sources.type= %s";
+					if (where == NULL){
+						where = album_id;
+					}else{
+						where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+					}
+				}
+				break;
+			}
+			case ARTISTS:{
+
+							if(query->query_parameters_set & (1<<ALBUM_ID)){
+								const char* album_id = "Albums.id = %d";
+								if (where == NULL){
+									where = album_id;
+								}else{
+									where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+								}
+							}
+							if(query->query_parameters_set & (1<<ALBUM_NAME)){
+													const char* album_id = "Albums.name LIKE %s";
+													where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
+							}
+							if(query->query_parameters_set & (1<<ARTIST_ID)){
+								const char* album_id = "Artists.id = %d";
+								if (where == NULL){
+									where = album_id;
+								}else{
+									where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+								}
+							}
+							if(query->query_parameters_set & (1<<ARTIST_NAME)){
+													const char* album_id = "Artists.name LIKE %s";
+													where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
+							}
+							if(query->query_parameters_set & (1<<SOURCE_TYPE)){
+								const char* album_id = "Sources.type= %s";
+								if (where == NULL){
+									where = album_id;
+								}else{
+									where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+								}
+							}
+				break;
+			}
+			case ALBUMS:{
+
+							if(query->query_parameters_set & (1<<ALBUM_ID)){
+								const char* album_id = "Albums.id = %d";
+								if (where == NULL){
+									where = album_id;
+								}else{
+									where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+								}
+							}
+							if(query->query_parameters_set & (1<<ALBUM_NAME)){
+													const char* album_id = "Albums.name LIKE %s";
+													where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
+							}
+							if(query->query_parameters_set & (1<<ARTIST_ID)){
+								const char* album_id = "Artists.id = %d";
+								if (where == NULL){
+									where = album_id;
+								}else{
+									where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+								}
+							}
+							if(query->query_parameters_set & (1<<ARTIST_NAME)){
+													const char* album_id = "Artists.name LIKE %s";
+													where = (where) ? apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL) : album_id;
+							}
+							if(query->query_parameters_set & (1<<SOURCE_TYPE)){
+								const char* album_id = "Sources.type= %s";
+								if (where == NULL){
+									where = album_id;
+								}else{
+									where =apr_pstrcat(dbd_config->pool, where, " AND ", album_id,NULL);
+								}
+							}
+				break;
+			}
+		}
+
+
+
+		if(select_columns && tables){
+			const char* select_statement = NULL;
+			select_statement = apr_psprintf(dbd_config->pool,"SELECT %s FROM %s",select_columns,tables);
+
+			if(where){
+				select_statement = apr_pstrcat(dbd_config->pool,select_statement," WHERE ",where,NULL);
+			}
+			if (group_by){
+				select_statement = apr_pstrcat(dbd_config->pool,select_statement," GROUP BY ", group_by , NULL);
+			}
+			if (query->query_parameters_set & (1<<SORT_BY)){
+				select_statement = apr_pstrcat(dbd_config->pool,select_statement," ORDER BY ", query->query_parameters[SORT_BY].parameter_value , NULL);
+				query->query_parameters_set &= ~(1<<SORT_BY);
+			}
+			//LIMIT must come after order by
+			if(query->query_parameters_set & (1 << ROWCOUNT)){
+				select_statement = apr_pstrcat(dbd_config->pool,select_statement," LIMIT %d", NULL);
+				if(query->query_parameters_set & (1 << OFFSET)){
+					select_statement = apr_pstrcat(dbd_config->pool,select_statement," OFFSET %d", NULL);
+				}
+			}
+			if(select_statement){
+				error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, select_statement,apr_pstrcat(dbd_config->pool,apr_itoa(dbd_config->pool,query->type),"#",apr_itoa(dbd_config->pool,(int)query->query_parameters_set),NULL), &(dbd_config->statements.select_by_range[query->type][query->query_parameters_set]));
+				if (error_num != 0){
+					add_error_list(query->error_messages,ERROR,"Error with statement", select_statement);
+					return error_num;
+				}
+			}else{
+				return -1;
+			}
+		}
+
+
+
+	return 0;
+}
+
+
 int select_db_range(db_config* dbd_config, music_query* query){
 	int error_num;
-	char* old_key;
+
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
+
+	query->results = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
+
+
+	if (dbd_config->statements.select_by_range[query->type][query->query_parameters_set] == NULL){
+		error_num = generate_sql_statement(dbd_config,query);
+		if(error_num != 0){
+			add_error_list(query->error_messages, ERROR, "DBD generate_sql_statement error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+			return error_num;
+		}
+	}
 
 	int num_parameters_set = __builtin_popcount(query->query_parameters_set);
 	int parameters;
 	unsigned int parameters_set = query->query_parameters_set;
-	query->results = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
+
 	if(query->query_parameters_set == 0){
 		error_num = apr_dbd_pselect(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle,  &results,dbd_config->statements.select_by_range[query->type][0], 0,0,NULL);
 	}else{
@@ -425,68 +466,6 @@ static int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query
 	}
 	return error_num;
 }
-
-/*
-static int insert_db_artist(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, music_file* song){
-	int error_num = 0;
-	int nrows = 1;
-	apr_pool_t* pool = dbd_config->pool;
-
-	//Create new title
-	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, query, song->artist);
-
-	if (error_num == 0){
-		error_num = get_insert_last_id(id, dbd_config);
-	}
-	return error_num;
-}
-
-static int insert_db_album(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, music_file* song){
-	int error_num = 0;
-	int nrows = 1;
-	apr_pool_t* pool = dbd_config->pool;
-
-	//Create new title
-	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, query, song->album);
-	if (error_num == 0){
-		error_num = get_insert_last_id(id, dbd_config);
-	}
-	return error_num;
-}
-
-static int insert_db_song(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, music_file* song, apr_time_t mtime){
-	int error_num;
-	int nrows = 1;
-	apr_pool_t* pool = dbd_config->pool;
-
-	//Create new title
-	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, query, song->title, "aaa", song->file_path,apr_itoa(pool, song->length),  apr_ltoa(pool,mtime), apr_itoa(pool, 0));
-	if (error_num == 0){
-		error_num = get_insert_last_id(id, dbd_config);
-	}
-	return error_num;
-}
-
-static int insert_db_links(db_config* dbd_config, apr_dbd_prepared_t* query, music_file* song, char* artist_id, char* album_id, char* song_id){
-	int error_num = 0;
-	int nrows = 1;
-	int feature = 0;
-	apr_pool_t* pool = dbd_config->pool;
-
-	if (song->track_no == NULL){
-		song->track_no = apr_itoa(pool, 0);
-	}
-	if (song->disc_no == NULL){
-		song->disc_no = apr_itoa(pool, 0);
-	}
-	error_num = apr_dbd_pvquery(dbd_config->dbd_driver, pool, dbd_config->dbd_handle, &nrows, dbd_config->statements.add_link,artist_id,album_id,song_id,apr_itoa(pool,  feature),song->track_no,song->disc_no);
-	if (error_num != 0){
-			add_error_list(dbd_config->database_errors, ERROR, "DBD insert_db_links error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
-			return error_num;
-	}
-	return error_num;
-}
-*/
 static int update_song(db_config* dbd_config, music_file* song, apr_time_t mtime){
 	int error_num = 0;
 	int nrows = 0;
