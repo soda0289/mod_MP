@@ -1,0 +1,124 @@
+/*
+ * dbd.h
+ *
+ *  Created on: Sep 20, 2012
+ *      Author: Reyad Attiyat
+ *      Copyright 2012 Reyad Attiyat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+*  limitations under the License.
+*/
+
+#ifndef DBD_H_
+#define DBD_H_
+#define MAX_NUM_COLUMNS 10
+#define NUM_TABLES 5
+
+#include "mod_mediaplayer.h"
+#include "apps/app_config.h"
+#include "apps/music/music_query.h"
+#include "apps/app_config.h"
+
+typedef struct music_query_ music_query_t;
+typedef struct app_list_t_ app_list_t;
+
+
+
+typedef struct table_t_{
+	const char* id;
+	const char* name;
+	apr_array_header_t* columns;
+	const char* foreign_key;
+}table_t;
+
+typedef	struct column_table_t_{
+		const char* id;
+		const char* name;
+		const char* freindly_name;
+		table_t* table;
+}column_table_t;
+
+typedef struct custom_parameter_t_{
+	const char* freindly_name;
+	const char* type;
+	const char* value;
+}custom_parameter_t;
+
+typedef struct query_t_{
+	const char* id;
+	int num_columns;
+	apr_array_header_t* tables;
+	const char* table_join_string;
+	apr_array_header_t* select_columns;
+	const char* select_columns_string;
+	const char* group_by_string;
+	apr_array_header_t* custom_parameters;
+}query_t;
+
+typedef enum{
+	LIMIT = 0,
+	OFFSET,
+	GROUP_BY,
+	ORDER_BY
+}sql_clauses;
+
+#define NUM_SQL_CLAUSES 4
+
+
+typedef struct db_config_{
+	apr_pool_t* pool;
+	apr_dbd_t *dbd_handle;
+	const apr_dbd_driver_t *dbd_driver;
+	const char* driver_name;
+	const char* mysql_parms;
+	apr_dbd_transaction_t * transaction;
+	int connected;
+	error_messages_t* database_errors;
+	struct {
+		apr_dbd_prepared_t* select_last_id;
+		apr_dbd_prepared_t *add_song;
+		apr_dbd_prepared_t *add_artist;
+		apr_dbd_prepared_t *add_album;
+		apr_dbd_prepared_t* add_source;
+		apr_dbd_prepared_t *select_song;
+		apr_dbd_prepared_t *select_artist;
+		apr_dbd_prepared_t *select_album;
+		apr_dbd_prepared_t *select_sources;
+		apr_dbd_prepared_t *add_link;
+		apr_dbd_prepared_t* select_file_path;
+		apr_dbd_prepared_t *select_mtime;
+		apr_dbd_prepared_t* update_song;
+
+	}statements;
+	//Setup by DB Query Configuration
+	apr_array_header_t* tables;   //Tables on database
+}db_config;
+
+typedef struct row_t_ {
+	const char** results;
+}row_t;
+
+typedef struct results_table_t_ {
+	apr_array_header_t* rows;
+}results_table_t;
+
+
+apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config);
+int prepare_database(app_list_t* app_list,db_config* dbd_config);
+int sync_song(db_config* dbd_config, music_file *song);
+int select_db_range(db_config* dbd_config, apr_dbd_prepared_t**** select, music_query_t* query);
+int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
+
+
+
+#endif /* DBD_H_ */
+

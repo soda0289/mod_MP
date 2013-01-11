@@ -29,15 +29,15 @@ function print_song_table(songs, queries){
 		var new_col = new Array();
 		new_col[0] = document.createElement('td');
 		new_col[0].style.width = "33%";
-		new_col[0].innerHTML =  songs[i].title;
+		new_col[0].innerHTML =  songs[i].song_title;
 		new_row.appendChild(new_col[0]);
 		new_col[1] = document.createElement('td');
 		new_col[1].style.width = "33%";
-		new_col[1].innerHTML =  songs[i].Artist;
+		new_col[1].innerHTML =  songs[i].artist_name;
 		new_row.appendChild(new_col[1]);
 		new_col[2] = document.createElement('td');
 		new_col[2].style.width = "33%";
-		new_col[2].innerHTML =  songs[i].Album;
+		new_col[2].innerHTML =  songs[i].album_name;
 		new_row.appendChild(new_col[2]);
 		
 		//newcontent.innerHTML += "Title: " + myObj.songs[i].title + "  Artist: " + myObj.songs[i].Artist +"  Album:  "+myObj.songs[i].Album;
@@ -54,9 +54,9 @@ function print_artists(artists, queries){
 		var newcontent = document.createElement('div');
 		newcontent.style.backgroundColor= bgcolor;
 		newcontent.style.color = "orange";
-		newcontent.innerHTML += artists[i].name;
+		newcontent.innerHTML += artists[i].artist_name;
 		newcontent.onclick = (function (){
-			var artist_id = artist.id
+			var artist_id = artist.artist_id
 			return function(){
 				//clear albums
 				var albums_div = document.getElementById('albums');
@@ -68,8 +68,8 @@ function print_artists(artists, queries){
 				songs_div.innerHTML = "";
 				
 				//Create two new queries
-				var songs_query = new music_query("mp", 1000, "songs", "+titles", artist_id, 0, print_song_table);
-				var albums_query = new music_query("mp", 100, "albums", "+albums", artist_id, 0, print_albums);
+				var songs_query = new music_query("mp", 1000, "songs", "song_title", artist_id, 0, print_song_table);
+				var albums_query = new music_query("mp", 100, "albums", "album_name", artist_id, 0, print_albums);
 				
 				
 				//Update ui
@@ -96,15 +96,15 @@ function print_albums(albums, queries){
 		var newcontent = document.createElement('div');
 		newcontent.style.backgroundColor= bgcolor;
 		newcontent.style.color = "orange";
-		newcontent.innerHTML += albums[i].name;
+		newcontent.innerHTML += albums[i].album_name;
 		newcontent.onclick = (function (){
-			var album_id = album.id;
+			var album_id = album.album_id;
 			return function(){
 				var songs_div = document.getElementById('songs');
 				//Stop running quieres
 				queries.songs_query.running = 0;
 				songs_div.innerHTML = "";
-				var songs_query = new music_query("mp", 1000, "songs", "+titles", 0, album_id, print_song_table);
+				var songs_query = new music_query("mp", 1000, "songs", "song_title", 0, album_id, print_song_table);
 				
 				//Update ui
 				queries.songs_query = songs_query;

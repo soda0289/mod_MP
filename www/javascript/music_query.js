@@ -11,17 +11,21 @@ function music_query(hostname, num_results, type, sort_by, artist_id,album_id, p
 	this.album_id = album_id
 	this.set_url = function (){
 		this.upper = (this.count * this.num_results).toString();
-		this.url = "http://" + this.hostname + "/music/" + this.type + "/" + this.sort_by + "/" + this.upper + "-" + this.num_results;
+		this.url = "http://" + this.hostname + "/music/" + this.type;
 		//Check if artist_id or album_id is set
-		
-		if (this.type == "albums" && this.artist_id > 0){
+	
+		if (album_id > 0){
+			this.url += "/album_id/" + album_id;
+		}else if (artist_id > 0){
 			this.url += "/artist_id/" + artist_id;
 		}
-		if (this.type == "songs" && (this.artist_id > 0 || this.album_id > 0)){
-			if (album_id > 0){
-				this.url += "/album_id/" + album_id;
-			}else if (artist_id > 0){
-				this.url += "/artist_id/" + artist_id;
+		if(sort_by != null){
+			this.url += "/sort_by/" + sort_by;
+		}
+		if(num_results > 0){
+			this.url += "/limit/" + num_results;
+			if(this.upper > 0){
+				this.url += "/offset/" + this.upper;
 			}
 		}
 	}
@@ -44,7 +48,6 @@ function load_query(music_query, music_ui_ctx){
 	
 		var lower = music_query.count * parseInt(upper,10);
 		var url = music_query.url;
-		
 		xmlhttp.open("GET",url,true);
 		
 		//Since each xmlhttp request is an array we pass the index of it to the new function
@@ -57,7 +60,7 @@ function load_query(music_query, music_ui_ctx){
 					try{
 						var json_object = JSON.parse(String(xmlhttp.responseText), null);
 					}catch (err){
-						alert("error: " + err + " on request number" + index);
+						alert("error: " + err + " on request number. URL:" + music_query.url);
 						return -1;
 					}
 					//Is the query running

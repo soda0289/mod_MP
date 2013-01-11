@@ -32,43 +32,44 @@
 #include "apr_strings.h"
 #include "apr_dbd.h"
 #include <stdlib.h>
-#include "tag_reader.h"
 
-#include "dbd.h"
+
+#include "apps/music/tag_reader.h"
+
+
 #include "error_handler.h"
-#include "music_query.h"
+#include "apps/music/music_query.h"
+#include "database/dbd.h"
+
+#include "apps/app_config.h"
+typedef struct app_list_t_ app_list_t;
+
 typedef struct db_config_ db_config;
+typedef struct music_query_ music_query_t;
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
-
-
-typedef struct{
-	char* song_id;
-	float progress;
-}decoding_t;
-
-typedef struct{
-	decoding_t decoding[10];
-}decoding_quene_t;
 
 
 typedef struct {
 	int enable;
 	const char* external_directory;
 	db_config* dbd_config;
+
 	apr_shm_t* dir_sync_shm;
 	const char* dir_sync_shm_file;
 	apr_shm_t* errors_shm;
 	const char* errors_shm_file;
 	error_messages_t* error_messages;
 
+	app_list_t* apps;
 } mediaplayer_srv_cfg ;
 
 typedef struct{
 	error_messages_t* error_messages;
-	music_query* query;
+	app_query appquery;
 }mediaplayer_rec_cfg;
 
 char* json_escape_char(apr_pool_t* pool, const char* string);
+int output_status_json(request_rec* r);
 
 #endif

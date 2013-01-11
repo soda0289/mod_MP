@@ -28,9 +28,9 @@ function music_ui(songs_query, artists_query, albums_query){
 function loadUI(){
 	
 	//Create queries for Songs, Artists, and Albums
-	var songs_query = new music_query("mp", 1000, "songs", "+titles", 0, 0, print_song_table);
-	var artists_query = new music_query("mp", 100, "artists", "+artists", 0, 0, print_artists);
-	var albums_query = new music_query("mp", 100, "albums", "+albums", 0, 0, print_albums);
+	var songs_query = new music_query("mp", 1000, "songs", "song_title", 0, 0, print_song_table);
+	var artists_query = new music_query("mp", 100, "artists", "artist_name", 0, 0, print_artists);
+	var albums_query = new music_query("mp", 100, "albums", "album_name", 0, 0, print_albums);
 	
 	//Load music ui
 	var music_ui_ctx = new music_ui(songs_query, artists_query, albums_query);
