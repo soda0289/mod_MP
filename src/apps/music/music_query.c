@@ -24,7 +24,7 @@
 #include "database/dbd.h"
 #include "music_query.h"
 #include <inttypes.h>
-
+#include "transcoder.h"
 #include "database/db_query_config.h"
 
 static void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname){
@@ -271,7 +271,7 @@ int run_music_query(request_rec* r, app_query app_query,db_config* dbd_config, a
 
 	music_query_t* music =(music_query_t*)app_query;
 
-	error_num = select_db_range(dbd_config, select,music);
+	error_num = select_db_range(dbd_config, music->query_parameters,music->db_query,&(music->results),music->error_messages);
 
 	switch(music->type){
 		case SONGS:{
@@ -296,7 +296,7 @@ int run_music_query(request_rec* r, app_query app_query,db_config* dbd_config, a
 			break;
 		}
 		case TRANSCODE:{
-			ogg_encode(r,dbd_config,music);
+			 transcode_audio(r,dbd_config,music);
 			break;
 		}
 		default:{

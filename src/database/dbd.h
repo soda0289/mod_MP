@@ -30,6 +30,8 @@
 
 typedef struct music_query_ music_query_t;
 typedef struct app_list_t_ app_list_t;
+typedef struct query_parameters_t_ query_parameters_t;
+
 
 
 
@@ -115,7 +117,7 @@ typedef struct results_table_t_ {
 apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config);
 int prepare_database(app_list_t* app_list,db_config* dbd_config);
 int sync_song(db_config* dbd_config, music_file *song);
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t**** select, music_query_t* query);
+int select_db_range(db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);
 int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
 
 

@@ -42,6 +42,7 @@
 #include "database/dbd.h"
 
 #include "apps/app_config.h"
+#include "apps/music/transcoder.h"
 typedef struct app_list_t_ app_list_t;
 
 typedef struct db_config_ db_config;
@@ -49,6 +50,13 @@ typedef struct music_query_ music_query_t;
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
+typedef struct decoding_job_t_ decoding_job_t;
+
+typedef struct queue_t_{
+	decoding_job_t* head;
+	decoding_job_t* tail;
+	int size;
+}queue_t;
 
 typedef struct {
 	int enable;
@@ -61,7 +69,11 @@ typedef struct {
 	const char* errors_shm_file;
 	error_messages_t* error_messages;
 
+	queue_t* decoding_queue;
+
 	app_list_t* apps;
+
+
 } mediaplayer_srv_cfg ;
 
 typedef struct{

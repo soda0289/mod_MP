@@ -122,6 +122,8 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 			srv_conf->apps = apr_pcalloc(pconf,sizeof(app_list_t));
 			srv_conf->apps->pool = pconf;
 
+			srv_conf->decoding_queue = apr_pcalloc(pconf,sizeof(queue_t));
+
 			config_app(srv_conf->apps,"music","music",NULL,get_music_query,run_music_query);
 
 
@@ -253,9 +255,7 @@ int run_get_method(request_rec* r){
 			//Print status and die
 			return output_status_json(r);
 		}
-		//allow global access to query for JSON printing
-		//this should be changed
-		rec_cfg->appquery =(app->query);
+
 		//Query OK run app and die
 		app->run_query(r,app->query,srv_conf->dbd_config,NULL);
 	}

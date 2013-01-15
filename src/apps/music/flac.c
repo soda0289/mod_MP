@@ -20,6 +20,7 @@
  *  Code borrowed from oggenc part of the vorbis-tools package.
 */
 
+#include "apps/music/transcoder.h"
 #include "FLAC/metadata.h"
 #include "FLAC/stream_decoder.h"
 #include "flac.h"
@@ -48,7 +49,7 @@ long process_flac_file(void *in, float **buffer, int samples){
     {
         if (flac->buffer_sample_count > 0)
         {
-            int copy = flac->buffer_sample_count< (samples - realsamples) ? flac->buffer_sample_count : (samples - realsamples);
+            int copy = (flac->buffer_sample_count< (samples - realsamples)) ? flac->buffer_sample_count : (samples - realsamples);
 
             for (i = 0; i < flac->channels; i++){
 
@@ -154,10 +155,9 @@ FLAC__StreamDecoderWriteStatus flac_write(const FLAC__StreamDecoder *decoder, co
 }
 
 
-int read_flac_file (flac_file** flac, const char* file_path, apr_pool_t* pool){
+int read_flac_file (apr_pool_t* pool, flac_file** flac, const char* file_path, encoding_options_t* enc_opt){
 	FLAC__StreamDecoderInitStatus status;
 	FLAC__bool status2;
-	//*flac = (flac_file*) malloc(sizeof(flac_file));//Should use apr pool
 	*flac = (flac_file*) apr_pcalloc(pool, sizeof(flac_file));
 
 	(*flac)->stream_decoder = FLAC__stream_decoder_new();
@@ -180,7 +180,8 @@ int read_flac_file (flac_file** flac, const char* file_path, apr_pool_t* pool){
 	if (status2 != true){
 			return -2;
 	}
-
+	enc_opt->channels = (*flac)->channels;
+	enc_opt->rate = (*flac)->rate;
 
 	return 0;
 }

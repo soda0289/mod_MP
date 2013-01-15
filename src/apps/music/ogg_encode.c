@@ -28,28 +28,33 @@
 #include "apps/music/music_query.h"
 #include "database/dbd.h"
 #include "flac.h"
+#include "apps/music/transcoder.h"
 
-int file_path_query(db_config* dbd_config,music_query_t* music,const char** file_path, const char** file_type){
+int file_path_query(db_config* dbd_config,query_parameters_t* query_parameters,query_t* db_query,const char** file_path, const char** file_type,error_messages_t* error_messages){
 	int status;
 
-	if(music->query_parameters == NULL || music->query_parameters->query_where_conditions->nelts != 1){
+	results_table_t* results;
+
+	//Check if query parameter is vald(source id is givien)
+	if(query_parameters == NULL || query_parameters->query_where_conditions->nelts != 1){
 		//ap_rprintf(r, "Couldn't find song_id query where condition");
 		return -5;
 	}
 
-
-	status = select_db_range(dbd_config,NULL,music);
-	if(status != 0 || music->results == NULL || music->results->rows == NULL || music->results->rows->nelts == 0){
+	status = select_db_range(dbd_config,query_parameters,db_query,&results,error_messages);
+	if(status != 0 || results->rows == NULL || results->rows->nelts == 0){
 		//ap_rprintf(r,"Error with running database query");
 		return -8;
 	}
-	*file_path = ((row_t*)music->results->rows->elts)[0].results[0];
-	*file_type = ((row_t*)music->results->rows->elts)[0].results[1];
+	//Column 0
+	*file_path = ((row_t*)results->rows->elts)[0].results[0];
+	//Column 1
+	*file_type = ((row_t*)results->rows->elts)[0].results[1];
 	return 0;
 }
 
 int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
-	char* file_path;
+	const char* file_path;
 	int status;
 	apr_status_t rv;
 
@@ -61,13 +66,13 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	apr_size_t total_length = 0;
 	//create file to save decoded data too
 
-	char* file_type;
+	const char* file_type;
 
 
 	bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
 
 
-	status = file_path_query(dbd_config,music,&file_path,&file_type);
+	status = file_path_query(dbd_config,music->query_parameters,music->db_query,&file_path,&file_type,music->error_messages);
 
 	//Determine what kind of file this is
 	//Pick right decoder
@@ -100,20 +105,15 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	return 0;
 }
 
-int ogg_encode(request_rec* r,db_config* dbd_config,music_query_t* music_query){
+int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path){
 	apr_status_t rv;
 	int status;
-	const char* file_path;
-	const char* file_type;
-	char* tmp_file_path;
-	const char* temp_dir;
+
 
 	apr_file_t* file_desc;
 	apr_size_t total_length = 0;
 
-	 rv = apr_file_open(&file_desc, tmp_file_path, APR_READ | APR_WRITE | APR_CREATE | APR_EXCL, APR_OS_DEFAULT, r->pool);
-
-
+	 rv = apr_file_open(&file_desc, output_file_path, APR_READ | APR_WRITE | APR_CREATE | APR_EXCL, APR_OS_DEFAULT, pool);
 
 	long samples_total;
 	//OGG Stream
@@ -132,22 +132,13 @@ int ogg_encode(request_rec* r,db_config* dbd_config,music_query_t* music_query){
     vorbis_block     vorbis_block;
     vorbis_info      v_info;
 
-
-    flac_file* flac;
     int serial_no;
 
 
 	vorbis_info_init(&v_info);
 
 
-	status = read_flac_file(&flac, file_path,r->pool);
-	if (status != 0){
-		ap_rprintf(r,"Error with read_file_path");
-		close_flac(flac);
-		return -1;
-	}
-
-	vorbis_encode_init_vbr(&v_info,flac->channels, flac->rate, 0);
+	vorbis_encode_init_vbr(&v_info,enc_opt->channels, enc_opt->rate, enc_opt->quality);
 
     vorbis_encode_setup_init(&v_info);
 
@@ -176,7 +167,7 @@ int ogg_encode(request_rec* r,db_config* dbd_config,music_query_t* music_query){
 	while(!eos){
     	//Create vorbis buffer of unencoded samples
         float **buffer = vorbis_analysis_buffer(&vorbis_dsp, 1024);
-        long samples_read = process_flac_file(flac, buffer, 1024);//Return samples read per channel
+        long samples_read = input_file->process_input_file(input_file->file_struct, buffer, 1024);//Return samples read per channel
 
         if (samples_read == 0){
         	vorbis_analysis_wrote(&vorbis_dsp,0); //Write 0 bytes to close up vorbis analysis
@@ -197,52 +188,27 @@ int ogg_encode(request_rec* r,db_config* dbd_config,music_query_t* music_query){
                 if(!result) break; //not enough data to create page continue, building ogg packets
 
                 apr_size_t* length_written;
-                length_written = apr_pcalloc(r->pool, sizeof(apr_size_t));
+                length_written = apr_pcalloc(pool, sizeof(apr_size_t));
                 *length_written = ogg_page.header_len;
                 rv = apr_file_write_full(file_desc, (&ogg_page)->header,ogg_page.header_len,length_written);
                 if (*length_written != ogg_page.header_len || rv != APR_SUCCESS){
-                	ap_rprintf(r, "Couldn't write all of head");
+                	//ap_rprintf(r, "Couldn't write all of head");
                 	return -1;
                 }
                 *length_written = ogg_page.body_len;
                 apr_file_write_full(file_desc, (&ogg_page)->body,ogg_page.body_len,length_written);
                 if (*length_written != ogg_page.body_len || rv != APR_SUCCESS){
-                	ap_rprintf(r,"Couldn't write all of body");
+                	//ap_rprintf(r,"Couldn't write all of body");
                 	return -1;
                 }
 
                 total_length += ogg_page.header_len +  ogg_page.body_len;
-                /*
-                b_header = apr_bucket_immortal_create((char *)((&ogg_page)->header),(&ogg_page)->header_len, bb->bucket_alloc);
-                b_body = apr_bucket_immortal_create((char *)((&ogg_page)->body),(&ogg_page)->body_len, bb->bucket_alloc);
-
-                APR_BRIGADE_INSERT_TAIL(bb, b_header);
-                APR_BRIGADE_INSERT_TAIL(bb, b_body);
-
-
-                //Write pages
-                ap_rwrite((&ogg_page)->header,(&ogg_page)->header_len ,r);
-                ap_rwrite((&ogg_page)->body,(&ogg_page)->body_len ,r);
-				*/
-
                 //Check if last page
                 if(ogg_page_eos(&ogg_page))
                     eos = 1;//Kill loops
             }
         }
     }
-
-/*
-	//Set headers
-	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
-	ap_set_content_type(r, "audio/ogg") ;
-	ap_set_content_length(r, total_length);
-	//apr_table_setn(r->headers_out, "Accept-Ranges", "bytes");
-	apr_table_setn(r->headers_out, "Accept-Ranges", "none");
-	apr_brigade_insert_file(bb, file_desc,0,total_length,r->pool);
-	 APR_BRIGADE_INSERT_TAIL(bb, apr_bucket_eos_create(bb->bucket_alloc));
-	ap_pass_brigade(r->output_filters, bb);
-*/
 	apr_file_close(file_desc);
 
 	//Clean up encoder
@@ -252,8 +218,6 @@ int ogg_encode(request_rec* r,db_config* dbd_config,music_query_t* music_query){
 	vorbis_dsp_clear(&vorbis_dsp);
 	vorbis_info_clear(&v_info);
 
-	close_flac(flac);
-	//ap_rprintf(r,"Successfully converted song");
 	return 0;
 }
 

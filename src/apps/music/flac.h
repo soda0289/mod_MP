@@ -25,6 +25,7 @@
 #include "FLAC/stream_decoder.h"
 #include "apr.h"
 #include "apr_general.h"
+#include "apps/music/transcoder.h"
 
 typedef struct {
 	FLAC__StreamDecoder* stream_decoder;
@@ -45,7 +46,8 @@ typedef struct {
 
 }flac_file;
 
-int read_flac_file (flac_file** flac, const char* file_path, apr_pool_t* pool);
+int read_flac_file (apr_pool_t* pool, flac_file** flac, const char* file_path, encoding_options_t* enc_opt);
 long process_flac_file(void *in, float **buffer, int samples);
+void close_flac(flac_file* flac);
 
 #endif /* PLAY_SONG_H_ */

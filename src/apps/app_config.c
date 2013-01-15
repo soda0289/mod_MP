@@ -36,9 +36,10 @@
 #include "apr_strings.h"
 #include "apps/app_config.h"
 
+/*
 int allocate_app_prepared_statments(apr_pool_t* pool, app_t* app){
 
-	apr_dbd_prepared_t**** select = &(app->select);
+	//apr_dbd_prepared_t**** select = &(app->select);
 	query_t* query;
 	table_t* table;
 
@@ -62,7 +63,7 @@ int allocate_app_prepared_statments(apr_pool_t* pool, app_t* app){
 		}
 	return 0;
 }
-
+*/
 int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id, int* init_app,int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*),int (*run_query)(request_rec*, app_query,db_config*,apr_dbd_prepared_t****)){
 	app_node_t* app_node = NULL;
 	app_node_t* app_node_previous = NULL;

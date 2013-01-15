@@ -239,21 +239,21 @@ int generate_sql_statements(db_config* dbd_config, music_query_t* query,apr_dbd_
 }
 */
 
-int generate_sql_statement(db_config* dbd_config, music_query_t* query,const char** select){
+int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_parameters,query_t* db_query,const char** select,error_messages_t* error_messages){
 	//int num_tables;
 	int error_num;
 	//int query_par;
 	//int num_query_parameters = __builtin_popcount(query->query_parameters_set);
-	const char* select_columns = (query->db_query->select_columns_string) ? query->db_query->select_columns_string : "*";
-	const char* tables = query->db_query->table_join_string;
+	const char* select_columns = (db_query->select_columns_string) ? db_query->select_columns_string : "*";
+	const char* tables = db_query->table_join_string;
 	const char* order_by = NULL;
 	const char* limit = NULL;
 	const char* offset = NULL;
-	const char* group_by = query->db_query->group_by_string;
-	if(query->query_parameters != NULL){
-		order_by = query->query_parameters->query_sql_clauses[ORDER_BY].value;
-		limit = query->query_parameters->query_sql_clauses[LIMIT].value;
-		offset = query->query_parameters->query_sql_clauses[OFFSET].value;
+	const char* group_by = db_query->group_by_string;
+	if(query_parameters != NULL){
+		order_by = query_parameters->query_sql_clauses[ORDER_BY].value;
+		limit = query_parameters->query_sql_clauses[LIMIT].value;
+		offset = query_parameters->query_sql_clauses[OFFSET].value;
 	}
 	char* where = NULL;
 
@@ -269,10 +269,10 @@ int generate_sql_statement(db_config* dbd_config, music_query_t* query,const cha
 		return -11;
 	}
 
-	if(query->query_parameters != NULL){
+	if(query_parameters != NULL){
 		//Add together where conditions
-		for(i = 0;i < query->query_parameters->query_where_conditions->nelts; i++){
-			query_where_condition_t* query_where_condition = &(((query_where_condition_t*)query->query_parameters->query_where_conditions->elts)[i]);
+		for(i = 0;i <query_parameters->query_where_conditions->nelts; i++){
+			query_where_condition_t* query_where_condition = &(((query_where_condition_t*)query_parameters->query_where_conditions->elts)[i]);
 			column_table_t* column = query_where_condition->column;
 			const char* where_condition = apr_pstrcat(statement_pool,column->table->name,".",column->name," ",operator_to_string(query_where_condition->operator)," \"",query_where_condition->condition,"\"",NULL);
 			where = (where) ? apr_pstrcat(statement_pool, where, " AND ", where_condition,NULL) : where_condition;
@@ -304,7 +304,7 @@ int generate_sql_statement(db_config* dbd_config, music_query_t* query,const cha
 		}
 
 		if(select_statement){
-			add_error_list(query->error_messages,WARN,"Statement", select_statement);
+			add_error_list(error_messages,WARN,"Statement", select_statement);
 			*select = apr_pstrdup(dbd_config->pool,select_statement);
 			apr_pool_destroy(statement_pool);
 			//error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, select_statement,NULL, &(select[query->type][query->query_parameters->parameters_set][(unsigned int)query->sort_by]));
@@ -325,17 +325,17 @@ int generate_sql_statement(db_config* dbd_config, music_query_t* query,const cha
 }
 
 
-int select_db_range(db_config* dbd_config, apr_dbd_prepared_t**** prepared_select, music_query_t* query){
+int select_db_range(db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages){
 	int error_num;
 
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
 	const char* select = NULL;
-	query->results = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
+	*query_results = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
 
-	error_num = generate_sql_statement(dbd_config,query, &select);
+	error_num = generate_sql_statement(dbd_config,query_parameters,db_query,&select,error_messages);
 	if(error_num != 0){
-		add_error_list(query->error_messages, ERROR, "DBD generate_sql_statement error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		add_error_list(error_messages, ERROR, "DBD generate_sql_statement error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
 		return error_num;
 	}
 
@@ -346,15 +346,15 @@ int select_db_range(db_config* dbd_config, apr_dbd_prepared_t**** prepared_selec
 		if (error_num == 2013){
 			dbd_config->connected = 0;
 		}
-		add_error_list(query->error_messages, ERROR, "DBD select_db_range error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		add_error_list(error_messages, ERROR, "DBD select_db_range error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
 		return error_num;
 	}
-	query->results->rows = apr_array_make(dbd_config->pool,1000,sizeof(row_t));
+	(*query_results)->rows = apr_array_make(dbd_config->pool,1000,sizeof(row_t));
 	//Cycle through all of them to clear cursor
 	for (error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1);
 			error_num != -1;
 			error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1)) {
-				row_t* res_row = (row_t*)apr_array_push(query->results->rows);
+				row_t* res_row = (row_t*)apr_array_push((*query_results)->rows);
 				int i;
 				int num_columns = apr_dbd_num_cols(dbd_config->dbd_driver, results);
 

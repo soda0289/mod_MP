@@ -37,8 +37,7 @@ typedef struct{
 	const char* friendly_name;
 	query_words_t query_words;
 	apr_array_header_t* db_queries; //Multi Column Queries for Database
-	//[query_type][parameters_set][sort_by_column]
-	apr_dbd_prepared_t*** select;
+
 	char* query;
 	int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*);
 	int (*run_query)(request_rec* r, app_query,db_config*, apr_dbd_prepared_t****);

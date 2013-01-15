@@ -40,6 +40,7 @@ typedef struct db_config_ db_config;
 typedef char* app_query;
 typedef struct query_words_t_ query_words_t;
 
+
 enum query_types{
 	SONGS = 0,
 	ALBUMS,
@@ -79,7 +80,7 @@ typedef enum{
 }parameter_type;
 
 //Query parameters including SQL Clauses and Custom parameters
-typedef struct{
+typedef struct query_parameters_t_{
 	//Parameters set allows us to cache out queries for
 	//each query type. Each column gets one binary digit
 	//and 3 binary digits are reserved for row_count,
