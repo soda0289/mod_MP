@@ -29,6 +29,7 @@
 
 typedef struct {
 	FLAC__StreamDecoder* stream_decoder;
+	FILE* fd;
 
 	//Header Info
     short channels;
@@ -48,6 +49,6 @@ typedef struct {
 
 int read_flac_file (apr_pool_t* pool, flac_file** flac, const char* file_path, encoding_options_t* enc_opt);
 long process_flac_file(void *in, float **buffer, int samples);
-void close_flac(flac_file* flac);
+int close_flac(flac_file* flac);
 
 #endif /* PLAY_SONG_H_ */

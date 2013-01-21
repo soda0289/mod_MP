@@ -29,29 +29,7 @@
 #include "database/dbd.h"
 #include "flac.h"
 #include "apps/music/transcoder.h"
-
-int file_path_query(db_config* dbd_config,query_parameters_t* query_parameters,query_t* db_query,const char** file_path, const char** file_type,error_messages_t* error_messages){
-	int status;
-
-	results_table_t* results;
-
-	//Check if query parameter is vald(source id is givien)
-	if(query_parameters == NULL || query_parameters->query_where_conditions->nelts != 1){
-		//ap_rprintf(r, "Couldn't find song_id query where condition");
-		return -5;
-	}
-
-	status = select_db_range(dbd_config,query_parameters,db_query,&results,error_messages);
-	if(status != 0 || results->rows == NULL || results->rows->nelts == 0){
-		//ap_rprintf(r,"Error with running database query");
-		return -8;
-	}
-	//Column 0
-	*file_path = ((row_t*)results->rows->elts)[0].results[0];
-	//Column 1
-	*file_type = ((row_t*)results->rows->elts)[0].results[1];
-	return 0;
-}
+#include "database/db_query_config.h"
 
 int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	const char* file_path;
@@ -64,6 +42,8 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	apr_finfo_t file_info;
 	apr_file_t* file_desc;
 	apr_size_t total_length = 0;
+
+	column_table_t* file_path_col;
 	//create file to save decoded data too
 
 	const char* file_type;
@@ -72,7 +52,15 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
 
 
-	status = file_path_query(dbd_config,music->query_parameters,music->db_query,&file_path,&file_type,music->error_messages);
+	//status = file_path_query(dbd_config,music->query_parameters,music->db_query,&file_path,&file_type,music->error_messages);
+	 status = find_select_column_from_query_by_table_id_and_query_id(&file_path_col,music->db_query,"sources","path");
+	 if(status != 0){
+		 return -11;
+	 }
+	 status = get_column_results_for_row(music->db_query,music->results,file_path_col,0,&file_path);
+	 if(status != 0){
+		 return -14;
+	 }
 
 	//Determine what kind of file this is
 	//Pick right decoder
@@ -85,7 +73,7 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 
 	rv = apr_file_open(&file_desc, file_path, APR_READ, APR_OS_DEFAULT, r->pool);
 	 if (rv != APR_SUCCESS){
-		 ap_rprintf(r,"Error opening file");
+		 ap_rprintf(r,"Error opening file (%s)", file_path);
 		 return -7;
 	 }
 	 rv = apr_stat(&file_info,file_path,APR_FINFO_SIZE,r->pool);
@@ -113,9 +101,13 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
 	apr_file_t* file_desc;
 	apr_size_t total_length = 0;
 
-	 rv = apr_file_open(&file_desc, output_file_path, APR_READ | APR_WRITE | APR_CREATE | APR_EXCL, APR_OS_DEFAULT, pool);
+	 rv = apr_file_open(&file_desc, output_file_path, APR_READ | APR_WRITE | APR_CREATE, APR_OS_DEFAULT, pool);
+	 if(rv != APR_SUCCESS){
+		 return rv;
+	 }
 
 	long samples_total;
+	long packets_done;
 	//OGG Stream
     ogg_stream_state ogg_stream;
     ogg_page ogg_page;
@@ -136,10 +128,7 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
 
 
 	vorbis_info_init(&v_info);
-
-
 	vorbis_encode_init_vbr(&v_info,enc_opt->channels, enc_opt->rate, enc_opt->quality);
-
     vorbis_encode_setup_init(&v_info);
 
     //Initialize vorbis analysis
@@ -164,15 +153,22 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
     ogg_stream_packetin(&ogg_stream,&header_codebooks);
 
     int eos = 0;
+    packets_done = 0;
+    samples_total = 0;
 	while(!eos){
     	//Create vorbis buffer of unencoded samples
         float **buffer = vorbis_analysis_buffer(&vorbis_dsp, 1024);
         long samples_read = input_file->process_input_file(input_file->file_struct, buffer, 1024);//Return samples read per channel
 
         if (samples_read == 0){
+        	//Input file is done
         	vorbis_analysis_wrote(&vorbis_dsp,0); //Write 0 bytes to close up vorbis analysis
         }else{
         	samples_total += samples_read;
+            if(packets_done>=40){
+            	enc_opt->progress = ((double)samples_total / (double)enc_opt->total_samples_per_chanel)*100.0;
+            	packets_done = 0;
+            }
         	vorbis_analysis_wrote(&vorbis_dsp, samples_read);
         }
         while(vorbis_analysis_blockout(&vorbis_dsp,&vorbis_block) == 1){
@@ -182,15 +178,17 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
             vorbis_analysis(&vorbis_block, &ogg_pack);
             ogg_stream_packetin(&ogg_stream,&ogg_pack);
 
+            packets_done++;
+
             while(!eos){
             	//Turn ogg packets into pages
                 int result = ogg_stream_pageout(&ogg_stream,&ogg_page);
                 if(!result) break; //not enough data to create page continue, building ogg packets
 
-                apr_size_t* length_written;
-                length_written = apr_pcalloc(pool, sizeof(apr_size_t));
+            apr_size_t* length_written;
+            length_written = apr_pcalloc(pool, sizeof(apr_size_t));
                 *length_written = ogg_page.header_len;
-                rv = apr_file_write_full(file_desc, (&ogg_page)->header,ogg_page.header_len,length_written);
+            rv = apr_file_write_full(file_desc, (&ogg_page)->header,ogg_page.header_len,length_written);
                 if (*length_written != ogg_page.header_len || rv != APR_SUCCESS){
                 	//ap_rprintf(r, "Couldn't write all of head");
                 	return -1;
@@ -199,10 +197,10 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
                 apr_file_write_full(file_desc, (&ogg_page)->body,ogg_page.body_len,length_written);
                 if (*length_written != ogg_page.body_len || rv != APR_SUCCESS){
                 	//ap_rprintf(r,"Couldn't write all of body");
-                	return -1;
+                	return -2;
                 }
 
-                total_length += ogg_page.header_len +  ogg_page.body_len;
+             total_length += ogg_page.header_len +  ogg_page.body_len;
                 //Check if last page
                 if(ogg_page_eos(&ogg_page))
                     eos = 1;//Kill loops

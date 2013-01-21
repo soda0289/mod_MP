@@ -49,11 +49,6 @@ typedef	struct column_table_t_{
 		table_t* table;
 }column_table_t;
 
-typedef struct custom_parameter_t_{
-	const char* freindly_name;
-	const char* type;
-	const char* value;
-}custom_parameter_t;
 
 typedef struct query_t_{
 	const char* id;
@@ -66,14 +61,7 @@ typedef struct query_t_{
 	apr_array_header_t* custom_parameters;
 }query_t;
 
-typedef enum{
-	LIMIT = 0,
-	OFFSET,
-	GROUP_BY,
-	ORDER_BY
-}sql_clauses;
 
-#define NUM_SQL_CLAUSES 4
 
 
 typedef struct db_config_{
@@ -119,8 +107,8 @@ int prepare_database(app_list_t* app_list,db_config* dbd_config);
 int sync_song(db_config* dbd_config, music_file *song);
 int select_db_range(db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);
 int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
-
-
+int get_column_results_for_row(query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result);
+int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args);
 
 #endif /* DBD_H_ */
 

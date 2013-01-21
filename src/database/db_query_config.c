@@ -20,6 +20,7 @@
 
 #include "apr_xml.h"
 #include "db_query_config.h"
+#include "database/db_query_parameters.h"
 
 int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem, const char* attr_name, char** attr_value){
 	apr_xml_attr* attr;
@@ -160,6 +161,24 @@ int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){
 	return -1;
 }
 
+int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,query_t* query, const char* table_id, const char* column_id){
+	int column_index;
+	column_table_t* column;
+
+	for(column_index = 0; column_index < query->select_columns->nelts;column_index++){
+		column = ((column_table_t**)query->select_columns->elts)[column_index];
+		if(apr_strnatcmp(column->id, column_id) == 0){
+			if(apr_strnatcmp(column->table->id, table_id) == 0){
+				*select_column = column;
+				return 0;
+			}
+		}
+	}
+
+
+	return -1;
+}
+
 //long function name
 int find_column_from_query_by_friendly_name(query_t* query,const char* friendly_name, column_table_t** column){
 	table_t* table;
@@ -178,18 +197,6 @@ int find_column_from_query_by_friendly_name(query_t* query,const char* friendly_
 				*column = column_temp;
 				return 0;
 			}
-		}
-	}
-	return -1;
-}
-
-int find_custom_parameter_by_friendly(apr_array_header_t* parameter_array,const char* friendly_name, custom_parameter_t** custom_parameter){
-	int i;
-	for(i =0;i < parameter_array->nelts;i++){
-		custom_parameter_t* cus_par = &(((custom_parameter_t*)parameter_array->elts)[i]);
-		if(apr_strnatcmp(cus_par->freindly_name,friendly_name) == 0){
-			*custom_parameter = cus_par;
-			return 0;
 		}
 	}
 	return -1;
@@ -278,7 +285,7 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 						apr_xml_to_text(dbd_config->pool,table_elem,APR_XML_X2T_INNER,NULL,NULL,&(query->group_by_string),&max_element_size);
 					}else if(apr_strnatcmp(query_child_elem->name,"custom_parameters") == 0){
 
-						query->custom_parameters =  apr_array_make(dbd_config->pool,5,sizeof(custom_parameter_t));
+						query->custom_parameters =  apr_array_make(dbd_config->pool,5,sizeof(struct custom_parameter_t_));
 
 						for(parameter_elem = query_child_elem->first_child;parameter_elem  != NULL; parameter_elem  = parameter_elem ->next){
 							custom_parameter_t* custom_parameter = apr_array_push(query->custom_parameters);

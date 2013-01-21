@@ -46,9 +46,6 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		return 0;
 	}
 
-	dbd_config->connected = 1;
-	dbd_config->database_errors = dir_sync->error_messages;
-
 	file_list = apr_pcalloc(dir_sync->pool, sizeof(List));
 	dir_sync->num_files = apr_pcalloc(dir_sync->pool, sizeof(int));
 
@@ -73,19 +70,19 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	}
 	while(file_list->file.path){
 		  song = apr_pcalloc(dir_sync->pool, sizeof(music_file));
-		  song->file = file_list->file;
-		  switch(song->file.type){
+		  song->file = &(file_list->file);
+		  switch(song->file->type){
 		  	  case FLAC:{
 		  		status = read_flac_level1(dir_sync->pool, song);
 		  		if (status == 0){
-		  			song->file.type_string = "flac";
+		  			song->file->type_string = "flac";
 		  		}
 		  		break;
 		  	  }
 		  	  case OGG:{
 		  		status = read_ogg(dir_sync->pool, song);
 		  		if (status == 0){
-		  			song->file.type_string = "ogg";
+		  			song->file->type_string = "ogg";
 		  		}
 		  		break;
 		  	  }
@@ -94,7 +91,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  		  //status = read_id3(dir_sync->pool,song);
 		  		  status = 5;
 			  		if (status == 0){
-			  			song->file.type_string = "mp3";
+			  			song->file->type_string = "mp3";
 			  		}
 			  	break;
 		  	  }
@@ -109,7 +106,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 			  if (dbd_config->connected == 1){
 				  status = sync_song(dbd_config, song);
 				  if (status != 0){
-					  add_error_list(dir_sync->error_messages, ERROR, apr_psprintf(dir_sync->pool,"Failed to sync song:"),  apr_psprintf(dir_sync->pool, "(%d) Song title: %s Song artist: %s song album:%s song file path: %s",status, song->title, song->artist, song->album, song->file.path));
+					add_error_list(dir_sync->error_messages, ERROR, apr_psprintf(dir_sync->pool,"Failed to sync song:"),  apr_psprintf(dir_sync->pool, "(%d) Song title: %s Song artist: %s song album:%s song file path: %s",status, song->title, song->artist, song->album, song->file->path));
 				  }
 			  }else{
 				  //Lost connection kill thread

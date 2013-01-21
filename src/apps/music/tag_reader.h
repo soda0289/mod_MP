@@ -52,7 +52,7 @@ typedef struct {
 	int   length;
 	//char** feature;
 
-	file_t file;
+	file_t* file;
 } music_file;
 
 struct List{

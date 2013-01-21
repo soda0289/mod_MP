@@ -1,6 +1,7 @@
-function print_song_table(songs, queries){
+function print_song_table(music_ui_ctx){
 	
-	songs_div = document.getElementById("songs");
+	var songs = music_ui_ctx.songs;
+	var songs_div = document.getElementById("songs");
 	//Create song table if it doesn't exsist
 	var songs_table = document.getElementById("songs_table");
 	if (songs_table == null){
@@ -10,7 +11,7 @@ function print_song_table(songs, queries){
 		songs_div.appendChild(songs_table);
 	}
 	
-	for(var i = 0; i < parseInt(songs.length, 10); i++){
+	for(var i = songs_table.rows.length; i < music_ui_ctx.songs.length; i = songs_table.rows.length){
 		var bgcolor = (i%2 == 0)? "#222222" : "#666666";
 
 		var new_row = document.createElement('tr');
@@ -21,10 +22,10 @@ function print_song_table(songs, queries){
 			var id = i;
 			
 			return function(){
-				play_song(id, queries);
+				play_song(id, music_ui_ctx);
 			}
 			
-		})(i, queries);
+		})(i, music_ui_ctx);
 		
 		var new_col = new Array();
 		new_col[0] = document.createElement('td');
@@ -66,10 +67,12 @@ function print_artists(artists, queries){
 				queries.albums_query.running = 0;
 				albums_div.innerHTML = "";
 				songs_div.innerHTML = "";
+				queries.songs = new Array();
+				queries.albums = new Array();
 				
 				//Create two new queries
-				var songs_query = new music_query("mp", 1000, "songs", "song_title", artist_id, 0, print_song_table);
-				var albums_query = new music_query("mp", 100, "albums", "album_name", artist_id, 0, print_albums);
+				var songs_query = new music_query("mp.attiyat.net", 1000, "songs", "song_title", artist_id, 0, 0,print_song_table);
+				var albums_query = new music_query("mp.attiyat.net", 100, "albums", "album_name", artist_id, 0, 0,print_albums);
 				
 				
 				//Update ui
@@ -99,12 +102,14 @@ function print_albums(albums, queries){
 		newcontent.innerHTML += albums[i].album_name;
 		newcontent.onclick = (function (){
 			var album_id = album.album_id;
+			var artist_id = album.artist_id;
 			return function(){
 				var songs_div = document.getElementById('songs');
 				//Stop running quieres
 				queries.songs_query.running = 0;
 				songs_div.innerHTML = "";
-				var songs_query = new music_query("mp", 1000, "songs", "song_title", 0, album_id, print_song_table);
+				queries.songs = new Array();
+				var songs_query = new music_query("mp.attiyat.net", 1000, "songs", "song_title", artist_id, album_id, 0,print_song_table);
 				
 				//Update ui
 				queries.songs_query = songs_query;

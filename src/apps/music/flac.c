@@ -182,12 +182,14 @@ int read_flac_file (apr_pool_t* pool, flac_file** flac, const char* file_path, e
 	}
 	enc_opt->channels = (*flac)->channels;
 	enc_opt->rate = (*flac)->rate;
+	enc_opt->total_samples_per_chanel = (*flac)->total_samples;
 
 	return 0;
 }
 
-void close_flac(flac_file* flac){
+int close_flac(flac_file* flac){
 	int i;
+
     for (i = 0; i < flac->channels; i++){
         free(flac->buf[i]);
     }
@@ -196,4 +198,5 @@ void close_flac(flac_file* flac){
     FLAC__stream_decoder_finish(flac->stream_decoder);
     FLAC__stream_decoder_delete(flac->stream_decoder);
     //free(flac);
+    return 0;
 }

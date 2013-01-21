@@ -21,29 +21,35 @@
 #include "mod_mediaplayer.h"
 #include "database/db_query_config.h"
 #include "database/dbd.h"
+#include "database/db_query_parameters.h"
 
 apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config){
 	apr_status_t rv;
 
 	*dbd_config = apr_pcalloc(pool, sizeof(db_config));
-
-	rv = apr_dbd_init(pool);
+	apr_pool_t* db_pool;
+	rv = apr_pool_create(&db_pool, pool);
+	if (rv != APR_SUCCESS){
+	  //Run error function
+	  return rv;
+	}
+	rv = apr_dbd_init(db_pool);
 	if (rv != APR_SUCCESS){
 	  //Run error function
 	  return rv;
 	}
 	(*dbd_config)->driver_name = "mysql";
 	(*dbd_config)->mysql_parms = "host=127.0.0.1,user=root";
-	(*dbd_config)->pool = pool;
+	(*dbd_config)->pool = db_pool;
 
 
-	rv = apr_dbd_get_driver(pool, (*dbd_config)->driver_name, &((*dbd_config)->dbd_driver));
+	rv = apr_dbd_get_driver(db_pool, (*dbd_config)->driver_name, &((*dbd_config)->dbd_driver));
 	if (rv != APR_SUCCESS){
 		//Run error function
 		return rv;
 	}
 
-	rv = apr_dbd_open((*dbd_config)->dbd_driver, pool, (*dbd_config)->mysql_parms, &((*dbd_config)->dbd_handle));
+	rv = apr_dbd_open((*dbd_config)->dbd_driver, db_pool, (*dbd_config)->mysql_parms, &((*dbd_config)->dbd_handle));
 	if (rv != APR_SUCCESS){
 		//Run error function
 		return rv;
@@ -64,7 +70,7 @@ int prepare_database(app_list_t* app_list,db_config* dbd_config){
 	}
 
 	//Setup database configuration
-	error_num = init_db_schema(app_list,"/home/reyad/sql_tables.xml",dbd_config);
+	error_num = init_db_schema(app_list,"/home/reyad/Workspace/MediaPlayer/sql_tables.xml",dbd_config);
 	if (error_num != 0){
 		return error_num;
 	}
@@ -307,11 +313,6 @@ int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_para
 			add_error_list(error_messages,WARN,"Statement", select_statement);
 			*select = apr_pstrdup(dbd_config->pool,select_statement);
 			apr_pool_destroy(statement_pool);
-			//error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, select_statement,NULL, &(select[query->type][query->query_parameters->parameters_set][(unsigned int)query->sort_by]));
-			//if (error_num != 0){
-			//	add_error_list(dbd_config->database_errors,ERROR,"Error with statement", select_statement);
-			//	return error_num;
-			//}
 		}else{
 			return -1;
 		}
@@ -322,6 +323,24 @@ int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_para
 
 
 	return 0;
+}
+
+int get_column_results_for_row(query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result){
+	int i;
+	column_table_t* select_column;
+	if(query_results->rows->nelts == 0){
+		return -2;
+	}
+	for(i = 0;i < db_query->select_columns->nelts; i++){
+		select_column = ((column_table_t**)db_query->select_columns->elts)[i];
+		if(column == select_column){
+			//We have out index (i);
+			*column_result = ((row_t*)query_results->rows->elts)[row_index].results[i];
+			return 0;
+		}
+	}
+
+	return -1;
 }
 
 
@@ -369,7 +388,7 @@ int select_db_range(db_config* dbd_config,query_parameters_t* query_parameters, 
 	return 0;
 }
 
-static int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args){
+int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args){
 	int error_num = 0;
 	int nrows = 1;
 	apr_pool_t* pool = dbd_config->pool;
@@ -382,6 +401,7 @@ static int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query
 	}
 	return error_num;
 }
+
 static int update_song(db_config* dbd_config, music_file* song, apr_time_t mtime){
 	int error_num = 0;
 	int nrows = 0;
@@ -495,12 +515,16 @@ int sync_song(db_config* dbd_config, music_file *song){
 	apr_pool_t* pool = dbd_config->pool;
 
 	//Check if song file path already exsits in database
-	error_num = get_id(&db_mtime_string,dbd_config, dbd_config->statements.select_mtime,(const char**)&(song->file.path));
+	{
+	const char* args[1];
+	args[0] = song->file->path;
+	error_num = get_id(&db_mtime_string,dbd_config, dbd_config->statements.select_mtime,args);
+	}
 	if (error_num == 0){
 		db_mtime = (apr_time_t) apr_atoi64(db_mtime_string);
-		if(song->file.mtime > db_mtime){
+		if(song->file->mtime > db_mtime){
 				//Update song
-				error_num = update_song(dbd_config, song, song->file.mtime);
+				error_num = update_song(dbd_config, song, song->file->mtime);
 				if (error_num == 0){
 					return 0;
 				}else{
@@ -510,7 +534,7 @@ int sync_song(db_config* dbd_config, music_file *song){
 					add_error_list(dbd_config->database_errors, ERROR, apr_psprintf(pool,"DBD update  error(%d): %s", error_num,(char *) error_message), "dsdsdds");
 					return -12;
 				}
-			}else if(song->file.mtime == db_mtime){
+			}else if(song->file->mtime == db_mtime){
 				//File is up to date
 				return 0;
 			}
@@ -519,10 +543,10 @@ int sync_song(db_config* dbd_config, music_file *song){
 		{
 		const char* args[4];
 		//`type`, `path`, `quality`,`mtime`
-		args[0] = song->file.type_string;
-		args[1] = song->file.path;
+		args[0] = song->file->type_string;
+		args[1] = song->file->path;
 		args[2] = apr_itoa(dbd_config->pool, 100);
-		args[3] = apr_ltoa(dbd_config->pool,song->file.mtime);
+		args[3] = apr_ltoa(dbd_config->pool,song->file->mtime);
 		error_num = insert_db(&source_id, dbd_config, dbd_config->statements.add_source, args);
 		if (error_num != 0){
 					add_error_list(dbd_config->database_errors, ERROR, "DBD insert_source error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
@@ -531,7 +555,7 @@ int sync_song(db_config* dbd_config, music_file *song){
 		}
 		//Find Artist ID
 		{
-		const char* args[0];
+		const char* args[1];
 		args[0] = song->artist ? song->artist : "Unknown";
 		error_num = get_id(&artist_id, dbd_config, dbd_config->statements.select_artist, args);
 		if (error_num  == -2){
@@ -547,7 +571,7 @@ int sync_song(db_config* dbd_config, music_file *song){
 		}
 		//Find Album ID
 		{
-		const char* args[0];
+		const char* args[1];
 		args[0] = song->album ? song->album : "Unknown";
 		error_num = get_id(&album_id, dbd_config, dbd_config->statements.select_album, args);
 		if(error_num == -2){
@@ -610,11 +634,11 @@ int sync_song(db_config* dbd_config, music_file *song){
 			return -4;
 		}
 	}else if(error_num == 2013){
-		add_error_list(dbd_config->database_errors, ERROR, "DBD not connected", apr_psprintf(pool, "(%d) (%s)",error_num, song->file.path));
+		add_error_list(dbd_config->database_errors, ERROR, "DBD not connected", apr_psprintf(pool, "(%d) (%s)",error_num, song->file->path));
 		dbd_config->connected = 0;
 		return -5;
 	}else{
-		add_error_list(dbd_config->database_errors, ERROR, "DBD get mtime error", apr_psprintf(pool, "(%d) (%s)",error_num, song->file.path));
+		add_error_list(dbd_config->database_errors, ERROR, "DBD get mtime error", apr_psprintf(pool, "(%d) (%s)",error_num, song->file->path));
 		return -6;
 	}
 	return 0;

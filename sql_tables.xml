@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<db>
+	<tables>
+ <!--  Define tables and columns must define links, artistid,albumid, songid, sourceid -->
+		<table id="links">
+			<name>links</name>
+			<columns>
+				<column id="songid">
+					<name>songid</name>
+					<fname>song_id</fname>
+				</column>
+				<column id="artistid">
+					<name>artistid</name>
+					<fname>artist_id</fname>
+				</column>
+				<column id="albumid">
+					<name>albumid</name>
+					<fname>album_id</fname>
+				</column>
+				<column id="sourceid">
+					<name>sourceid</name>
+					<fname>source_id</fname>
+				</column>
+				<column id="feature">
+					<name>feature</name>
+					<fname>feature</fname>
+				</column>
+				<column id="trackno">
+					<name>track_no</name>
+					<fname>track_num</fname>
+				</column>
+				<column id="discno">
+					<name>disc_no</name>
+					<fname>disc_num</fname>
+				</column>
+			</columns>
+		</table>
+		<table id="albums">
+			<name>Albums</name>
+			<columns>
+				<column id="id" fk="links.albumid">
+					<name>id</name>
+					<fname>album_id</fname>
+				</column>
+				<column id="name">
+					<name>name</name>
+					<fname>album_name</fname>
+				</column>
+				<column id="date">
+					<name>date_released</name>
+					<fname>album_release_date</fname>
+				</column>
+				<column id="album_artist">
+					<name>album_artist</name>
+					<fname>album_artist</fname>
+				</column>
+			</columns>
+		</table>
+		<table id="artists">
+			<name>Artists</name>
+			<columns>
+				<column id="id" fk="links.artistid">
+					<name>id</name>
+					<fname>artist_id</fname>
+				</column>
+				<column id="name">
+					<name>name</name>
+					<fname>artist_name</fname>
+				</column>
+				<column id="musicbrainz">
+					<name>musicbrainz_id</name>
+					<fname>artist_mb_id</fname>
+				</column>
+			</columns>
+		</table>
+		<table id="songs">
+			<name>Songs</name>
+			<columns>
+				<column id="id" fk="links.songid">
+					<name>id</name>
+					<fname>song_id</fname>
+				</column>
+				<column id="name">
+					<name>name</name>
+					<fname>song_title</fname>
+				</column>
+				<column id="musicbrainz">
+					<name>musicbrainz_id</name>
+					<fname>song_mb_id</fname>
+				</column>
+				<column id="length">
+					<name>length</name>
+					<fname>song_length</fname>
+				</column>
+				<column id="play_count">
+					<name>play_count</name>
+					<fname>song_play_count</fname>
+				</column>
+			</columns>
+		</table>
+		<table id="sources">
+			<name>Sources</name>
+			<columns>
+				<column id="id" fk="links.sourceid">
+					<name>id</name>
+					<fname>source_id</fname>
+				</column>
+				<column id="type">
+					<name>type</name>
+					<fname>source_type</fname>
+				</column>
+				<column id="path">
+					<name>path</name>
+					<fname>source_path</fname>
+				</column>
+				<column id="quality">
+					<name>quality</name>
+					<fname>source_quality</fname>
+				</column>
+				<column id="mtime">
+					<name>mtime</name>
+					<fname>source_mtime</fname>
+				</column>
+			</columns>
+		</table>
+	</tables>
+	 <!--  Define queries that the mediaplayer will use SONGS, ARTISTS, ALBUMS, SOURCES -->
+	<queries>
+		<app id="music">
+			<query id="songs">
+					<table id="links">
+						<column id="songid"/>
+						<column id="artistid"/>
+						<column id="albumid"/>
+						<column id="sourceid"/>
+					</table>
+					<table id="songs">
+						<column id="name"/>
+					</table>
+					<table id="artists">
+						<column id="name"/>
+					</table>
+					<table id="albums">
+						<column id="name"/>
+					</table>
+					<table id="sources">
+						<column id="path"/>
+					</table>
+				<group_by>links.songid, links.albumid, links.artistid</group_by>
+			</query>
+			<query id="artists">
+					<table id="links">
+						<column id="artistid"/>
+					</table>
+					<table id="songs">
+					</table>
+					<table id="artists">
+						<column id="name"/>
+					</table>
+					<table id="albums">
+					</table>
+					<table id="sources">
+					</table>
+				<group_by>links.artistid</group_by>
+			</query>
+			<query id="albums">
+					<table id="links">
+						<column id="albumid"/>
+					</table>
+					<table id="songs">
+					</table>
+					<table id="artists">
+					</table>
+					<table id="albums">
+						<column id="name"/>
+						<column id="album_artist"/>
+					</table>
+					<table id="sources">
+					</table>
+				<group_by>links.albumid</group_by>
+			</query>
+			<query id="sources">
+					<table id="links">
+					</table>
+					<table id="songs">
+					</table>
+					<table id="sources">
+						<column id="id"/>
+						<column id="type"/>
+					</table>
+				<group_by>links.songid, links.albumid,links.artistid,links.sourceid</group_by>
+			</query>
+			<query id="play">
+					<table id="sources">
+						<column id="path" />
+						<column id="type" />
+					</table>
+			</query>
+			<query id="transcode">
+				<table id="links">
+					<column id="sourceid"/>
+					<column id="songid"/>
+					<column id="artistid"/>
+					<column id="albumid"/>
+				</table>
+				<table id="sources">
+					<column id="path" />
+					<column id="type" />
+					<column id="quality"/>
+				</table>
+				<custom_parameters>
+					<parameter id="output">
+						<fname>output_type</fname>
+						<type>string</type>
+						<value>ogg</value>
+					</parameter>
+				</custom_parameters>
+			</query>
+		</app>
+	</queries>
+</db>

@@ -103,7 +103,8 @@ am_mod_mediaplayer_la_OBJECTS = mod_mediaplayer_la-mod_mediaplayer.lo \
 	mod_mediaplayer_la-ogg_encode.lo \
 	mod_mediaplayer_la-dir_sync.lo \
 	mod_mediaplayer_la-app_config.lo \
-	mod_mediaplayer_la-transcoder.lo
+	mod_mediaplayer_la-transcoder.lo \
+	mod_mediaplayer_la-db_query_parameters.lo
 mod_mediaplayer_la_OBJECTS = $(am_mod_mediaplayer_la_OBJECTS)
 mod_mediaplayer_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -275,7 +276,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-mod_mediaplayer_la_SOURCES = mod_mediaplayer.c apps/music/tag_reader.c database/dbd.c database/db_query_config.c error_handler.c apps/music/music_query.c apps/music/flac.c apps/music/ogg_encode.c apps/music/dir_sync/dir_sync.c apps/app_config.c apps/music/transcoder.c
+mod_mediaplayer_la_SOURCES = mod_mediaplayer.c apps/music/tag_reader.c database/dbd.c database/db_query_config.c error_handler.c apps/music/music_query.c apps/music/flac.c apps/music/ogg_encode.c apps/music/dir_sync/dir_sync.c apps/app_config.c apps/music/transcoder.c database/db_query_parameters.c
 mod_mediaplayer_la_CFLAGS = -Wall ${MODULE_CFLAGS}
 mod_mediaplayer_la_LDFLAGS = -lpthread -lm -lrt -lssl -lcrypto -ldl -lFLAC -logg -lvorbisenc -lvorbis -lvorbisfile -rpath ${AP_LIBEXECDIR} -module -avoid-version ${MODULE_LDFLAGS}
 mod_LTLIBRARIES = mod_mediaplayer.la
@@ -373,6 +374,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_mediaplayer_la-app_config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_mediaplayer_la-db_query_config.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_mediaplayer_la-db_query_parameters.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_mediaplayer_la-dbd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_mediaplayer_la-dir_sync.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod_mediaplayer_la-error_handler.Plo@am__quote@
@@ -480,6 +482,13 @@ mod_mediaplayer_la-transcoder.lo: apps/music/transcoder.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='apps/music/transcoder.c' object='mod_mediaplayer_la-transcoder.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -c -o mod_mediaplayer_la-transcoder.lo `test -f 'apps/music/transcoder.c' || echo '$(srcdir)/'`apps/music/transcoder.c
+
+mod_mediaplayer_la-db_query_parameters.lo: database/db_query_parameters.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -MT mod_mediaplayer_la-db_query_parameters.lo -MD -MP -MF $(DEPDIR)/mod_mediaplayer_la-db_query_parameters.Tpo -c -o mod_mediaplayer_la-db_query_parameters.lo `test -f 'database/db_query_parameters.c' || echo '$(srcdir)/'`database/db_query_parameters.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mod_mediaplayer_la-db_query_parameters.Tpo $(DEPDIR)/mod_mediaplayer_la-db_query_parameters.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='database/db_query_parameters.c' object='mod_mediaplayer_la-db_query_parameters.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mod_mediaplayer_la_CFLAGS) $(CFLAGS) -c -o mod_mediaplayer_la-db_query_parameters.lo `test -f 'database/db_query_parameters.c' || echo '$(srcdir)/'`database/db_query_parameters.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -35,6 +35,9 @@
 #include <http_log.h>
 #include "unixd.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "apps/app_config.h"
 
 #include "apps/music/dir_sync/dir_sync.h"
@@ -92,8 +95,11 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 			apr_status_t rv;
 
 			rv = apr_shm_create(&srv_conf->dir_sync_shm, sizeof(dir_sync_t),srv_conf->dir_sync_shm_file , pconf);
-			if (rv == APR_EEXIST) {
-				rv = apr_shm_attach(&(srv_conf->dir_sync_shm), srv_conf->dir_sync_shm_file, pconf);
+			if(rv == 17){
+				//It already exsits lets kill it with fire
+				rv =apr_shm_attach(&srv_conf->dir_sync_shm,srv_conf->dir_sync_shm_file , pconf);
+				rv = apr_shm_destroy(srv_conf->dir_sync_shm);
+				rv = apr_shm_create(&srv_conf->dir_sync_shm, sizeof(dir_sync_t),srv_conf->dir_sync_shm_file , pconf);
 			}
 			if(rv != APR_SUCCESS){
 				ap_log_error(__FILE__,__LINE__, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
@@ -101,9 +107,12 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 				return HTTP_INTERNAL_SERVER_ERROR;
 			}
 			rv = apr_shm_create(&srv_conf->errors_shm, sizeof(error_messages_t), srv_conf->errors_shm_file, pconf);
-		    if (rv == APR_EEXIST) {
-		    	rv =apr_shm_attach(&(srv_conf->errors_shm), srv_conf->errors_shm_file, pconf);
-		    }
+			if(rv == 17){
+				//It already exsits lets kill it with fire
+				apr_shm_attach(&srv_conf->errors_shm,srv_conf->errors_shm_file , pconf);
+				apr_shm_destroy(srv_conf->errors_shm);
+				rv = apr_shm_create(&srv_conf->errors_shm, sizeof(error_messages_t),srv_conf->errors_shm_file , pconf);
+			}
 			if(rv != APR_SUCCESS){
 				ap_log_error(__FILE__,__LINE__, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
 				srv_conf->errors_shm = NULL;
@@ -116,18 +125,26 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 			//Create thread to connect to database and synchronize
 			dir_sync_t*dir_sync = apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
 			srv_conf->error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
+			srv_conf->pid = getpid();
 			srv_conf->error_messages->num_errors = 0;
 
 
 			srv_conf->apps = apr_pcalloc(pconf,sizeof(app_list_t));
 			srv_conf->apps->pool = pconf;
-
+			//Init queue should be moved into app init function
 			srv_conf->decoding_queue = apr_pcalloc(pconf,sizeof(queue_t));
+			srv_conf->decoding_queue->pool = pconf;
+			srv_conf->decoding_queue->max_num_workers = 4;
+			//Setup decoding working array
+			srv_conf->decoding_queue->decoding = apr_pcalloc(pconf, sizeof(decoding_job_t*) * srv_conf->decoding_queue->max_num_workers );
+			srv_conf->decoding_queue->num_working_threads = 0;
+			srv_conf->decoding_queue->size = 0;
+			apr_thread_mutex_create(&(srv_conf->decoding_queue->mutex),APR_THREAD_MUTEX_DEFAULT,s->process->pool);
 
 			config_app(srv_conf->apps,"music","music",NULL,get_music_query,run_music_query);
 
 
-			dir_sync->pool = pconf;
+			dir_sync->pool = s->process->pool;
 			dir_sync->num_files = NULL;
 			dir_sync->dir_path = srv_conf->external_directory;
 			dir_sync->error_messages = srv_conf->error_messages;
@@ -158,9 +175,13 @@ void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 		if(srv_conf->enable){
 			//Create shared memory
 
-			//Reattach shared memory
-			apr_shm_attach(&(srv_conf->dir_sync_shm), srv_conf->dir_sync_shm_file, child_pool);
-			apr_shm_attach(&(srv_conf->errors_shm), srv_conf->errors_shm_file, child_pool);
+			if(getpid() != srv_conf->pid){
+				//Only when in new proccess do we re attach shared memory
+				//If we are in the same proccess we dont need shared memory do we.
+				//Reattach shared memory
+				apr_shm_attach(&(srv_conf->dir_sync_shm), srv_conf->dir_sync_shm_file, child_pool);
+				apr_shm_attach(&(srv_conf->errors_shm), srv_conf->errors_shm_file, child_pool);
+			}
 			//Create new database connection for every fork
 			rv = connect_database(child_pool, srv_conf->error_messages,&(srv_conf->dbd_config));
 			if(rv != APR_SUCCESS){
@@ -208,7 +229,7 @@ int output_status_json(request_rec* r){
 		ap_rputs("{\n\t\"status\" : {", r);
 			ap_rprintf(r, "\t\"Progress\" :  \"%.2f\",\n", dir_sync->sync_progress);
 
-			ap_rputs("\"Errors\" : [\n", r);
+			ap_rputs("\t\"Errors\" : [\n", r);
 				//Print Errors
 		int i;
 		for (i =0;i < rec_cfg->error_messages->num_errors; i++){
@@ -251,7 +272,7 @@ int run_get_method(request_rec* r){
 		//Check if Query is ok
 		if (error_num != 0){
 			//Query Failed
-			add_error_list(rec_cfg->error_messages, ERROR,"Error with query", "Problem with URI");
+			add_error_list(rec_cfg->error_messages, ERROR,"Error with query", apr_pstrcat(r->pool,"Problem with URI (",apr_itoa(r->pool,error_num),")",NULL));
 			//Print status and die
 			return output_status_json(r);
 		}

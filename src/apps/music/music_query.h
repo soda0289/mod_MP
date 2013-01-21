@@ -51,47 +51,7 @@ enum query_types{
 };
 
 typedef struct results_table_t_ results_table_t;
-
-typedef 	enum{
-	EQUAL =0,
-	LIKE,
-	GREATER,
-	LESS,
-	BETWEEN
-}condition_operator;
-
-//SQL Where conditions
-typedef struct{
-	column_table_t* column;
-	condition_operator operator;
-	const char* condition;
-}query_where_condition_t;
-
-//SQL clauses struct (Row Count, Group By, ...)
-typedef struct{
-	const char* freindly_name;
-	const char* value;
-}query_sql_clauses_t;
-
-typedef enum{
-	WHERE =0,
-	SQL,
-	CUSTOM
-}parameter_type;
-
-//Query parameters including SQL Clauses and Custom parameters
-typedef struct query_parameters_t_{
-	//Parameters set allows us to cache out queries for
-	//each query type. Each column gets one binary digit
-	//and 3 binary digits are reserved for row_count,
-	//row_offset, and group_by
-	uint64_t parameters_set;
-	char num_columns;
-	apr_array_header_t* query_where_conditions;
-	query_sql_clauses_t* query_sql_clauses;
-	char num_custom_parameters;
-	apr_array_header_t* query_custom_parameters;
-}query_parameters_t;
+typedef struct query_parameters_t_ query_parameters_t;
 
 typedef struct music_query_{
 	enum query_types type;

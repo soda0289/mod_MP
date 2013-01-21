@@ -53,9 +53,15 @@ module AP_MODULE_DECLARE_DATA mediaplayer_module;
 typedef struct decoding_job_t_ decoding_job_t;
 
 typedef struct queue_t_{
+	apr_pool_t* pool;
+	apr_thread_mutex_t* mutex;
+	int max_num_workers;//CONSTANT
+	decoding_job_t** decoding;
 	decoding_job_t* head;
 	decoding_job_t* tail;
 	int size;
+
+	int num_working_threads;
 }queue_t;
 
 typedef struct {
@@ -63,6 +69,7 @@ typedef struct {
 	const char* external_directory;
 	db_config* dbd_config;
 
+	pid_t pid;
 	apr_shm_t* dir_sync_shm;
 	const char* dir_sync_shm_file;
 	apr_shm_t* errors_shm;
@@ -72,7 +79,6 @@ typedef struct {
 	queue_t* decoding_queue;
 
 	app_list_t* apps;
-
 
 } mediaplayer_srv_cfg ;
 

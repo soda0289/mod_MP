@@ -75,7 +75,7 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 	if (song == NULL){
 		return 1;
 	}
-	file_path = song->file.path;
+	file_path = song->file->path;
 	if (!file_path){
 		return 1;
 	}
@@ -198,7 +198,7 @@ int read_ogg(apr_pool_t* pool, music_file* song){
 	OggVorbis_File vorbis_file;
 	vorbis_comment *vc = NULL;
 
-	status = ov_fopen(song->file.path, &vorbis_file);
+	status = ov_fopen(song->file->path, &vorbis_file);
 	if (status != 0){
 		return 2;
 	}

@@ -23,6 +23,7 @@ typedef struct encoding_options_t_{
 	long channels;
 	long rate;
 	long total_samples_per_chanel;
+	float progress;
 }encoding_options_t;
 
 /* The input file struct holds the three decoding functions need to process a input file
@@ -43,12 +44,18 @@ typedef struct input_file_t_{
 }input_file_t;
 
 typedef struct decoding_job_t_{
+	const char* song_id;
+	const char* artist_id;
+	const char* album_id;
+
 	const char* source_id;
 	const char* output_type;
 	const char* output_file_path;
 	const char* new_source_id;
 
-	float progress;
+	char* status;
+
+	float* progress;
 	input_file_t* input_file;
 	int (*encoder_function)(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path);
 
@@ -57,9 +64,10 @@ typedef struct decoding_job_t_{
 
 typedef struct transcode_thread_t_{
 	apr_pool_t* pool;
+	db_config* dbd_config;
 	error_messages_t* error_messages;
 	queue_t* queue;
-
+	int key;
 }transcode_thread_t;
 
 int transcode_audio(request_rec* r, db_config* dbd_config,music_query_t* music_query);
