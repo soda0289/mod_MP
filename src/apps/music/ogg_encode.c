@@ -44,6 +44,7 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	apr_size_t total_length = 0;
 
 	column_table_t* file_path_col;
+	column_table_t* file_type_col;
 	//create file to save decoded data too
 
 	const char* file_type;
@@ -57,10 +58,18 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	 if(status != 0){
 		 return -11;
 	 }
+	 status = find_select_column_from_query_by_table_id_and_query_id(&file_type_col,music->db_query,"sources","type");
+	 if(status != 0){
+		 return -11;
+	 }
 	 status = get_column_results_for_row(music->db_query,music->results,file_path_col,0,&file_path);
 	 if(status != 0){
 		 return -14;
 	 }
+	 status = get_column_results_for_row(music->db_query,music->results,file_type_col,0,&file_type);
+	 	 if(status != 0){
+	 		 return -14;
+	 	 }
 
 	//Determine what kind of file this is
 	//Pick right decoder
@@ -97,15 +106,6 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
 	apr_status_t rv;
 	int status;
 
-
-	apr_file_t* file_desc;
-	apr_size_t total_length = 0;
-
-	 rv = apr_file_open(&file_desc, output_file_path, APR_READ | APR_WRITE | APR_CREATE, APR_OS_DEFAULT, pool);
-	 if(rv != APR_SUCCESS){
-		 return rv;
-	 }
-
 	long samples_total;
 	long packets_done;
 	//OGG Stream
@@ -125,6 +125,20 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
     vorbis_info      v_info;
 
     int serial_no;
+	apr_file_t* file_desc;
+	apr_size_t total_length = 0;
+    int eos = 0;
+    packets_done = 0;
+    samples_total = 0;
+
+
+
+	 rv = apr_file_open(&file_desc, output_file_path, APR_READ | APR_WRITE | APR_CREATE, APR_OS_DEFAULT, pool);
+	 if(rv != APR_SUCCESS){
+		 return rv;
+	 }
+
+
 
 
 	vorbis_info_init(&v_info);
@@ -152,9 +166,7 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
     ogg_stream_packetin(&ogg_stream,&header_comments);
     ogg_stream_packetin(&ogg_stream,&header_codebooks);
 
-    int eos = 0;
-    packets_done = 0;
-    samples_total = 0;
+
 	while(!eos){
     	//Create vorbis buffer of unencoded samples
         float **buffer = vorbis_analysis_buffer(&vorbis_dsp, 1024);
@@ -166,7 +178,9 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
         }else{
         	samples_total += samples_read;
             if(packets_done>=40){
-            	enc_opt->progress = ((double)samples_total / (double)enc_opt->total_samples_per_chanel)*100.0;
+            	if(enc_opt->progress != NULL){
+                	*(enc_opt->progress) = ((double)samples_total / (double)enc_opt->total_samples_per_chanel)*100.0;
+            	}
             	packets_done = 0;
             }
         	vorbis_analysis_wrote(&vorbis_dsp, samples_read);
@@ -181,23 +195,24 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
             packets_done++;
 
             while(!eos){
+            	apr_size_t* length_written;
             	//Turn ogg packets into pages
                 int result = ogg_stream_pageout(&ogg_stream,&ogg_page);
                 if(!result) break; //not enough data to create page continue, building ogg packets
 
-            apr_size_t* length_written;
+
             length_written = apr_pcalloc(pool, sizeof(apr_size_t));
-                *length_written = ogg_page.header_len;
+             *length_written = ogg_page.header_len;
             rv = apr_file_write_full(file_desc, (&ogg_page)->header,ogg_page.header_len,length_written);
                 if (*length_written != ogg_page.header_len || rv != APR_SUCCESS){
                 	//ap_rprintf(r, "Couldn't write all of head");
-                	return -1;
+                	return rv;
                 }
                 *length_written = ogg_page.body_len;
-                apr_file_write_full(file_desc, (&ogg_page)->body,ogg_page.body_len,length_written);
+               rv= apr_file_write_full(file_desc, (&ogg_page)->body,ogg_page.body_len,length_written);
                 if (*length_written != ogg_page.body_len || rv != APR_SUCCESS){
                 	//ap_rprintf(r,"Couldn't write all of body");
-                	return -2;
+                	return rv;
                 }
 
              total_length += ogg_page.header_len +  ogg_page.body_len;

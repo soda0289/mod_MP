@@ -66,6 +66,7 @@ typedef struct query_t_{
 
 typedef struct db_config_{
 	apr_pool_t* pool;
+	apr_thread_mutex_t* mutex;
 	apr_dbd_t *dbd_handle;
 	const apr_dbd_driver_t *dbd_driver;
 	const char* driver_name;
@@ -87,7 +88,6 @@ typedef struct db_config_{
 		apr_dbd_prepared_t* select_file_path;
 		apr_dbd_prepared_t *select_mtime;
 		apr_dbd_prepared_t* update_song;
-
 	}statements;
 	//Setup by DB Query Configuration
 	apr_array_header_t* tables;   //Tables on database
@@ -104,8 +104,8 @@ typedef struct results_table_t_ {
 
 apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config);
 int prepare_database(app_list_t* app_list,db_config* dbd_config);
-int sync_song(db_config* dbd_config, music_file *song);
-int select_db_range(db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);
+int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song);
+int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);
 int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
 int get_column_results_for_row(query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result);
 int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args);

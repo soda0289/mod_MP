@@ -18,7 +18,7 @@
  *  limitations under the License.
  */
 
-#include "apr_xml.h"
+#include <apr_xml.h>
 #include "db_query_config.h"
 #include "database/db_query_parameters.h"
 
@@ -261,6 +261,7 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 						//Read columns used in Select statement of Query
 						for(col_elem = table_elem->first_child;col_elem != NULL;col_elem = col_elem->next){
 							if(apr_strnatcmp(col_elem->name,"column") == 0){
+								const char* table_column_name;
 								status = get_xml_attr(dbd_config->pool,col_elem,"id",&column_id);
 								if(status != SUCCESS){
 									//no column id found
@@ -277,7 +278,7 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 								*column_ptr = column;
 
 								//Append column name to Select Columns String
-								const char* table_column_name = apr_pstrcat(dbd_config->pool,table->name,".",column->name,NULL);
+								table_column_name = apr_pstrcat(dbd_config->pool,table->name,".",column->name,NULL);
 								 query->select_columns_string = (query->select_columns_string) ? apr_pstrcat(dbd_config->pool,query->select_columns_string,",",table_column_name,NULL) : table_column_name;
 							}
 						}

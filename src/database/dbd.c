@@ -23,21 +23,11 @@
 #include "database/dbd.h"
 #include "database/db_query_parameters.h"
 
-apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config){
+apr_status_t connect_database(apr_pool_t* db_pool, error_messages_t* error_messages,db_config** dbd_config){
 	apr_status_t rv;
 
-	*dbd_config = apr_pcalloc(pool, sizeof(db_config));
-	apr_pool_t* db_pool;
-	rv = apr_pool_create(&db_pool, pool);
-	if (rv != APR_SUCCESS){
-	  //Run error function
-	  return rv;
-	}
-	rv = apr_dbd_init(db_pool);
-	if (rv != APR_SUCCESS){
-	  //Run error function
-	  return rv;
-	}
+	*dbd_config = apr_pcalloc(db_pool, sizeof(db_config));
+
 	(*dbd_config)->driver_name = "mysql";
 	(*dbd_config)->mysql_parms = "host=127.0.0.1,user=root";
 	(*dbd_config)->pool = db_pool;
@@ -54,6 +44,8 @@ apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages
 		//Run error function
 		return rv;
 	}
+
+	apr_thread_mutex_create(&((*dbd_config)->mutex),APR_THREAD_MUTEX_DEFAULT,db_pool);
 	(*dbd_config)->connected = 1;
 	(*dbd_config)->database_errors = error_messages;
 
@@ -106,7 +98,7 @@ int prepare_database(app_list_t* app_list,db_config* dbd_config){
 	if (error_num != 0){
 		return error_num;
 	}
-	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT mtime FROM Sources WHERE path = (%s)", NULL, &(dbd_config->statements.select_mtime));
+	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT `mtime` FROM `Sources` WHERE path=%s;", NULL, &(dbd_config->statements.select_mtime));
 	if (error_num != 0){
 		return error_num;
 	}
@@ -247,6 +239,9 @@ int generate_sql_statements(db_config* dbd_config, music_query_t* query,apr_dbd_
 
 int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_parameters,query_t* db_query,const char** select,error_messages_t* error_messages){
 	//int num_tables;
+	apr_status_t status;
+
+	apr_pool_t* statement_pool;
 	int error_num;
 	//int query_par;
 	//int num_query_parameters = __builtin_popcount(query->query_parameters_set);
@@ -256,19 +251,18 @@ int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_para
 	const char* limit = NULL;
 	const char* offset = NULL;
 	const char* group_by = db_query->group_by_string;
+	char* where = NULL;
+
+	int i;
 	if(query_parameters != NULL){
 		order_by = query_parameters->query_sql_clauses[ORDER_BY].value;
 		limit = query_parameters->query_sql_clauses[LIMIT].value;
 		offset = query_parameters->query_sql_clauses[OFFSET].value;
 	}
-	char* where = NULL;
-
-	int i;
 
 
-	apr_status_t status;
 
-	apr_pool_t* statement_pool;
+
 
 	status = apr_pool_create(&statement_pool,dbd_config->pool);
 	if (status != APR_SUCCESS){
@@ -310,8 +304,7 @@ int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_para
 		}
 
 		if(select_statement){
-			add_error_list(error_messages,WARN,"Statement", select_statement);
-			*select = apr_pstrdup(dbd_config->pool,select_statement);
+			*select = apr_pstrcat(dbd_config->pool,select_statement,";",NULL);
 			apr_pool_destroy(statement_pool);
 		}else{
 			return -1;
@@ -328,7 +321,7 @@ int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_para
 int get_column_results_for_row(query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result){
 	int i;
 	column_table_t* select_column;
-	if(query_results->rows->nelts == 0){
+	if(query_results->rows == NULL || query_results->rows->nelts == 0){
 		return -2;
 	}
 	for(i = 0;i < db_query->select_columns->nelts; i++){
@@ -344,47 +337,52 @@ int get_column_results_for_row(query_t* db_query, results_table_t* query_results
 }
 
 
-int select_db_range(db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages){
+int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages){
+
 	int error_num;
 
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
 	const char* select = NULL;
-	*query_results = apr_pcalloc(dbd_config->pool, sizeof(results_table_t));
+
+	apr_thread_mutex_lock(dbd_config->mutex);
+	(*query_results) = apr_pcalloc(pool, sizeof(results_table_t));
 
 	error_num = generate_sql_statement(dbd_config,query_parameters,db_query,&select,error_messages);
 	if(error_num != 0){
 		add_error_list(error_messages, ERROR, "DBD generate_sql_statement error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		apr_thread_mutex_unlock(dbd_config->mutex);
 		return error_num;
 	}
 
-	error_num = apr_dbd_select(dbd_config->dbd_driver,dbd_config->pool,dbd_config->dbd_handle,&results,select,0);
-
+	error_num = apr_dbd_select(dbd_config->dbd_driver,pool,dbd_config->dbd_handle,&results,select,0);
 	if (error_num != 0){
 		//check if not connected
 		if (error_num == 2013){
 			dbd_config->connected = 0;
 		}
 		add_error_list(error_messages, ERROR, "DBD select_db_range error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		apr_thread_mutex_unlock(dbd_config->mutex);
 		return error_num;
 	}
-	(*query_results)->rows = apr_array_make(dbd_config->pool,1000,sizeof(row_t));
+	(*query_results)->rows = apr_array_make(pool,1000,sizeof(row_t));
 	//Cycle through all of them to clear cursor
-	for (error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1);
+	for (error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1);
 			error_num != -1;
-			error_num = apr_dbd_get_row(dbd_config->dbd_driver, dbd_config->pool, results, &row, -1)) {
+			error_num = apr_dbd_get_row(dbd_config->dbd_driver, pool, results, &row, -1)) {
 				row_t* res_row = (row_t*)apr_array_push((*query_results)->rows);
 				int i;
 				int num_columns = apr_dbd_num_cols(dbd_config->dbd_driver, results);
 
-				res_row->results = apr_pcalloc(dbd_config->pool,sizeof(char*) * num_columns);
+				res_row->results = apr_pcalloc(pool,sizeof(char*) * num_columns);
 
 				for(i = 0; i < num_columns; i++){
 					//We must copy the row entry as it does not stay in memory for long
-					res_row->results[i] = apr_pstrdup(dbd_config->pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, i));
+					res_row->results[i] = apr_pstrdup(pool,apr_dbd_get_entry (dbd_config->dbd_driver,  row, i));
 				}
 
 		}
+	apr_thread_mutex_unlock(dbd_config->mutex);
 	return 0;
 }
 
@@ -443,14 +441,14 @@ int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_pre
 }
 
 
-static int get_id(char** id, db_config* dbd_config,  apr_dbd_prepared_t* select, const char** args){
+static int get_id(char** id, db_config* dbd_config,apr_dbd_prepared_t* prep, const char** args){
 	int error_num = 0;
 	int row_count;
 	apr_dbd_results_t* results = NULL;
 	apr_dbd_row_t *row = NULL;
 	apr_pool_t* pool = dbd_config->pool;
 
-	error_num = apr_dbd_pselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, select, 0, 0, args);
+	error_num = apr_dbd_pselect(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,  &results, prep, 0, 0, args);
 	if (error_num != 0){
 		add_error_list(dbd_config->database_errors, ERROR, "DBD get id error", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
 		return error_num;
@@ -503,7 +501,7 @@ int get_mtime(apr_time_t* mtime, db_config* dbd_config, const char* file_path, a
 	return 0;
 }
 
-int sync_song(db_config* dbd_config, music_file *song){
+int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song){
 	char* artist_id = NULL;
 	char* album_id = NULL;
 	char* song_id = NULL;
@@ -512,7 +510,6 @@ int sync_song(db_config* dbd_config, music_file *song){
 	apr_time_t db_mtime = 0;
 	int error_num = 0;
 	const char* error_message = NULL;
-	apr_pool_t* pool = dbd_config->pool;
 
 	//Check if song file path already exsits in database
 	{
@@ -545,8 +542,8 @@ int sync_song(db_config* dbd_config, music_file *song){
 		//`type`, `path`, `quality`,`mtime`
 		args[0] = song->file->type_string;
 		args[1] = song->file->path;
-		args[2] = apr_itoa(dbd_config->pool, 100);
-		args[3] = apr_ltoa(dbd_config->pool,song->file->mtime);
+		args[2] = apr_itoa(pool, 100);
+		args[3] = apr_ltoa(pool,song->file->mtime);
 		error_num = insert_db(&source_id, dbd_config, dbd_config->statements.add_source, args);
 		if (error_num != 0){
 					add_error_list(dbd_config->database_errors, ERROR, "DBD insert_source error:", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
@@ -599,8 +596,8 @@ int sync_song(db_config* dbd_config, music_file *song){
 			//`name`, `musicbrainz_id`, `length`, `play_count`
 			args[0] = song->title;
 			args[1] = "aaaa";
-			args[2] = apr_itoa(dbd_config->pool, song->length);
-			args[3] = apr_itoa(dbd_config->pool, 0);
+			args[2] = apr_itoa(pool, song->length);
+			args[3] = apr_itoa(pool, 0);
 			error_num = insert_db(&song_id, dbd_config, dbd_config->statements.add_song, args);
 			if (error_num != 0){
 				add_error_list(dbd_config->database_errors, ERROR,   apr_psprintf(pool,"DBD insert artist error(%d):", error_num), apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
@@ -620,7 +617,7 @@ int sync_song(db_config* dbd_config, music_file *song){
 			args[1] = album_id;
 			args[2] = song_id;
 			args[3] = source_id;
-			args[4] = apr_itoa(dbd_config->pool, 0);
+			args[4] = apr_itoa(pool, 0);
 			args[5] = song->track_no ? song->track_no : "0";
 			args[6] = song->disc_no ? song->disc_no: "0";
 			error_num = insert_db(NULL, dbd_config, dbd_config->statements.add_link, args);

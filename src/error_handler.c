@@ -19,6 +19,22 @@
 */
 #include "mod_mediaplayer.h"
 
+int print_error_messages(request_rec* r,error_messages_t* error_messages){
+	int i;
+	ap_rputs("\t\t\"Errors\" : [\n", r);
+				//Print Errors
+
+			for (i =0;i < error_messages->num_errors; i++){
+				ap_rprintf(r, "\t\t\t{\n\t\t\t\t\"type\" : %d,\n\t\t\t\t\"header\" : \"%s\",\n\t\t\t\t\"message\" : \"%s\"\n\t\t\t}\n", error_messages->messages[i].type,json_escape_char(r->pool,error_messages->messages[i].header), json_escape_char(r->pool,error_messages->messages[i].message));
+				if (i+1 != error_messages->num_errors){
+					ap_rputs(",",r);
+				}
+			ap_rputs("\n",r);
+			}
+			ap_rputs("\t\t]\n",r);
+	return 0;
+}
+
 int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message){
 	if((error_messages->num_errors) >=1024 || error_messages == NULL){
 		//Should write to apache error log or somthing

@@ -44,9 +44,11 @@ void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, cha
 	FLAC__StreamMetadata_VorbisComment       *comment;
 	FLAC__StreamMetadata_VorbisComment_Entry *comment_entry;
 	char* comment_value;
-	comment = &block->data.vorbis_comment;
 	int comment_length;
 	int offset;
+
+	comment = &block->data.vorbis_comment;
+
 
 	//TITLE
 	offset = 0;
@@ -174,6 +176,17 @@ static music_file* read_flac_level0(request_rec* r, char* file_path){
 }
 */
 int read_ogg(apr_pool_t* pool, music_file* song){
+	char* strtok_state;
+	char* comment;
+	char* comment_name;
+	char* comment_value;
+
+
+	int i, tag, status;
+
+	OggVorbis_File vorbis_file;
+	vorbis_comment *vc = NULL;
+
 	const int NUM_TAGS = 5;
 	song_tags saved_tags[NUM_TAGS];
 	saved_tags[0].tag_name = "TITLE";
@@ -187,16 +200,7 @@ int read_ogg(apr_pool_t* pool, music_file* song){
 	saved_tags[4].tag_name = "DISCNUMBER";
 	(saved_tags[4].tag_dest) = &(song->disc_no);
 
-	char* strtok_state;
-	char* comment;
-	char* comment_name;
-	char* comment_value;
 
-
-	int i, tag, status;
-
-	OggVorbis_File vorbis_file;
-	vorbis_comment *vc = NULL;
 
 	status = ov_fopen(song->file->path, &vorbis_file);
 	if (status != 0){
@@ -271,8 +275,9 @@ List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* cou
 		}
 		//Is a File
 		if (filef.filetype == APR_REG){
+			List* file_list_new;
 			(*count)++;
-			List* file_list_new  = apr_pcalloc(pool, sizeof(List));
+			file_list_new  = apr_pcalloc(pool, sizeof(List));
 			file_list->file.path = file_path;
 			file_list->file.mtime = filef.mtime;
 			file_list->file.type  = get_file_ext(pool,file_path);

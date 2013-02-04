@@ -33,13 +33,11 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 
 	const char** query_nouns = query_words->words;
 	int status;
+	music_query_t* music_query;
 
 	music_query_t** music_query_ptr = (music_query_t**) query;
-	*music_query_ptr = apr_pcalloc(pool,sizeof(music_query_t));
-	music_query_t* music_query = *music_query_ptr;
-	music_query->error_messages = error_messages;
 
-	int num_words = query_words->num_words;
+	int num_words;
 	int table_elem;
 	int col_elem;
 	int noun_num;
@@ -51,6 +49,13 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 	query_t* db_query;
 
 	char cus_par_set = 0;//Flag custom parameters set in db query
+
+	*music_query_ptr = apr_pcalloc(pool,sizeof(music_query_t));
+	music_query = *music_query_ptr;
+	music_query->error_messages = error_messages;
+
+
+	num_words = query_words->num_words;
 
 	if(query_nouns == NULL || query_nouns[1] == NULL){
 		//Not enough info
@@ -97,6 +102,7 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 
 	//Look for query parameters; every second uri part
 	for(noun_num = 2; noun_num+1 < num_words; noun_num += 2){
+		int sql_clauses;
 		int sql_clause_found = 0;
 		//Look for WHERE columns
 		if(find_column_from_query_by_friendly_name(music_query->db_query,query_nouns[noun_num],&column) == 0){
@@ -107,7 +113,7 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 			continue;
 		}
 		//Look for query parameter (row_count, offset, sort by)
-		int sql_clauses;
+
 
 		for(sql_clauses =0;sql_clauses < NUM_SQL_CLAUSES;sql_clauses++){
 			if(music_query->query_parameters->query_sql_clauses[sql_clauses].freindly_name == NULL){
@@ -157,9 +163,15 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 
 int output_json(request_rec* r, music_query_t* query){
 
-	output_status_json(r);
+	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 
-	ap_rprintf(r, "\"%s\" :[",query->db_query->id);
+	//Apply header
+	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
+	ap_set_content_type(r, "application/json") ;
+
+	ap_rputs(	"{\n",r);
+	print_error_messages(r, rec_cfg->error_messages);
+	ap_rprintf(r, ",\n\t\"%s\" :[\n",query->db_query->id);
 
 	if(query->results != NULL && query->results->rows != NULL){
 		int row_count = 0;
@@ -167,20 +179,22 @@ int output_json(request_rec* r, music_query_t* query){
 		row_t row;
 		for(row_count = 0;row_count < query->results->rows->nelts;row_count++){
 			row = APR_ARRAY_IDX(query->results->rows,row_count,row_t);
-			ap_rputs("{",r);
+			ap_rputs("\t\t\t{\n",r);
 			for(column_index = 0;column_index < query->db_query->select_columns->nelts;column_index++){
-				ap_rprintf(r,"\"%s\": \"%s\" ",APR_ARRAY_IDX(query->db_query->select_columns,column_index,column_table_t*)->freindly_name,json_escape_char(r->pool,row.results[column_index]));
+				ap_rprintf(r,"\t\t\t\t\"%s\": \"%s\"",APR_ARRAY_IDX(query->db_query->select_columns,column_index,column_table_t*)->freindly_name,json_escape_char(r->pool,row.results[column_index]));
 				if(column_index+1 < query->db_query->select_columns->nelts){
 					ap_rputs(", ",r);
 				}
+				ap_rputs("\n",r);
 			}
-			ap_rputs("}",r);
+			ap_rputs("\t\t\t}",r);
 			if(row_count+1 < query->results->rows->nelts){
-				ap_rputs(",\n",r);
+				ap_rputs(",",r);
 			}
+			ap_rputs("\n",r);
 		}
 	}
-	ap_rputs(	"]}",r);
+	ap_rputs(	"\t]\n}\n",r);
 	return 0;
 }
 
@@ -190,37 +204,46 @@ int run_music_query(request_rec* r, app_query app_query,db_config* dbd_config, a
 
 	music_query_t* music =(music_query_t*)app_query;
 
-	error_num = select_db_range(dbd_config, music->query_parameters,music->db_query,&(music->results),music->error_messages);
-
-	switch(music->type){
-		case SONGS:{
-			output_json(r,music);
-			break;
-		}
-		case ALBUMS:{
-			output_json(r,music);
-			break;
-		}
-		case ARTISTS:{
-			output_json(r,music);
-			break;
-		}
-		case SOURCES:{
-			output_json(r,music);
-			break;
-		}
-		case PLAY:{
-			//output_json(r,music);
-			play_song(dbd_config,r,music);
-			break;
-		}
-		case TRANSCODE:{
-			 transcode_audio(r,dbd_config,music);
-			break;
-		}
-		default:{
-			 output_status_json(r);
-						break;
+	if(music->db_query == NULL){
+		 output_status_json(r);
+		 return OK;
+	}
+	error_num = select_db_range(r->pool,dbd_config, music->query_parameters,music->db_query,&(music->results),music->error_messages);
+	if(error_num != 0){
+		add_error_list(music->error_messages, ERROR,"Select DB Range Error", "Couln't run music query");
+		output_status_json(r);
+		return OK;
+	}else{
+		switch(music->type){
+			case SONGS:{
+				output_json(r,music);
+				break;
+			}
+			case ALBUMS:{
+				output_json(r,music);
+				break;
+			}
+			case ARTISTS:{
+				output_json(r,music);
+				break;
+			}
+			case SOURCES:{
+				output_json(r,music);
+				break;
+			}
+			case PLAY:{
+				//output_json(r,music);
+				play_song(dbd_config,r,music);
+				break;
+			}
+			case TRANSCODE:{
+				 transcode_audio(r,dbd_config,music);
+				 break;
+			}
+			default:{
+				output_status_json(r);
+				 break;
+			}
 		}
 	}
 	return OK;

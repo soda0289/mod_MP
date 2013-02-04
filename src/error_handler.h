@@ -22,6 +22,8 @@
 #define ERROR_HANDLER_H_
 #define MAX_ERROR_SIZE 1024
 
+#include "httpd.h"
+
 enum error_type{
 	ERROR = 0,
 	DEBUG,
@@ -41,5 +43,6 @@ typedef struct {
 }error_messages_t;
 
 int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message);
+int print_error_messages(request_rec* r,error_messages_t* error_messages);
 
 #endif /* ERROR_HANDLER_H_ */
