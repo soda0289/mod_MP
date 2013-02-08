@@ -21,10 +21,10 @@
 #ifndef DB_QUERY_CONFIG_H_
 #define DB_QUERY_CONFIG_H_
 
-#include "dbd.h"
+#include "db_typedef.h"
+#include "apps/app_typedefs.h"
 
 #define SUCCESS 0
-typedef struct custom_parameter_t_ custom_parameter_t;
 
 int init_db_schema(app_list_t* app_list,char* file_path, db_config* dbd_config);
 int find_query_by_id(query_t** element, apr_array_header_t*array, const char* id);

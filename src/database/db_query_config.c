@@ -19,8 +19,10 @@
  */
 
 #include <apr_xml.h>
-#include "db_query_config.h"
-#include "database/db_query_parameters.h"
+#include <stdlib.h>
+#include "dbd.h"
+#include "db_typedef.h"
+
 
 int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem, const char* attr_name, char** attr_value){
 	apr_xml_attr* attr;
@@ -246,7 +248,7 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 						get_xml_attr(dbd_config->pool,table_elem,"id",&table_id);
 						//Find table id in known tables
 						status = find_table_by_id(&table,dbd_config->tables,table_id);
-						if(status != SUCCESS){
+						if(status != APR_SUCCESS){
 							//no table found
 							return -1;
 						}
@@ -263,12 +265,12 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 							if(apr_strnatcmp(col_elem->name,"column") == 0){
 								const char* table_column_name;
 								status = get_xml_attr(dbd_config->pool,col_elem,"id",&column_id);
-								if(status != SUCCESS){
+								if(status != APR_SUCCESS){
 									//no column id found
 									return -2;
 								}
 								status = find_column_by_id(&column,table->columns,column_id);
-								if(status != SUCCESS){
+								if(status != APR_SUCCESS){
 									//no column found
 									add_error_list(dbd_config->database_errors,ERROR,"Database Query Config", apr_psprintf(dbd_config->pool,"Couldn't find coulmn with id:%s",column_id));
 									return -3;

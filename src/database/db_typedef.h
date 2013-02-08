@@ -16,5 +16,6 @@ typedef struct row_ row_t;
 typedef struct results_table_ results_table_t;
 
 typedef struct query_parameters_ query_parameters_t;
+typedef struct custom_parameter_t_ custom_parameter_t;
 
 #endif /* DB_TYPEDEF_H_ */
