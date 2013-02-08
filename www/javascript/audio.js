@@ -1,31 +1,56 @@
 function update_decoding_status(music_ui_ctx){
-		var decdoing_status = document.getElementById("decoding_status");
+		var decdoing_status_list = document.getElementById("decoding_status");
 		
-		if(music_ui_ctx.decoding_job[0] == null){
+		
+		if(music_ui_ctx.decoding_job == null){
 			alert("No decoding JOB WTF! Server must be borked");
 		}
 		
-		decoding_status.innerHTML = music_ui_ctx.decoding_job[0].status + "<br \>Progress: " + music_ui_ctx.decoding_job[0].progress;
-		if(parseFloat(music_ui_ctx.decoding_job[0].progress) < 100.0){
-			setTimeout(
-			function(transcode_query, music_ui_ctx){
-				return function(){
-					decode_song(transcode_query.song, music_ui_ctx);
-				}
-			}(this, music_ui_ctx),3000);
-		}else{
-			decoding_status.innerHTML = "";
-			this.song.sources = new Array();
-			var source = {
-				source_id : music_ui_ctx.decoding_job[0].output_source_id,
-			 	source_type : music_ui_ctx.decoding_job[0].output_type
-			};
-			this.song.sources.push(source);
-			
-			if(music_ui_ctx.playing === 0){
-				play_song(this.song, music_ui_ctx);
+		
+		
+			if(this.decoding_job.transcode_query.result == null){
+				return 0;
 			}
-		}
+			var decoding_status = document.getElementById("decoding_" +this.decoding_job.transcode_query.result.input_source_id);
+			if(decoding_status == null){
+				decoding_status =  document.createElement('span');
+				decoding_status.id = "decoding_" +this.decoding_job.transcode_query.result.input_source_id;
+				decdoing_status_list.appendChild(decoding_status);
+			}
+			decoding_status.innerHTML = this.decoding_job.transcode_query.result.status + " Progress: " + this.decoding_job.transcode_query.result.progress;
+			if(parseFloat(this.decoding_job.transcode_query.result.progress) < 100.0){
+				setTimeout(
+				function(dec_job, music_ui_ctx){
+					return function(){
+						//decode_song(dec_job.song, music_ui_ctx);
+						load_query(dec_job.transcode_query, music_ui_ctx)
+					}
+				}(this.decoding_job, music_ui_ctx),3000);
+				
+			}else{
+				this.decoding_job.song.sources = new Array();
+				var source = {
+					source_id : this.decoding_job.transcode_query.result.output_source_id,
+				 	source_type : this.decoding_job.transcode_query.result.output_type
+				};
+				this.decoding_job.song.sources.push(source);
+				
+				if(music_ui_ctx.playing === 0 && this.decoding_job.song.song_id === music_ui_ctx.next_to_play.song_id){
+					play_song(this.decoding_job.song, music_ui_ctx);
+				}
+				
+				decdoing_status_list.removeChild(decoding_status);
+				music_ui_ctx.decoding_job.splice(music_ui_ctx.decoding_job.indexOf(this.decdoing_job),1);
+			}
+			
+	
+}
+
+function decoding_job(transcode_query, song){
+	this.song = song;
+	this.transcode_query = transcode_query;
+	this.status = "";
+	this.progress = 0.0;
 }
 
 
@@ -33,13 +58,14 @@ function decode_song(song, music_ui_ctx){
 	
 	music_ui_ctx.song_loaded = false;
 	
-	music_ui_ctx.transcode_query = new music_query("mp.attiyat.net", 0, "transcode", null, 0, 0, song.song_id,update_decoding_status);
+	transcode_query = new music_query("mp.attiyat.net", 0, "transcode", null, 0, 0, song.song_id,update_decoding_status);
+	var dec_job = new decoding_job(transcode_query, song);
 	
-	music_ui_ctx.transcode_query.song = song;
-
-	music_ui_ctx.decoding_job = new Array();
+	//Add to decdoing_job array
+	music_ui_ctx.decoding_job.push(dec_job);
+	transcode_query.decoding_job = dec_job;
 	
-	load_query(music_ui_ctx.transcode_query, music_ui_ctx);
+	load_query(transcode_query, music_ui_ctx);
 }
 
 function sources_query_loaded(music_ui_ctx){
@@ -77,11 +103,16 @@ function find_playable_source(song, music_ui_ctx){
 }
 
 function play_song(song, music_ui_ctx){
-	if(typeof(song) === "undefined"){
+	if(typeof(song) !== "object"){
 		alert("passed play_song undefined song");
 		return 0;
 	}
+	//unhighlight current song
+	unhighlight_song(music_ui_ctx);
+	//stop current song
+	music_ui_ctx.playing = 0;
 	
+	music_ui_ctx.next_to_play = song;
 	if(find_playable_source(song, music_ui_ctx) === 0){
 		//Abort playing
 		music_ui_ctx.playing = 0;
@@ -116,22 +147,16 @@ function play_song(song, music_ui_ctx){
 			stop_song(music_ui_ctx);
 		};
 	}(music_ui_ctx);
-	//Play next song when finished current
-	music_ui_ctx.audio_ele.addEventListener('ended', function(music_ui_ctx){
-			return function(event){
-				music_ui_ctx.playing = 0;
-				play_song(music_ui_ctx.songs[get_next_song_index(music_ui_ctx)],music_ui_ctx);
-			}
-		}(music_ui_ctx), false);
+
 	
-		for(var i = 1;i <= 4; i++){
-			var song_next = music_ui_ctx.songs[music_ui_ctx.playing_index + i];
-			if(typeof song_next !== 'undefined'){
-				find_playable_source(song_next, music_ui_ctx);
-			}else{
-				break;
-			}
+	for(var i = 1;i <= 4; i++){
+		var song_next = music_ui_ctx.songs[music_ui_ctx.playing_index + i];
+		if(typeof song_next !== 'undefined'){
+			find_playable_source(song_next, music_ui_ctx);
+		}else{
+			break;
 		}
+	}
 }
 
 function stop_song(music_ui_ctx){

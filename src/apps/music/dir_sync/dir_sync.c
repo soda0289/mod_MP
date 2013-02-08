@@ -2,7 +2,22 @@
  * dir_sync.c
  *
  *  Created on: Nov 12, 2012
- *      Author: reyad
+ *      Author: Reyad Attiyat
+ *      Copyright 2012 Reyad Attiyat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 #include <httpd.h>
@@ -43,11 +58,13 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		return 0;
 	}
 
-	rv = connect_database(pool, dir_sync->error_messages,&(dbd_config));
+
+	rv = connect_database(dir_sync->pool, dir_sync->error_messages,&(dbd_config));
 	if(rv != APR_SUCCESS){
 		add_error_list(dir_sync->error_messages, ERROR ,"Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
 		return 0;
 	}
+	dir_sync->dbd_config = dbd_config;
 	status = prepare_database(dir_sync->app_list,dbd_config);
 	if(status != 0){
 		dbd_error = apr_dbd_error(dbd_config->dbd_driver,dbd_config->dbd_handle, status);
@@ -110,7 +127,11 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  	  }
 		  }
 
+
+
 		  if (status == 0 && song){
+			  //We have song get musicbrainz ids
+			  status = get_musicbrainz_release_id(pool, song, dir_sync->error_messages);
 			  //Update or Insert song
 			  if (dbd_config->connected == 1){
 				  status = sync_song(pool, dbd_config, song);
@@ -138,8 +159,5 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 
 	apr_dbd_close(dbd_config->dbd_driver,dbd_config->dbd_handle);
 	apr_pool_clear(pool);
-
-
-	add_error_list(dir_sync->error_messages, DEBUG, "Thread DIR Sync completed successfully",":)");
 	return 0;
 }

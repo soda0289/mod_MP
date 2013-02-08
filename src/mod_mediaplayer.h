@@ -43,6 +43,8 @@
 
 #include "apps/app_config.h"
 #include "apps/music/transcoder.h"
+#include "apps/music/decoding_queue.h"
+
 typedef struct app_list_t_ app_list_t;
 
 typedef struct db_config_ db_config;
@@ -51,69 +53,26 @@ typedef struct music_query_ music_query_t;
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
 
-#define MAX_NUM_WORKERS 4
-
-typedef struct decoding_job_t_{
-	//Index in array
-	int index;
-	//INPUT
-	char song_id[256];
-	char artist_id[256];
-	char album_id[256];
-	char source_id[256];
-	char input_file_path[1024];
-	char input_file_type[1024];
-	//OUTPUT
-	char output_file_type[256];
-	char output_file_path[1024];
-	//Decdoing job generates
-	char new_source_id[256];
-	//Status messages as it moves in queue
-	char status[512];
-	//Progress of encoding
-	float progress;
-
-
-	int next;
-}decoding_job_t;
-
-
-typedef struct queue_t_{
-	apr_pool_t* pool;
-	error_messages_t* error_messages;
-	apr_global_mutex_t* mutex;
-
-	int head;
-	int tail;
-
-	uint64_t working;
-	uint64_t waiting;
-	//uint64_t free;
-	decoding_job_t decoding[64];
-
-	int num_working_threads;
-}queue_t;
-
 typedef struct {
 	int enable;
 	const char* external_directory;
 	db_config* dbd_config;
 
 	pid_t pid;
+
 	apr_shm_t* dir_sync_shm;
 	const char* dir_sync_shm_file;
 
 	apr_shm_t* errors_shm;
 	const char* errors_shm_file;
 
-	apr_shm_t* queue_shm;
 	const char* queue_shm_file;
+
+	decoding_queue_t* decoding_queue;
 
 	error_messages_t* error_messages;
 
 	char num_working_threads; //This is per Proccess
-	queue_t* decoding_queue;  //Global decoding queue
-
 	app_list_t* apps;
 } mediaplayer_srv_cfg ;
 
@@ -124,5 +83,6 @@ typedef struct{
 
 char* json_escape_char(apr_pool_t* pool, const char* string);
 int output_status_json(request_rec* r);
+int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool);
 
 #endif

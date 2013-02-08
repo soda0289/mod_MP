@@ -50,6 +50,14 @@ typedef struct {
 	char* track_no;
 	char* disc_no;
 	int   length;
+	struct musicbrainz_{
+		char* mb_release_id;
+		char* mb_recoriding_id;
+		char* mb_album_id;
+		char* mb_artist_id;
+		char* mb_albumartist_id;
+	} mb_id;
+
 	//char** feature;
 
 	file_t* file;

@@ -12,6 +12,7 @@ function music_query(hostname, num_results, type, sort_by,artist_id,album_id, so
 	this.album_id = album_id;
 	this.song_id = song_id;
 	this.source_id;
+	this.result = null;
 	
 	this.source_type = "ogg";
 	this.url;
@@ -76,7 +77,7 @@ function concat_query_results(music_query, music_ui_ctx, json_object){
 		json_length = json_object.sources.length;
 		break;
 	case "transcode":
-		music_ui_ctx.decoding_job = music_ui_ctx.decoding_job.concat(json_object.decoding_job);
+		music_query.result = json_object.decoding_job;
 		json_length = json_object.decoding_job.length;
 		break;
 	}
@@ -92,7 +93,8 @@ function proccess_query(music_query, music_ui_ctx){
 			var json_object = JSON.parse(String(music_query.xmlhttp.responseText), null);
 		}catch (err){
 			alert("error: " + err + " on request number. URL:" + music_query.url);
-			return -1;
+			//Re run query
+			load_query(music_query, music_ui_ctx);
 		}
 		//Is the query running
 		//Did the server list any results

@@ -64,5 +64,5 @@ typedef struct music_query_{
 
 int get_music_query(apr_pool_t* pool,error_messages_t*,app_query* query,query_words_t* query_words, apr_array_header_t* db_queries);
 int run_music_query(request_rec*, app_query,db_config*, apr_dbd_prepared_t****);
-
+int output_json(request_rec* r, music_query_t* query);
 #endif /* MUSIC_QUERY_H_ */

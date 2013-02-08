@@ -1,6 +1,8 @@
 function unhighlight_song(music_ui_ctx){
-	var old_song = document.getElementById("song_" + music_ui_ctx.songs[music_ui_ctx.playing_index].song_id);
-	old_song.style.backgroundColor = music_ui_ctx.song_backgroundColor;
+	if(music_ui_ctx.playing_index >= 0){
+		var old_song = document.getElementById("song_" + music_ui_ctx.songs[music_ui_ctx.playing_index].song_id);
+		old_song.style.backgroundColor = music_ui_ctx.song_backgroundColor;
+	}
 }
 
 function shuffle_playlist(music_ui_ctx){
@@ -82,6 +84,7 @@ function music_ui(songs_query, artists_query, albums_query) {
 			function(music_ui_ctx) {
 				return function(event){
 					music_ui_ctx.buffer_elem.innerHTML = "Starting to load Audio";
+					music_ui_ctx.playing = 1;
 					this.play();
 				}
 	}(this),false);
@@ -89,6 +92,7 @@ function music_ui(songs_query, artists_query, albums_query) {
 			function(music_ui_ctx) {
 				return function(event){
 					music_ui_ctx.buffer_elem.innerHTML = "Loading Audio";
+					music_ui_ctx.playing = 1;
 					this.play();
 				}
 	}(this),false);
@@ -96,6 +100,7 @@ function music_ui(songs_query, artists_query, albums_query) {
 			function(music_ui_ctx) {
 				return function(event){
 					music_ui_ctx.buffer_elem.innerHTML = "Loaded metadata";
+					music_ui_ctx.playing = 1;
 					this.play();
 				}
 	}(this),false);
@@ -111,7 +116,12 @@ function music_ui(songs_query, artists_query, albums_query) {
 					music_ui_ctx.buffer_elem.innerHTML = "Done loading. 100% downloaded";
 				}
 	}(this),false);
-	
+	//Play next song when finished current
+	this.audio_ele.addEventListener('ended', function(music_ui_ctx){
+			return function(event){
+				music_ui_ctx.next_button.click();
+			}
+	}(this), false);
 	
 
 	
@@ -121,6 +131,7 @@ function music_ui(songs_query, artists_query, albums_query) {
 	//Info about playing song
 	this.song_backgroundColor;
 	this.playing_index = -1;
+	this.next_to_play = null;
 	
 	//Setup song table
 	this.songs_div = document.getElementById("songs");
@@ -185,9 +196,6 @@ function music_ui(songs_query, artists_query, albums_query) {
 	this.next_button = document.getElementById("next");
 	this.next_button.onclick = function (music_ui_ctx){
 		return function(event){
-			unhighlight_song(music_ui_ctx);
-			//stop current song
-			music_ui_ctx.playing = 0;
 			//play next song
 			play_song(music_ui_ctx.songs[get_next_song_index(music_ui_ctx)], music_ui_ctx);
 		}

@@ -50,6 +50,8 @@
 
 #include "unixd.h"
 
+#include "apps/music/decoding_queue.h"
+
 
 static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){
 	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));
@@ -131,7 +133,7 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
 	return 0;
 }
 
-int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
+static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
 	apr_thread_t* thread_sync_dir;
 	mediaplayer_srv_cfg* srv_conf;
 
@@ -160,7 +162,7 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 	do{
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
 		if(srv_conf->enable && srv_conf->external_directory != NULL){
-			apr_status_t rv;
+			apr_status_t rv = 0;
 			int status;
 			//Setup Shared Memory
 			status = setup_shared_memory(&(srv_conf->dir_sync_shm),sizeof(dir_sync_t),srv_conf->dir_sync_shm_file, pconf);
@@ -169,11 +171,6 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 			}
 
 			status = setup_shared_memory(&(srv_conf->errors_shm),sizeof(error_messages_t),srv_conf->errors_shm_file, pconf);
-			if(status != 0){
-				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
-			}
-
-			status = setup_shared_memory(&(srv_conf->queue_shm),sizeof(queue_t),srv_conf->queue_shm_file, pconf);
 			if(status != 0){
 				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
 			}
@@ -188,50 +185,38 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 			srv_conf->apps = apr_pcalloc(pconf,sizeof(app_list_t));
 			srv_conf->apps->pool = pconf;
 			//Init queue should be moved into app init function
-			srv_conf->decoding_queue = apr_shm_baseaddr_get(srv_conf->queue_shm);
-			srv_conf->decoding_queue->pool = pconf;
-			srv_conf->decoding_queue->head = 0;
-			srv_conf->decoding_queue->tail = -1;
-			srv_conf->decoding_queue->working = 0ull;
-			srv_conf->decoding_queue->waiting = 0ull;
 
-			rv = apr_global_mutex_create(&(srv_conf->decoding_queue->mutex),"/tmp/mp_decoding_queue_lock",APR_LOCK_DEFAULT,s->process->pool);
-			if(rv != APR_SUCCESS){
-				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error global mutex");
+			rv = create_decoding_queue(s->process->pool, srv_conf->queue_shm_file,&(srv_conf->decoding_queue));
+			if(rv != 0){
+				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
 			}
-			rv = ap_unixd_set_global_mutex_perms(srv_conf->decoding_queue->mutex);
-			if(rv != APR_SUCCESS){
-				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error setting permission for global mutex");
-			}
-
 
 			config_app(srv_conf->apps,"music","music",NULL,get_music_query,run_music_query);
 
-			rv = apr_dbd_init(s->process->pool);
+
+			rv = apr_dbd_init(pconf);
 			if (rv != APR_SUCCESS){
 			  //Run error function
 			  return rv;
 			}
 
 
-			dir_sync->pool = s->process->pool;
+
+			dir_sync->pool = pconf;
 			dir_sync->num_files = NULL;
 			dir_sync->dir_path = srv_conf->external_directory;
 			dir_sync->error_messages = srv_conf->error_messages;
 			dir_sync->sync_progress = 0.0;
 			dir_sync->app_list = srv_conf->apps;
 
-			/*rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync, s->process->pool);
+			rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync, s->process->pool);
 			if(rv != APR_SUCCESS){
 				ap_log_error(__FILE__,__LINE__, 0,APLOG_CRIT, rv, s, "Error starting thread");
 			}
-			*/
-			apr_pool_cleanup_register(pconf, srv_conf->decoding_queue->mutex,(void*) apr_global_mutex_destroy	, apr_pool_cleanup_null);
+
+
 			apr_pool_cleanup_register(pconf, srv_conf->dir_sync_shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
 			apr_pool_cleanup_register(pconf, srv_conf->errors_shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
-			apr_pool_cleanup_register(pconf, srv_conf->queue_shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
-
-
 		}
 	}while ((s = s->next) != NULL);
 
@@ -240,7 +225,7 @@ int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* pte
 
 
 
-void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
+static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	apr_status_t rv = 0;
 	mediaplayer_srv_cfg* srv_conf;
 	int status;
@@ -250,9 +235,9 @@ void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	do{
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
 		if(srv_conf->enable){
-			//Create shared memory
 
-			if(/*getpid() != srv_conf->pid*/1){
+			//Reattach shared memory
+			if(getpid() != srv_conf->pid){
 				//Only when in new proccess do we re attach shared memory
 				//If we are in the same proccess we dont need shared memory do we.
 				//Reattach shared memory
@@ -269,27 +254,18 @@ void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 							ap_log_error(__FILE__,__LINE__, 0,APLOG_CRIT, rv, s, "Error reattaching shared memeory Error Messages");
 					}
 				}
-				if(srv_conf->queue_shm_file){
-					rv = apr_shm_attach(&(srv_conf->queue_shm), srv_conf->queue_shm_file, child_pool);
-					if(rv != APR_SUCCESS){
-						ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error reattaching shared memeory Decoding Queue");
-					}
-				}
 
 
+				//Setup srv_conf
 				srv_conf->error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
-				srv_conf->decoding_queue->error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
-				srv_conf->decoding_queue = apr_shm_baseaddr_get(srv_conf->queue_shm);
-
-
-
-				rv = apr_global_mutex_child_init(&(srv_conf->decoding_queue->mutex),"/tmp/mp_decoding_queue_lock",s->process->pool);
-				if(rv != APR_SUCCESS){
-						ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error reattaching to global mutex");
+				//Were in a new process reattach decoding queue
+				rv = reattach_decoding_queue(s->process->pool, srv_conf->decoding_queue, srv_conf->queue_shm_file, srv_conf->error_messages);
+				if(rv != 0){
+					ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error recreating shared memory!!!");
 				}
 
 				//Setup Database Connection
-				rv = connect_database(child_pool, srv_conf->error_messages,&(srv_conf->dbd_config));
+				rv = connect_database(s->process->pconf, srv_conf->error_messages,&(srv_conf->dbd_config));
 				if(rv != APR_SUCCESS){
 					add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
 				}else{
@@ -298,14 +274,17 @@ void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 						dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
 						add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
 					}
-					//apr_pool_cleanup_register(pconf, srv_conf->queue_shm,(void*) close_database	, apr_pool_cleanup_null);
+					//apr_pool_cleanup_register(child_pool, srv_conf->queue_shm,(void*) close_database	, apr_pool_cleanup_null);
 				}
 
+			}else{
+
+				//THIS SHOULD ONLY HAPPEN IN DEBUG MODE
+				//You cannot copy pointers in shared memory
+				dir_sync_t* dir_sync;
+				dir_sync = (dir_sync_t*)apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
+				srv_conf->dbd_config = dir_sync->dbd_config;
 			}
-			//Create new database connection for every fork
-
-
-
 		}
 	}while ((s = s->next) != NULL);
 
@@ -338,7 +317,7 @@ int output_status_json(request_rec* r){
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 
 	//Apply header
-	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
+	apr_table_set(r->headers_out, "Access-Control-Allow-Origin", "*");
 	ap_set_content_type(r, "application/json") ;
 	ap_rputs("{\n", r);
 
@@ -351,6 +330,7 @@ int output_status_json(request_rec* r){
 		return 0;
 }
 
+
 int run_get_method(request_rec* r){
 	int error_num;
 
@@ -359,10 +339,14 @@ int run_get_method(request_rec* r){
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module) ;
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 
-	if(srv_conf->dbd_config == NULL || srv_conf->dir_sync_shm == NULL || srv_conf->errors_shm == NULL){
-		//BIG Error
-		ap_rprintf(r, "something is wrong NULL value found");
-		return OK;
+	if(srv_conf->dbd_config == NULL){
+		//Try and copy dbd from dir_sync
+		//WE SHOULD ONLY DO THIS FOR DEBUG
+		if(srv_conf->dbd_config == NULL){
+			dir_sync_t* dir_sync;
+			dir_sync = (dir_sync_t*)apr_shm_baseaddr_get(srv_conf->dir_sync_shm);
+			srv_conf->dbd_config = dir_sync->dbd_config;
+		}
 	}
 
 	if(srv_conf->dbd_config->connected != 1){
@@ -381,7 +365,7 @@ int run_get_method(request_rec* r){
 }
 
 static int run_post_method(request_rec* r){
-
+	output_status_json(r);
 	return OK;
 }
 
@@ -399,7 +383,12 @@ static int mediaplayer_handler(request_rec* r) {
 		return DECLINED;
 	}
 
-
+	if(srv_conf->errors_shm == NULL || srv_conf->dir_sync_shm == NULL){
+		//BIG Error
+		add_error_list(srv_conf->error_messages,ERROR,"Error shared memory is null","This should not be able to print without shared memory");
+		output_status_json(r);
+		return OK;
+	}
 	error_messages = apr_shm_baseaddr_get(srv_conf->errors_shm);
 
 	//Copy error messages from shared memory

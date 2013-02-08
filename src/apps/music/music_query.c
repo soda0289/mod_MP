@@ -16,7 +16,7 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 
 #include "mod_mediaplayer.h"
 #include "ogg_encode.h"
@@ -27,7 +27,6 @@
 #include "transcoder.h"
 #include "database/db_query_config.h"
 #include "database/db_query_parameters.h"
-
 
 int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query* query,query_words_t* query_words, apr_array_header_t* db_queries){
 
@@ -164,19 +163,28 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 int output_json(request_rec* r, music_query_t* query){
 
 	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
+	int print_query_results = 0;
 
+	if(query->db_query == NULL || query->results == NULL || query->results->rows == NULL){
+		//Heavy debug
+		add_error_list(query->error_messages, ERROR, "Error printing query","URI: %s, query->db_query: %d, query->results: %d, query->results->rows: %d");
+	}else{
+		print_query_results = 1;
+	}
 	//Apply header
-	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
+	apr_table_set(r->headers_out, "Access-Control-Allow-Origin", "*");
 	ap_set_content_type(r, "application/json") ;
 
 	ap_rputs(	"{\n",r);
-	print_error_messages(r, rec_cfg->error_messages);
-	ap_rprintf(r, ",\n\t\"%s\" :[\n",query->db_query->id);
 
-	if(query->results != NULL && query->results->rows != NULL){
+	print_error_messages(r, rec_cfg->error_messages);
+	if(print_query_results){
 		int row_count = 0;
 		int column_index = 0;
 		row_t row;
+
+		ap_rprintf(r, ",\n\t\"%s\" :[\n",query->db_query->id);
+
 		for(row_count = 0;row_count < query->results->rows->nelts;row_count++){
 			row = APR_ARRAY_IDX(query->results->rows,row_count,row_t);
 			ap_rputs("\t\t\t{\n",r);
@@ -191,10 +199,10 @@ int output_json(request_rec* r, music_query_t* query){
 			if(row_count+1 < query->results->rows->nelts){
 				ap_rputs(",",r);
 			}
-			ap_rputs("\n",r);
 		}
+		ap_rputs("\n\t]",r);
 	}
-	ap_rputs(	"\t]\n}\n",r);
+	ap_rputs(	"\n}\n",r);
 	return 0;
 }
 
@@ -203,6 +211,9 @@ int run_music_query(request_rec* r, app_query app_query,db_config* dbd_config, a
 	//We should check if database is connected somewhere
 
 	music_query_t* music =(music_query_t*)app_query;
+
+	//Why not add some headers
+	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 
 	if(music->db_query == NULL){
 		 output_status_json(r);

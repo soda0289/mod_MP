@@ -15744,6 +15744,9 @@ fi
             if test "$min_apache20_version" != "no"; then
                 APR_CONFIG="`$APXS_BIN -q APR_BINDIR 2>/dev/null`/apr-1-config"
                 if test ! -x $APR_CONFIG; then
+                    APR_CONFIG="`$APXS_BIN -q APR_BINDIR 2>/dev/null`/apr-2-config"
+                fi
+		if test ! -x $APR_CONFIG; then
                     APR_CONFIG="`$APXS_BIN -q APR_BINDIR 2>/dev/null`/apr-config"
                 fi
                 APR_INCLUDES=`$APR_CONFIG --includes 2>/dev/null`

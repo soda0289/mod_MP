@@ -29,43 +29,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define LOCK_CHECK_ERRORS(lock, error_messages, error_header) if((rv = apr_global_mutex_lock(lock) != APR_SUCCESS))add_error_list(error_messages,ERROR,error_header,apr_strerror(rv, error_message,512))
-#define UNLOCK_CHECK_ERRORS(lock, error_messages, error_header) if((rv = apr_global_mutex_unlock(lock) != APR_SUCCESS))add_error_list(error_messages,ERROR,error_header,apr_strerror(rv, error_message,512))
+#include "decoding_queue.h"
 
-
-decoding_job_t* get_decoding_job_queue(queue_t* queue, error_messages_t* error_messages){
-	//Lock queue
-	decoding_job_t* dec_job;
-	int index;
-
-	apr_status_t rv;
-	char error_message[512];
-
-	uint64_t index_flag = 0;
-
-	LOCK_CHECK_ERRORS(queue->mutex,queue->error_messages, "Error Locking in get decoding queue");
-
-	if(queue->waiting){
-		//Set dec job to head
-		if(queue->head < 0 ){
-			add_error_list(queue->error_messages,ERROR,"Errroroororor", "head is less than 0");
-		}
-		index = queue->head;
-		index_flag = (1ull << (63 - index));
-		dec_job = &(queue->decoding[index]);
-		//remove job from waiting queue
-		queue->waiting &= ~(index_flag);
-		queue->head = dec_job->next;
-	}else{
-		dec_job = NULL;
-	}
-
-	queue->working |= index_flag;
-	//unlock queue
-	UNLOCK_CHECK_ERRORS(queue->mutex,queue->error_messages, "Error Unlocking in get decoding queue");
-	return dec_job;
-
-}
 
 
 void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
@@ -82,15 +47,14 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 
 
 	//Lock queue
-	LOCK_CHECK_ERRORS(transcode_thread->queue->mutex,transcode_thread->queue->error_messages, "Error Locking encoding thread");
+	LOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex,transcode_thread->decoding_queue->error_messages, "Error Locking encoding thread");
 
 	++transcode_thread->num_working_threads;
-	++transcode_thread->queue->num_working_threads;
-	rv = apr_global_mutex_unlock(transcode_thread->queue->mutex);
+	++transcode_thread->decoding_queue->queue->num_working_threads;
 
-	UNLOCK_CHECK_ERRORS(transcode_thread->queue->mutex, transcode_thread->queue->error_messages,"Error Unlocking encoding thread");
+	UNLOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex, transcode_thread->decoding_queue->error_messages,"Error Unlocking encoding thread");
 
-	while((decoding_job = get_decoding_job_queue(transcode_thread->queue, transcode_thread->queue->error_messages)) != NULL){
+	while((decoding_job = get_decoding_job_queue(transcode_thread->decoding_queue, transcode_thread->decoding_queue->error_messages)) != NULL){
 		const char* args[4];
 		const char* links_args[7];
 
@@ -150,7 +114,7 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 		//add row to soruce table
 		rv = apr_thread_mutex_lock(transcode_thread->dbd_config->mutex);
 		if(rv != APR_SUCCESS){
-			add_error_list(transcode_thread->queue->error_messages,ERROR,"Error locking dbd",apr_strerror(rv, error_message,512));
+			add_error_list(transcode_thread->decoding_queue->error_messages,ERROR,"Error locking dbd",apr_strerror(rv, error_message,512));
 		}
 		//`type`, `path`, `quality`,`mtime`
 		args[0] = (decoding_job)->output_file_type;
@@ -181,143 +145,26 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 		}
 		rv = apr_thread_mutex_unlock(transcode_thread->dbd_config->mutex);
 		if(rv != APR_SUCCESS){
-			add_error_list(transcode_thread->queue->error_messages,ERROR,"Error unlocking dbd",apr_strerror(rv, error_message,512));
+			add_error_list(transcode_thread->decoding_queue->error_messages,ERROR,"Error unlocking dbd",apr_strerror(rv, error_message,512));
 		}
 
 		remove_from_queue:
 
-		LOCK_CHECK_ERRORS(transcode_thread->queue->mutex, transcode_thread->queue->error_messages,"Error Locking encoding thread");
+		LOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex, transcode_thread->decoding_queue->error_messages,"Error Locking encoding thread");
 		//Unset flag in working queue
-		transcode_thread->queue->working &= ~index_flag;
+		transcode_thread->decoding_queue->queue->working &= ~index_flag;
 
-		UNLOCK_CHECK_ERRORS(transcode_thread->queue->mutex, transcode_thread->queue->error_messages,"Error Unlocking encoding thread");
+		UNLOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex, transcode_thread->decoding_queue->error_messages,"Error Unlocking encoding thread");
 	}
 
-	LOCK_CHECK_ERRORS(transcode_thread->queue->mutex,transcode_thread->queue->error_messages, "Error Locking encoding thread");
+	LOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex,transcode_thread->decoding_queue->error_messages, "Error Locking encoding thread");
 
 	--transcode_thread->num_working_threads;
-	--transcode_thread->queue->num_working_threads;
+	--transcode_thread->decoding_queue->queue->num_working_threads;
 
-	UNLOCK_CHECK_ERRORS(transcode_thread->queue->mutex, transcode_thread->queue->error_messages,"Error unlocking encoding thread");
-
-	return 0;
-}
-
-int add_decoding_job_queue(decoding_job_t* job,queue_t* queue){
-	int empty_index;
-	apr_status_t rv;
-	char error_message[512];
-	uint64_t free;
-
-	//Lock queue
-	LOCK_CHECK_ERRORS(queue->mutex,queue->error_messages, "Error Locking in add decoding job");
-
-
-
-
-	free = ~(queue->waiting | queue->working);
-	if(!free){
-		add_error_list(queue->error_messages,ERROR,"Error adding to queue","Queue is FULL!");
-		return -1;
-	}
-
-
-	if(free){
-		empty_index = __builtin_clzll(free);
-	}else{
-		//Queue empty
-		//reset head and start at 0
-		empty_index = 0;
-	}
-	//if waiting queue is empty
-	if(queue->waiting == 0ull){
-		//set head
-		queue->head = empty_index;
-	}
-
-	//Add into free index
-	queue->decoding[empty_index] = *job;
-	queue->decoding[empty_index].index = empty_index;
-	//Points no where since its last in list
-	queue->decoding[empty_index].next = -1;
-
-	//Mark in waiting
-	queue->waiting |= (1ull << (63 - empty_index));
-
-	//if queue->tail is set(not negative)
-	if(queue->tail >= 0){
-		//Update current tail
-		queue->decoding[queue->tail].next = empty_index;
-		//Set tail to new index
-	}
-	queue->tail = empty_index;
-	//unlock queue
-	UNLOCK_CHECK_ERRORS(queue->mutex,queue->error_messages, "Error Unlocking in add decoding job");
+	UNLOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex, transcode_thread->decoding_queue->error_messages,"Error unlocking encoding thread");
 
 	return 0;
-}
-
-//This is better when most bits in x are 0
-//It uses 3 arithmetic operations and one comparison/branch per "1" bit in x.
-int popcount_4(uint64_t x) {
-    int count;
-    for (count=0; x; count++)
-        x &= x-1;
-    return count;
-}
-
-
-int does_decoding_job_exsits(queue_t* queue,decoding_job_t** dec_job){
-	int i, found = 0;
-	uint64_t has_job;
-
-	apr_status_t rv;
-	char error_message[512];
-
-	if(*dec_job == NULL){
-		return 0;
-	}
-
-	LOCK_CHECK_ERRORS(queue->mutex,queue->error_messages, "Error locking in does decoding job exsits");
-
-	has_job = queue->waiting | queue->working;
-
-	if(queue->waiting & queue->working){
-		add_error_list(queue->error_messages,ERROR,"Working and waiting are set WTF MAN",apr_strerror(rv, error_message,512));
-	}
-
-	//i - Index is set to the offset, next decoding job in line, or the first one that is being worked on
-	//which is equal too the array length minus the number of leading zeros.
-	//i is incremented to each value of what is being worked on in the array and then through
-	//each element in the queue.
-
-	for(i = __builtin_clzll(has_job);
-		has_job;
-		i = __builtin_clzll(has_job &= ~(1ull << (63 - i)))){
-
-		//Check if source id and output_type are equal
-		//Should also check if encoding options are equal such as quality
-		if(apr_strnatcmp(queue->decoding[i].source_id,(*dec_job)->source_id) == 0 && apr_strnatcmp(queue->decoding[i].output_file_type,(*dec_job)->output_file_type) == 0){
-			const char* dec_job_status;
-
-			*dec_job = &(queue->decoding[i]);
-			//Found decoding job
-			dec_job_status = apr_psprintf(queue->pool,"Decoding index: %d Working on",i);
-			apr_cpystrn((*dec_job)->status,dec_job_status,512);
-
-			//Job found return 1
-			found++;
-			//Should break but were debugging so try and find duplicates
-		}
-	}
-
-	if(found > 1){
-		add_error_list(queue->error_messages, ERROR, "Error found duplicate", "found duplicate in working/waiting queue");
-	}
-
-	UNLOCK_CHECK_ERRORS(queue->mutex,queue->error_messages, "Error Unlocking in does decoding job exists");
-
-	return found;
 }
 
 int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db_config* dbd_config,query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages){
@@ -331,13 +178,15 @@ int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db
 
 	add_where_query_parameter(query_parameters,song_id_col,song_id);
 	add_where_query_parameter(query_parameters,type,output_type);
-
 	status = select_db_range(pool, dbd_config,query_parameters,db_query,&results_table,error_messages);
+	if(status != 0){
+		 return -11;
+	}
 
-	 status = find_select_column_from_query_by_table_id_and_query_id(&source_id_col,db_query,"links","sourceid");
-	 if(status != 0){
-		 return -13;
-	 }
+	status = find_select_column_from_query_by_table_id_and_query_id(&source_id_col,db_query,"links","sourceid");
+	if(status != 0){
+		return -13;
+	}
 
 	 if(results_table->rows->nelts > 0){
 		 status = get_column_results_for_row(db_query,results_table,source_id_col,0,output_source_id);
@@ -471,6 +320,8 @@ int transcode_audio(request_rec* r, db_config* dbd_config,music_query_t* music_q
 
 	apr_cpystrn(decoding_job->output_file_path, output_file_path, 1024);
 	apr_cpystrn(decoding_job->output_file_type,output_type_parameter->value, 256);
+	apr_cpystrn(decoding_job->new_source_id,"0", 256);
+	apr_cpystrn(decoding_job->status,"Created decoding_job", 256);
 
 	decoding_job->progress = 0.0;
 
@@ -484,9 +335,9 @@ int transcode_audio(request_rec* r, db_config* dbd_config,music_query_t* music_q
 		apr_cpystrn(decoding_job->status,"Decoding job already exists in database",256);
 		decoding_job->progress = 100.0;
 	//Check the working decoding job and the queue
-	}else if((status = does_decoding_job_exsits(srv_conf->decoding_queue, &decoding_job)) == 0){
+	}else if((status = does_decoding_job_exsits(r->pool,srv_conf->decoding_queue, &decoding_job)) == 0){
 
-		const char* dec_job_status = apr_psprintf(r->pool,"Added to queue of size %d", popcount_4(srv_conf->decoding_queue->waiting));
+		const char* dec_job_status = apr_psprintf(r->pool,"Added to queue of size %d", popcount_4(srv_conf->decoding_queue->queue->waiting));
 		//decoding job does not exsits
 		//add it to queue
 		status = add_decoding_job_queue(decoding_job,srv_conf->decoding_queue);
@@ -502,7 +353,7 @@ int transcode_audio(request_rec* r, db_config* dbd_config,music_query_t* music_q
 				//
 				transcode_thread->num_working_threads = srv_conf->num_working_threads;
 				//Global Queue
-				transcode_thread->queue = srv_conf->decoding_queue;
+				transcode_thread->decoding_queue = srv_conf->decoding_queue;
 				//Database
 				transcode_thread->dbd_config = dbd_config;
 				//Error Messages
@@ -515,7 +366,7 @@ int transcode_audio(request_rec* r, db_config* dbd_config,music_query_t* music_q
 
 	rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
 	//Apply header
-	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
+	apr_table_set(r->headers_out, "Access-Control-Allow-Origin", "*");
 	ap_set_content_type(r, "application/json") ;
 	ap_rputs("{\n", r);
 	print_error_messages(r, rec_cfg->error_messages);

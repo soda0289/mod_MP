@@ -14,6 +14,8 @@
 
 #include "mod_mediaplayer.h"
 
+#include "decoding_queue.h"
+
 typedef struct queue_t_ queue_t;
 typedef struct music_query_ music_query_t;
 
@@ -48,7 +50,7 @@ typedef struct transcode_thread_t_{
 	apr_pool_t* pool;
 	db_config* dbd_config;
 	error_messages_t* error_messages;
-	queue_t* queue;
+	decoding_queue_t* decoding_queue;
 	int num_working_threads;
 }transcode_thread_t;
 

@@ -57,7 +57,7 @@ void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, cha
 		comment_value = memchr(comment_entry->entry, '=',comment_entry->length);
 
 		if (comment_value){
-			//Remove eqal sign form value
+			//Remove equal sign form value
 			comment_value++;
 			if(*feild == NULL){
 				comment_length = comment_entry->length - (comment_value - (char*)comment_entry->entry);
@@ -100,6 +100,10 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 				 find_vorbis_comment_entry(pool, block, "ALBUM", &song->album);
 				 find_vorbis_comment_entry(pool, block, "TRACKNUMBER", &song->track_no);
 				 find_vorbis_comment_entry(pool, block, "DISCNUMBER", &song->disc_no);
+				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_ALBUMID", &song->mb_id.mb_release_id);
+				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_ALBUMARTISTID", &song->mb_id.mb_albumartist_id);
+				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_ARTISTID", &song->mb_id.mb_artist_id);
+				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_TRACKID", &song->mb_id.mb_recoriding_id);
 				 break;
 			 }
 			 case
