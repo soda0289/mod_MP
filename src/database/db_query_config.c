@@ -288,7 +288,7 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 						apr_xml_to_text(dbd_config->pool,table_elem,APR_XML_X2T_INNER,NULL,NULL,&(query->group_by_string),&max_element_size);
 					}else if(apr_strnatcmp(query_child_elem->name,"custom_parameters") == 0){
 
-						query->custom_parameters =  apr_array_make(dbd_config->pool,5,sizeof(struct custom_parameter_t_));
+						query->custom_parameters =  apr_array_make(dbd_config->pool,5,sizeof(custom_parameter_t));
 
 						for(parameter_elem = query_child_elem->first_child;parameter_elem  != NULL; parameter_elem  = parameter_elem ->next){
 							custom_parameter_t* custom_parameter = apr_array_push(query->custom_parameters);

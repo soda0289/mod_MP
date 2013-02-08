@@ -43,24 +43,25 @@ typedef enum{
 
 #define NUM_SQL_CLAUSES 4
 //SQL Where conditions
-typedef struct{
+struct query_where_condition_{
 	column_table_t* column;
 	condition_operator operator;
 	const char* condition;
-}query_where_condition_t;
+};
 
 //SQL clauses struct (Row Count, Group By, ...)
-typedef struct{
+struct query_sql_clasuses_{
 	const char* freindly_name;
 	const char* value;
-}query_sql_clauses_t;
+};
 
 
-typedef struct custom_parameter_t_{
+struct custom_parameter_{
 	const char* freindly_name;
 	const char* type;
 	const char* value;
-}custom_parameter_t;
+};
+
 
 //Query parameters including SQL Clauses and Custom parameters
 struct query_parameters_{
