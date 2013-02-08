@@ -31,14 +31,8 @@
 #include "apr_dbd.h"
 #include "error_handler.h"
 #include "database/dbd.h"
+#include "database/db_typedef.h"
 #include "apps/app_config.h"
-
-typedef struct query_t_ query_t;
-typedef struct column_table_t_ column_table_t;
-typedef struct table_t_ table_t;
-typedef struct db_config_ db_config;
-typedef char* app_query;
-typedef struct query_words_t_ query_words_t;
 
 
 enum query_types{
@@ -50,17 +44,15 @@ enum query_types{
 	PLAY
 };
 
-typedef struct results_table_t_ results_table_t;
-typedef struct query_parameters_t_ query_parameters_t;
-
-typedef struct music_query_{
+struct music_query_{
 	enum query_types type;
 	query_t* db_query;
 	query_parameters_t* query_parameters;
 
 	results_table_t* results;
 	error_messages_t* error_messages;
-}music_query_t;
+};
+typedef struct music_query_ music_query_t;
 
 int get_music_query(apr_pool_t* pool,error_messages_t*,app_query* query,query_words_t* query_words, apr_array_header_t* db_queries);
 int run_music_query(request_rec*, app_query,db_config*, apr_dbd_prepared_t****);

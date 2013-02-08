@@ -27,30 +27,30 @@
 #include "apps/app_config.h"
 #include "apps/music/music_query.h"
 #include "apps/app_config.h"
-
-typedef struct music_query_ music_query_t;
-typedef struct app_list_t_ app_list_t;
-typedef struct query_parameters_t_ query_parameters_t;
+#include "db_query_parameters.h"
+#include "db_typedef.h"
 
 
 
 
-typedef struct table_t_{
+struct table_{
 	const char* id;
 	const char* name;
 	apr_array_header_t* columns;
 	const char* foreign_key;
-}table_t;
+};
 
-typedef	struct column_table_t_{
+
+struct column_table_{
 		const char* id;
 		const char* name;
 		const char* freindly_name;
 		table_t* table;
-}column_table_t;
+};
 
 
-typedef struct query_t_{
+
+struct query_{
 	const char* id;
 	int num_columns;
 	apr_array_header_t* tables;
@@ -59,12 +59,13 @@ typedef struct query_t_{
 	const char* select_columns_string;
 	const char* group_by_string;
 	apr_array_header_t* custom_parameters;
-}query_t;
+};
 
 
 
 
-typedef struct db_config_{
+
+struct db_config_{
 	apr_pool_t* pool;
 	apr_thread_mutex_t* mutex;
 	apr_dbd_t *dbd_handle;
@@ -91,15 +92,17 @@ typedef struct db_config_{
 	}statements;
 	//Setup by DB Query Configuration
 	apr_array_header_t* tables;   //Tables on database
-}db_config;
+};
 
-typedef struct row_t_ {
+
+struct row_ {
 	const char** results;
-}row_t;
+};
 
-typedef struct results_table_t_ {
+
+struct results_table_ {
 	apr_array_header_t* rows;
-}results_table_t;
+};
 
 
 apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config);

@@ -167,12 +167,12 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 			//Setup Shared Memory
 			status = setup_shared_memory(&(srv_conf->dir_sync_shm),sizeof(dir_sync_t),srv_conf->dir_sync_shm_file, pconf);
 			if(status != 0){
-				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
+				ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
 			}
 
 			status = setup_shared_memory(&(srv_conf->errors_shm),sizeof(error_messages_t),srv_conf->errors_shm_file, pconf);
 			if(status != 0){
-				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
+				ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
 			}
 
 			//Create thread to connect to database and synchronize
@@ -188,7 +188,7 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 
 			rv = create_decoding_queue(s->process->pool, srv_conf->queue_shm_file,&(srv_conf->decoding_queue));
 			if(rv != 0){
-				ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
+				ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
 			}
 
 			config_app(srv_conf->apps,"music","music",NULL,get_music_query,run_music_query);
@@ -245,7 +245,7 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 				if(srv_conf->dir_sync_shm_file){
 					rv = apr_shm_attach(&(srv_conf->dir_sync_shm), srv_conf->dir_sync_shm_file, child_pool);
 					if(rv != APR_SUCCESS){
-						ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error reattaching shared memeory Directory Sync");
+						ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Error reattaching shared memeory Directory Sync");
 					}
 				}
 				if(srv_conf->errors_shm_file){
@@ -261,7 +261,7 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 				//Were in a new process reattach decoding queue
 				rv = reattach_decoding_queue(s->process->pool, srv_conf->decoding_queue, srv_conf->queue_shm_file, srv_conf->error_messages);
 				if(rv != 0){
-					ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error recreating shared memory!!!");
+					ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Error recreating shared memory!!!");
 				}
 
 				//Setup Database Connection

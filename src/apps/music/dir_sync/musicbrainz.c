@@ -83,7 +83,7 @@ int get_musicbrainz_release_id(apr_pool_t* pool, music_file* song, error_message
 		if(mb_release == NULL){
 			return 3;
 		}
-		mb5_release_get_id(mb_release,song->mb_release_id, 64);
+		mb5_release_get_id(mb_release,song->mb_id.mb_release_id, 64);
 		break;
 	}
 

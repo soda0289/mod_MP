@@ -21,18 +21,21 @@
 #ifndef APP_CONFIG_H_
 #define APP_CONFIG_H_
 
-#include "database/dbd.h"
+#include "apr_tables.h"
+#include "apr_dbd.h"
 
-typedef struct db_config_ db_config;
+#include "database/db_typedef.h"
+#include "app_typedefs.h"
+#include "error_handler.h"
 
-typedef char* app_query;
 
-typedef struct query_words_t_{
+struct query_words_{
 	int num_words;
 	const char** words;
-}query_words_t;
+};
 
-typedef struct{
+
+struct app_{
 	const char* id;
 	const char* friendly_name;
 	query_words_t query_words;
@@ -41,20 +44,22 @@ typedef struct{
 	char* query;
 	int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*);
 	int (*run_query)(request_rec* r, app_query,db_config*, apr_dbd_prepared_t****);
-}app_t;
+};
 
-typedef struct app_node_t_ app_node_t;
 
-typedef struct app_node_t_{
+struct app_node_{
 	app_t* app;
 	app_node_t* next;
-}app_node_t;
+};
 
-typedef struct app_list_t_{
+
+struct app_list_{
 	int count;
 	apr_pool_t* pool;  //Pool to allocate Linked List
 	app_node_t* first_node;
-}app_list_t;
+};
+
+
 
 int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id, int* init_app,int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*),int (*run_query)(request_rec*, app_query,db_config*,apr_dbd_prepared_t****));
 int app_process_uri(apr_pool_t* pool, const char* uri, app_list_t* app_list, app_t** app);

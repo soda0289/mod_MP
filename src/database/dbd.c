@@ -22,6 +22,8 @@
 #include "database/db_query_config.h"
 #include "database/dbd.h"
 #include "database/db_query_parameters.h"
+#include "database/db_typedef.h"
+
 
 apr_status_t connect_database(apr_pool_t* db_pool, error_messages_t* error_messages,db_config** dbd_config){
 	apr_status_t rv;
@@ -506,7 +508,7 @@ int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song){
 		if (error_num  == -2){
 			//`name`, `musicbrainz_id`, `length`, `play_count`
 			args[0] = song->title;
-			args[1] = song->mb_release_id;
+			args[1] = song->mb_id.mb_release_id;
 			args[2] = apr_itoa(pool, song->length);
 			args[3] = apr_itoa(pool, 0);
 			error_num = insert_db(&song_id, dbd_config, dbd_config->statements.add_song, args);

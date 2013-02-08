@@ -39,16 +39,13 @@
 
 #include "error_handler.h"
 #include "apps/music/music_query.h"
-#include "database/dbd.h"
+
 
 #include "apps/app_config.h"
 #include "apps/music/transcoder.h"
 #include "apps/music/decoding_queue.h"
-
-typedef struct app_list_t_ app_list_t;
-
-typedef struct db_config_ db_config;
-typedef struct music_query_ music_query_t;
+#include "apps/app_typedefs.h"
+#include "database/db_typedef.h"
 
 module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
