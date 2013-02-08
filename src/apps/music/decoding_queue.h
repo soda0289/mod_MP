@@ -10,10 +10,11 @@
 
 #include "error_handler.h"
 #include "apr_global_mutex.h"
+#include "music_typedefs.h"
 
 #define MAX_NUM_WORKERS 4
 
-typedef struct decoding_job_t_{
+struct decoding_job_{
 	//Index in array
 	int index;
 	//INPUT
@@ -35,10 +36,10 @@ typedef struct decoding_job_t_{
 
 
 	int next;
-}decoding_job_t;
+};
 
 
-typedef struct queue_t_{
+struct queue_{
 	int head;
 	int tail;
 
@@ -48,16 +49,18 @@ typedef struct queue_t_{
 	decoding_job_t decoding[64];
 
 	int num_working_threads;
-}queue_t;
+};
 
-typedef struct decoding_queue_t_{
+
+struct decoding_queue_{
 	apr_shm_t* queue_shm;
 
 	//These pointers must be set in child proccess
 	error_messages_t* error_messages;
 	apr_global_mutex_t* mutex;
 	queue_t* queue;
-}decoding_queue_t;
+};
+
 
 
 #define LOCK_CHECK_ERRORS(lock, error_messages, error_header) if((rv = apr_global_mutex_lock(lock) != APR_SUCCESS))add_error_list(error_messages,ERROR,error_header,apr_strerror(rv, error_message,512))

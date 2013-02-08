@@ -15,9 +15,7 @@
 #include "mod_mediaplayer.h"
 
 #include "decoding_queue.h"
-
-typedef struct queue_t_ queue_t;
-typedef struct music_query_ music_query_t;
+#include "music_typedefs.h"
 
 
 typedef struct encoding_options_t_{

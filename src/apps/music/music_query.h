@@ -33,7 +33,7 @@
 #include "database/dbd.h"
 #include "database/db_typedef.h"
 #include "apps/app_config.h"
-
+#include "music_typedefs.h"
 
 enum query_types{
 	SONGS = 0,
@@ -52,7 +52,7 @@ struct music_query_{
 	results_table_t* results;
 	error_messages_t* error_messages;
 };
-typedef struct music_query_ music_query_t;
+
 
 int get_music_query(apr_pool_t* pool,error_messages_t*,app_query* query,query_words_t* query_words, apr_array_header_t* db_queries);
 int run_music_query(request_rec*, app_query,db_config*, apr_dbd_prepared_t****);

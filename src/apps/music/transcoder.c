@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include "decoding_queue.h"
+#include "music_typedefs.h"
 
 
 
