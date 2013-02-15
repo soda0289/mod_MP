@@ -52,6 +52,9 @@
 
 #include "apps/music/decoding_queue.h"
 
+unixd_config_rec ap_unixd_config;
+
+
 
 static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){
 	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));
@@ -94,7 +97,7 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
     int status;
 
 
-    apr_uid_get(&uid,&gid,"apache", pool);
+    //apr_uid_get(&uid,&gid,"apache", pool);
 
 	rv = apr_shm_create(shm, size,file_path , pool);
 	if(rv == 17){
@@ -118,8 +121,8 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
 	}
 	time(&t);
 	buf.shm_ctime = t;
-	buf.shm_perm.gid = gid;
-	buf.shm_perm.uid = uid;
+	buf.shm_perm.gid = ap_unixd_config.group_id;
+	buf.shm_perm.uid = ap_unixd_config.user_id;
 	buf.shm_perm.mode = 0664;
 	status = shmctl(shm_id, IPC_SET, &buf);
 	if(status != 0){
