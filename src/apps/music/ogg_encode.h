@@ -24,7 +24,7 @@
 #define OGG_ENCODE_H_
 #include "apps/music/transcoder.h"
 
-int play_song(db_config* dbd_config, request_rec* r, music_query_t* music);
+int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music);
 int ogg_encode(apr_pool_t* pool, input_file_t* input_file,const char* output_file_path);
 int file_path_query(db_config* dbd_config,query_parameters_t* query_parameters,query_t* db_query,const char** file_path, const char** file_type,error_messages_t* error_messages);
 

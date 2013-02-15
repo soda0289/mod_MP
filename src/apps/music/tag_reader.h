@@ -23,6 +23,8 @@
 #define TAG_READER_H_
 
 #include "error_handler.h"
+#include "music_typedefs.h"
+
 
 enum FILE_TYPE{
 	MP3 = 0,
@@ -43,7 +45,7 @@ typedef struct{
 	apr_time_t mtime;
 }file_t;
 
-typedef struct {
+struct music_file_{
 	char* title;
 	char* artist;
 	char* album;
@@ -61,7 +63,7 @@ typedef struct {
 	//char** feature;
 
 	file_t* file;
-} music_file;
+};
 
 struct List{
 	file_t file;

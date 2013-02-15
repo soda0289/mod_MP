@@ -10,6 +10,7 @@
 
 #include "error_handler.h"
 #include "apr_global_mutex.h"
+#include "apr_proc_mutex.h"
 #include "music_typedefs.h"
 
 #define MAX_NUM_WORKERS 4

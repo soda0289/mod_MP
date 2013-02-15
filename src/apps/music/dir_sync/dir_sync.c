@@ -131,7 +131,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 
 		  if (status == 0 && song){
 			  //We have song get musicbrainz ids
-			  status = get_musicbrainz_release_id(pool, song, dir_sync->error_messages);
+			  //status = get_musicbrainz_release_id(pool, song, dir_sync->error_messages);
 			  //Update or Insert song
 			  if (dbd_config->connected == 1){
 				  status = sync_song(pool, dbd_config, song);

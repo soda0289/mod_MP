@@ -52,6 +52,6 @@ typedef struct transcode_thread_t_{
 	int num_working_threads;
 }transcode_thread_t;
 
-int transcode_audio(request_rec* r, db_config* dbd_config,music_query_t* music_query);
+int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query);
 
 #endif /* TRANSCODER_H_ */

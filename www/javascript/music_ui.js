@@ -143,6 +143,44 @@ function music_ui(songs_query, artists_query, albums_query) {
 	}(this),false);
 	this.songs_table = document.getElementById("songs_table");
 	
+	//Create song header if it doesn't exsist
+	var head_row = document.createElement('tr');
+	
+	head_row.id = "song_header";
+	head_row.style.backgroundColor= "black";
+	head_row.style.color = "orange";
+	head_row.style.position = "fixed";
+	
+	
+	
+	var new_col = new Array();
+	new_col[0] = document.createElement('th');
+	new_col[0].style.width = "33%";
+	new_col[0].innerHTML =  "Title";
+	head_row.appendChild(new_col[0]);
+
+	new_col[1] = document.createElement('th');
+	new_col[1].style.width = "33%";
+	new_col[1].innerHTML =  "Album";
+	head_row.appendChild(new_col[1]);
+
+	new_col[2] = document.createElement('th');
+	new_col[2].style.width = "33%";
+	new_col[2].innerHTML =  "Artist";
+	head_row.appendChild(new_col[2]);
+	
+
+	var header_table = new_col[0] = document.createElement('table');
+	header_table.style.width = "100%";
+	header_table.style.position = "fixed";
+	
+	header_table.appendChild(head_row);
+	
+	this.songs_div.appendChild(header_table);
+	
+	
+	
+	
 	this.create_songs_table = function(){
 		this.songs_table = document.createElement('table');
 		this.songs_table.id = "songs_table";
@@ -208,18 +246,82 @@ function music_ui(songs_query, artists_query, albums_query) {
 	}(this);
 }
 
-
-function loadUI(){
+function create_inital_queries(domain){
+	
 	
 	//Create queries for Songs, Artists, and Albums
-	var songs_query = new music_query("mp.attiyat.net", 750, "songs", "song_title", 0, 0, 0,print_song_table);
-	var artists_query = new music_query("mp.attiyat.net", 100, "artists", "artist_name", 0, 0, 0,print_artists);
-	var albums_query = new music_query("mp.attiyat.net", 100, "albums", "album_name", 0, 0, 0,print_albums);
+	var songs_query = new music_query(domain, 750, "songs", "song_title", 0, 0, 0,print_song_table);
+	var artists_query = new music_query(domain, 100, "artists", "artist_name", 0, 0, 0,print_artists);
+	var albums_query = new music_query(domain, 100, "albums", "album_name", 0, 0, 0,print_albums);
 	
 	//Load music ui
 	var music_ui_ctx = new music_ui(songs_query, artists_query, albums_query);
+	music_ui_ctx.domain = domain;
 	
 	load_queries(music_ui_ctx);
+}
+
+
+function loadUI(){
+	var login_box = document.createElement("div");
+	login_box.id = "login_box";
+	login_box.style.position = "absolute";
+	login_box.style.top = "50%";
+	login_box.style.left = "50%";
+	login_box.style.width = "300px";
+	login_box.style.height = "150px";
+	login_box.style.backgroundColor = "white";
+	
+
+	
+	var server_url = document.createElement("input");
+	server_url.id = "server_url"
+	server_url.type = "text";
+	
+	var server_url_div = document.createElement("div");
+	server_url_div.innerHTML = "Server URL: ";
+	server_url_div.appendChild(server_url);
+	login_box.appendChild(server_url_div);
+	
+	
+	
+	var username = document.createElement("input");
+	username.type = "text";
+	
+	var username_div = document.createElement("div");
+	username_div.innerHTML = "User name: ";
+	username_div.appendChild(username);
+	login_box.appendChild(username_div);
+	
+	
+	var password = document.createElement("input");
+	password.type = "password";
+	
+	var password_div = document.createElement("div");
+	password_div.innerHTML = "Passowrd: ";
+	password_div.appendChild(password);
+	login_box.appendChild(password_div);
+	
+	
+	
+	var ok_button = document.createElement("input");
+	ok_button.type = "button";
+	ok_button.value = "OK";
+	ok_button.id = "ok_button"
+	ok_button.onclick = function(event){
+		var server_url = document.getElementById("server_url");
+		var login_box = document.getElementById("login_box");
+		create_inital_queries(server_url.value);
+		login_box.style.visibility = "hidden";
+	}
+	login_box.appendChild(ok_button);
+	
+	
+	
+	
+	
+	var body = document.getElementById("body");
+	body.appendChild(login_box);
 }
 //note to self
 //when you set a varible to a function

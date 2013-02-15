@@ -22,6 +22,7 @@
 #define ERROR_HANDLER_H_
 #define MAX_ERROR_SIZE 1024
 
+#include "apr_shm.h"
 #include "httpd.h"
 
 enum error_type{
@@ -42,7 +43,10 @@ typedef struct {
 	error_message_t messages[1024];
 }error_messages_t;
 
+int init_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file);
+int reattach_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file);
 int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message);
-int print_error_messages(request_rec* r,error_messages_t* error_messages);
+int copy_error_messages(error_messages_t** new,error_messages_t* old, apr_pool_t* pool);
+int print_error_messages(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages);
 
 #endif /* ERROR_HANDLER_H_ */

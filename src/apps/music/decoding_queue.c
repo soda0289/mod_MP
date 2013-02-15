@@ -20,14 +20,18 @@
  *
  */
 
-#include "apr.h"
+
 #include "apr_general.h"
 #include "apr_shm.h"
+
+
 #include "httpd.h"
 #include "decoding_queue.h"
 #include "unixd.h"
 #include "error_handler.h"
 #include "mod_mediaplayer.h"
+#include "apr_global_mutex.h"
+#include "apr_proc_mutex.h"
 
 int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue){
 	apr_status_t rv;
@@ -46,6 +50,7 @@ int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_
 	(*decoding_queue)->queue->tail = -1;
 	(*decoding_queue)->queue->working = 0ull;
 	(*decoding_queue)->queue->waiting = 0ull;
+
 
 	rv = apr_global_mutex_create(&((*decoding_queue)->mutex),"/tmp/mp_decoding_queue_lock",APR_LOCK_DEFAULT,pool);
 	if(rv != APR_SUCCESS){

@@ -32,7 +32,14 @@ apr_status_t connect_database(apr_pool_t* db_pool, error_messages_t* error_messa
 
 	(*dbd_config)->driver_name = "mysql";
 	(*dbd_config)->mysql_parms = "host=127.0.0.1,user=root";
-	(*dbd_config)->pool = db_pool;
+
+	rv = apr_pool_create_ex(&((*dbd_config)->pool), db_pool, NULL, NULL);
+	if (rv != APR_SUCCESS){
+		//Run error function
+		return rv;
+	}
+
+	//(*dbd_config)->pool = db_pool;
 
 	rv = apr_dbd_get_driver(db_pool, (*dbd_config)->driver_name, &((*dbd_config)->dbd_driver));
 	if (rv != APR_SUCCESS){
@@ -40,13 +47,13 @@ apr_status_t connect_database(apr_pool_t* db_pool, error_messages_t* error_messa
 		return rv;
 	}
 
-	rv = apr_dbd_open((*dbd_config)->dbd_driver, db_pool, (*dbd_config)->mysql_parms, &((*dbd_config)->dbd_handle));
+	rv = apr_dbd_open((*dbd_config)->dbd_driver, (*dbd_config)->pool, (*dbd_config)->mysql_parms, &((*dbd_config)->dbd_handle));
 	if (rv != APR_SUCCESS){
 		//Run error function
 		return rv;
 	}
 
-	apr_thread_mutex_create(&((*dbd_config)->mutex),APR_THREAD_MUTEX_DEFAULT,db_pool);
+	apr_thread_mutex_create(&((*dbd_config)->mutex),APR_THREAD_MUTEX_DEFAULT,(*dbd_config)->pool);
 	(*dbd_config)->connected = 1;
 	(*dbd_config)->database_errors = error_messages;
 
@@ -63,9 +70,11 @@ int prepare_database(app_list_t* app_list,db_config* dbd_config){
 	}
 
 	//Setup database configuration
-	error_num = init_db_schema(app_list,"/home/reyad/Workspace/MediaPlayer/sql_tables.xml",dbd_config);
-	if (error_num != 0){
-		return error_num;
+	if(app_list != NULL){
+		error_num = init_db_schema(app_list,"/home/reyad/Workspace/MediaPlayer/sql_tables.xml",dbd_config);
+		if (error_num != 0){
+			return error_num;
+		}
 	}
 	//allocate_app_prepared_statments(app_list,dbd_config);
 
@@ -152,6 +161,12 @@ static int get_insert_last_id (char** id, db_config* dbd_config){
 	}
 
 		return 0;
+}
+
+void close_database(db_config* dbd_config){
+	apr_thread_mutex_destroy(dbd_config->mutex);
+	apr_dbd_close(dbd_config->dbd_driver,dbd_config->dbd_handle);
+	apr_pool_destroy(dbd_config->pool);
 }
 
 static const char* operator_to_string(condition_operator operator){

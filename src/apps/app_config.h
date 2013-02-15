@@ -29,6 +29,10 @@
 #include "error_handler.h"
 
 
+typedef int (*init_app_fnt)(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context);
+typedef int (*reattach_app_fnt)(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context);
+typedef int (*run_query_fnt)(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries,const void* global_context);
+
 struct query_words_{
 	int num_words;
 	const char** words;
@@ -38,12 +42,13 @@ struct query_words_{
 struct app_{
 	const char* id;
 	const char* friendly_name;
+	const void* global_context;
 	query_words_t query_words;
 	apr_array_header_t* db_queries; //Multi Column Queries for Database
 
-	char* query;
-	int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*);
-	int (*run_query)(request_rec* r, app_query,db_config*, apr_dbd_prepared_t****);
+	init_app_fnt init_app;
+	reattach_app_fnt reattach_app;
+	run_query_fnt run_query;
 };
 
 
@@ -57,12 +62,16 @@ struct app_list_{
 	int count;
 	apr_pool_t* pool;  //Pool to allocate Linked List
 	app_node_t* first_node;
+
+
 };
 
 
 
-int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id, int* init_app,int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*),int (*run_query)(request_rec*, app_query,db_config*,apr_dbd_prepared_t****));
+int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id,init_app_fnt init_app, reattach_app_fnt reattach_app, run_query_fnt run_query);
 int app_process_uri(apr_pool_t* pool, const char* uri, app_list_t* app_list, app_t** app);
 int allocate_app_prepared_statments(apr_pool_t* pool, app_t* app);
+int init_apps(app_list_t* app_list,apr_pool_t* global_pool, error_messages_t* error_messages, const char* media_directory);
+int reattach_apps(app_list_t* app_list,apr_pool_t* child_pool, error_messages_t* error_messages);
 
 #endif /* APP_CONFIG_H_ */

@@ -93,13 +93,14 @@ function proccess_query(music_query, music_ui_ctx){
 			var json_object = JSON.parse(String(music_query.xmlhttp.responseText), null);
 		}catch (err){
 			alert("error: " + err + " on request number. URL:" + music_query.url);
+			
 			//Re run query
 			load_query(music_query, music_ui_ctx);
 		}
 		//Is the query running
 		//Did the server list any results
 		
-		if(typeof (json_object.Errors) != 'undefined' && json_object.Errors.length > 0){
+		if(json_object.Errors !== 'undefined' && json_object.Errors.length > 0){
 			for(x in json_object.Errors){
 				var error = json_object.Errors[x];
 				if(error.type == 0){

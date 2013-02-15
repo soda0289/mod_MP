@@ -20,11 +20,12 @@
 
 #include <apr_xml.h>
 #include <stdlib.h>
+#include "db_query_config.h"
 #include "dbd.h"
 #include "db_typedef.h"
 
 
-int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem, const char* attr_name, char** attr_value){
+static int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_name,const char** attr_value){
 	apr_xml_attr* attr;
 	for(attr = elem->attr;attr != NULL;attr = attr->next){
 		if(apr_strnatcmp(attr->name,attr_name) == 0){
@@ -35,7 +36,7 @@ int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem, const char* attr_name, cha
 	return -1;
 }
 
-int read_columns(table_t* table,apr_xml_elem* table_elem, db_config* dbd_config){
+static int read_columns(table_t* table,apr_xml_elem* table_elem, db_config* dbd_config){
 	apr_xml_elem* column_elem;
 	apr_xml_elem* column_elem_child;
 	column_table_t* column;
@@ -74,7 +75,7 @@ int read_columns(table_t* table,apr_xml_elem* table_elem, db_config* dbd_config)
 }
 
 
-int read_tables(apr_xml_elem* tables,db_config* dbd_config){
+static int read_tables(apr_xml_elem* tables,db_config* dbd_config){
 	apr_xml_elem* table_elem;
 	apr_xml_elem* table_elem_child;
 	table_t* table;
@@ -119,7 +120,7 @@ int find_query_by_id(query_t** element, apr_array_header_t*array, const char* id
 	return -1;
 }
 
-int find_table_by_id(table_t** element, apr_array_header_t*array, const char* id){
+static int find_table_by_id(table_t** element, apr_array_header_t*array, const char* id){
 	int i;
 	for(i = 0;i < array->nelts;i++){
 		if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, table_t).id,id)==0){
@@ -130,7 +131,7 @@ int find_table_by_id(table_t** element, apr_array_header_t*array, const char* id
 	return -1;
 }
 
-int find_column_by_id(column_table_t** element, apr_array_header_t*array, const char* id){
+static int find_column_by_id(column_table_t** element, apr_array_header_t*array, const char* id){
 	int i;
 	for(i = 0;i < array->nelts;i++){
 		if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, column_table_t).id,id)==0){
@@ -141,18 +142,7 @@ int find_column_by_id(column_table_t** element, apr_array_header_t*array, const 
 	return -1;
 }
 
-int find_arrary_element_by_id(void** element, apr_array_header_t*array, const char* id){
-	int i;
-	for(i = 0;i < array->nelts;i++){
-		if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, table_t).id,id)==0){
-			*element = &(APR_ARRAY_IDX(array, i, table_t));
-			return 0;
-		}
-	}
-	return -1;
-}
-
-int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){
+static int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){
 	app_node_t* app_node;
 	for(app_node = app_list->first_node;app_node != NULL;app_node = app_node->next){
 		if(apr_strnatcasecmp(id,app_node->app->id) == 0){
@@ -204,7 +194,7 @@ int find_column_from_query_by_friendly_name(query_t* query,const char* friendly_
 	return -1;
 }
 
-int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_config){
+static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_config){
 	apr_xml_elem* query_elem;
 	apr_xml_elem* table_elem;
 	apr_xml_elem* col_elem;
@@ -215,7 +205,7 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 
 	const char* table_id = NULL;
 	const char* column_id = NULL;
-	char* app_id = NULL;
+	const char* app_id = NULL;
 
 	query_t* query;
 	table_t* table;
@@ -224,21 +214,30 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 	column_table_t** column_ptr;
 	int status;
 
-	app_t* app;
+	app_t* app = NULL;
 
 	apr_size_t max_element_size = 512;
 
 
 	//Read each app query and custom parameters
 	for(app_elem = queries->first_child; app_elem != NULL;app_elem = app_elem->next){
-		get_xml_attr(dbd_config->pool,app_elem,"id",&app_id);
-		find_app_by_id(app_list,app_id,&app);
+		status = get_xml_attr(dbd_config->pool,app_elem,"id",&app_id);
+		if(status != 0){
+			return -1;
+		}
+		status = find_app_by_id(app_list,app_id,&app);
+		if(status != 0){
+			return -2;
+		}
 		app->db_queries = apr_array_make(dbd_config->pool,10,sizeof(query_t));
 		//Read queries
 		for(query_elem=app_elem->first_child;query_elem != NULL; query_elem = query_elem->next){
 			if(apr_strnatcmp(query_elem->name,"query") == 0){
 				query = apr_array_push(app->db_queries);
-				get_xml_attr(dbd_config->pool,query_elem,"id",&query->id);
+				status = get_xml_attr(dbd_config->pool,query_elem,"id",&query->id);
+				if(status != 0){
+					return -2;
+				}
 				query->select_columns = apr_array_make(dbd_config->pool,10,sizeof(column_table_t*));
 				query->tables = apr_array_make(dbd_config->pool,10,sizeof(table_t*));
 
@@ -246,6 +245,9 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 				for(query_child_elem = table_elem = query_elem->first_child;table_elem != NULL; query_child_elem = table_elem = table_elem->next){
 					if(apr_strnatcmp(table_elem->name,"table") == 0){
 						get_xml_attr(dbd_config->pool,table_elem,"id",&table_id);
+						if(status != APR_SUCCESS){
+								return -1;
+							}
 						//Find table id in known tables
 						status = find_table_by_id(&table,dbd_config->tables,table_id);
 						if(status != APR_SUCCESS){
@@ -304,8 +306,6 @@ int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_c
 				}
 			}
 		}
-		//Pre allocate space for prepared statements
-		//allocate_app_prepared_statments(dbd_config->pool, app);
 	}
 	return 0;
 }
@@ -356,5 +356,7 @@ int init_db_schema(app_list_t* app_list,char* file_path, db_config* dbd_config){
 		 	}
 		 }
 	 }
+
+	 apr_file_close(xml_file);
 	return 0;
 }

@@ -31,12 +31,12 @@
 #include "apps/music/transcoder.h"
 #include "database/db_query_config.h"
 
-int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
+int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){
 	const char* file_path;
 	int status;
 	apr_status_t rv;
 
-	apr_bucket_brigade* bb;
+	const char* error_header = "Error Playing Song";
 	apr_bucket* b_header;
 	apr_bucket* b_body;
 	apr_finfo_t file_info;
@@ -48,9 +48,6 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 	//create file to save decoded data too
 
 	const char* file_type;
-
-
-	bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
 
 
 	//status = file_path_query(dbd_config,music->query_parameters,music->db_query,&file_path,&file_type,music->error_messages);
@@ -76,29 +73,24 @@ int play_song(db_config* dbd_config, request_rec* r, music_query_t* music){
 
 	//Flac
 	if (file_path == NULL){
-		ap_rprintf(r,"Error with getting file_path from results");
+		add_error_list(music->error_messages,ERROR, error_header,"Error with getting file_path from results");
 		return -1;
 	}
 
-	rv = apr_file_open(&file_desc, file_path, APR_READ, APR_OS_DEFAULT, r->pool);
+	rv = apr_file_open(&file_desc, file_path, APR_READ, APR_OS_DEFAULT, pool);
 	 if (rv != APR_SUCCESS){
-		 ap_rprintf(r,"Error opening file (%s)", file_path);
+		add_error_list(music->error_messages,ERROR, error_header, apr_psprintf(pool,"Error opening file (%s)", file_path));
 		 return -7;
 	 }
-	 rv = apr_stat(&file_info,file_path,APR_FINFO_SIZE,r->pool);
+	 rv = apr_stat(&file_info,file_path,APR_FINFO_SIZE,pool);
 	 //TEMPORARY FILE EXSITS USE IT
-	//Set headers
-	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 
-	ap_set_content_type(r, apr_psprintf(r->pool,"audio/%s",file_type)) ;
-	ap_set_content_length(r, total_length);
-	apr_table_setn(r->headers_out, "Accept-Ranges", "bytes");
+	apr_cpystrn(music->output_content_type ,apr_psprintf(pool,"audio/%s",file_type),255) ;
 
-	apr_brigade_insert_file(bb, file_desc,0,file_info.size,r->pool);
-	 APR_BRIGADE_INSERT_TAIL(bb, apr_bucket_eos_create(bb->bucket_alloc));
-	ap_pass_brigade(r->output_filters, bb);
+	apr_table_add(music->output_headers, "Accept-Ranges", "bytes");
 
-	apr_file_close(file_desc);
+	apr_brigade_insert_file(music->output_bb, file_desc,0,file_info.size,pool);
+	//apr_file_close(file_desc);
 	return 0;
 }
 

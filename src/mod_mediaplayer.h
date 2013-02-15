@@ -32,6 +32,7 @@
 #include "apr_strings.h"
 #include "apr_dbd.h"
 #include <stdlib.h>
+#include "apps/music/dir_sync/dir_sync.h"
 
 
 #include "apps/music/tag_reader.h"
@@ -57,19 +58,16 @@ typedef struct {
 
 	pid_t pid;
 
-	apr_shm_t* dir_sync_shm;
-	const char* dir_sync_shm_file;
+
 
 	apr_shm_t* errors_shm;
 	const char* errors_shm_file;
 
-	const char* queue_shm_file;
 
-	decoding_queue_t* decoding_queue;
+
 
 	error_messages_t* error_messages;
 
-	char num_working_threads; //This is per Proccess
 	app_list_t* apps;
 } mediaplayer_srv_cfg ;
 
@@ -79,7 +77,8 @@ typedef struct{
 }mediaplayer_rec_cfg;
 
 char* json_escape_char(apr_pool_t* pool, const char* string);
-int output_status_json(request_rec* r);
+int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages);
 int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool);
+int run_get_method(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri);
 
 #endif

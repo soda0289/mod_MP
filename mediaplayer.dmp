@@ -1,0 +1,119 @@
+-- MySQL dump 10.13  Distrib 5.5.29, for Linux (x86_64)
+--
+-- Host: localhost    Database: mediaplayer
+-- ------------------------------------------------------
+-- Server version	5.5.29
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `Albums`
+--
+
+DROP TABLE IF EXISTS `Albums`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Albums` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `date_released` datetime DEFAULT NULL,
+  `album_artist` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10560 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Artists`
+--
+
+DROP TABLE IF EXISTS `Artists`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Artists` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `musicbrainz_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3289 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Songs`
+--
+
+DROP TABLE IF EXISTS `Songs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Songs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `musicbrainz_id` varchar(255) DEFAULT NULL,
+  `length` int(11) NOT NULL DEFAULT '0',
+  `play_count` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=186441 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Sources`
+--
+
+DROP TABLE IF EXISTS `Sources`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Sources` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(45) DEFAULT NULL,
+  `path` varchar(255) DEFAULT NULL,
+  `quality` varchar(45) DEFAULT NULL,
+  `mtime` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=57382 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `links`
+--
+
+DROP TABLE IF EXISTS `links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `links` (
+  `artistid` int(11) NOT NULL,
+  `albumid` int(11) NOT NULL,
+  `songid` int(11) NOT NULL,
+  `sourceid` int(11) NOT NULL,
+  `feature` int(11) NOT NULL DEFAULT '0',
+  `track_no` int(11) NOT NULL DEFAULT '0',
+  `disc_no` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`artistid`,`albumid`,`songid`,`sourceid`),
+  KEY `song_id_idx` (`songid`),
+  KEY `album_id_idx` (`albumid`),
+  KEY `fk_links_1_idx` (`artistid`),
+  KEY `fk_links_1_idx1` (`sourceid`),
+  CONSTRAINT `album_id` FOREIGN KEY (`albumid`) REFERENCES `Albums` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `artist_id` FOREIGN KEY (`artistid`) REFERENCES `Artists` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `song_id` FOREIGN KEY (`songid`) REFERENCES `Songs` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `sources_id` FOREIGN KEY (`sourceid`) REFERENCES `Sources` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2013-02-08 15:20:18

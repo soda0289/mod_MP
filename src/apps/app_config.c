@@ -36,35 +36,9 @@
 #include "apr_strings.h"
 #include "apps/app_config.h"
 
-/*
-int allocate_app_prepared_statments(apr_pool_t* pool, app_t* app){
 
-	//apr_dbd_prepared_t**** select = &(app->select);
-	query_t* query;
-	table_t* table;
 
-	int i,j,k,l;
-	int num_columns = 0;
-		int num_queries = app->db_queries->nelts;
-		*select = apr_pcalloc(pool,sizeof(apr_dbd_prepared_t*) * num_queries);
-		for(k =0;k < num_queries;k++){
-			query = &(((query_t*)app->db_queries->elts)[k]);
-			int num_tables = query->tables->nelts;
-			for(i = 0;i < num_tables;i++){
-				table = ((table_t**)query->tables->elts)[i];
-				num_columns += table->columns->nelts;
-			}
-			int num_parameters = num_columns + 3;
-			(*select)[k] = apr_pcalloc(pool,sizeof(apr_dbd_prepared_t*) * num_parameters);
-			for(j = 0;j < num_parameters;j++){
-				(*select)[k][j] = apr_pcalloc(pool,sizeof(apr_dbd_prepared_t*) * num_columns * 2);
-			}
-
-		}
-	return 0;
-}
-*/
-int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id, int* init_app,int (*get_query)(apr_pool_t*, error_messages_t*,app_query*,query_words_t*, apr_array_header_t*),int (*run_query)(request_rec*, app_query,db_config*,apr_dbd_prepared_t****)){
+int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id,init_app_fnt init_app, reattach_app_fnt reattach_app, run_query_fnt run_query){
 	app_node_t* app_node = NULL;
 	app_node_t* app_node_previous = NULL;
 	app_t** app;
@@ -83,10 +57,34 @@ int config_app(app_list_t* app_list,const char* freindly_name, const char* app_i
 		app = &(app_node_previous->next->app);
 	}
 	*app =  apr_pcalloc(app_list->pool,sizeof(app_t));
+
 	(*app)->friendly_name = apr_pstrdup(app_list->pool,freindly_name);
+	(*app)->global_context = NULL;
 	(*app)->id = apr_pstrdup(app_list->pool,app_id);
-	(*app)->get_query = get_query;
+	(*app)->init_app = init_app;
+	(*app)->reattach_app = reattach_app;
 	(*app)->run_query = run_query;
+	return 0;
+}
+
+int reattach_apps(app_list_t* app_list,apr_pool_t* child_pool, error_messages_t* error_messages){
+	app_node_t* app_node;
+
+	for(app_node = app_list->first_node;app_node != NULL;app_node = app_node->next){
+		app_node->app->reattach_app(child_pool,error_messages,app_node->app->global_context);
+	}
+
+	return 0;
+}
+
+int init_apps(app_list_t* app_list,apr_pool_t* global_pool, error_messages_t* error_messages, const char* media_directory){
+	app_node_t* app_node;
+
+	for(app_node = app_list->first_node;app_node != NULL;app_node = app_node->next){
+		app_node->app->init_app(global_pool,error_messages, media_directory, &(app_node->app->global_context));
+	}
+
+
 	return 0;
 }
 

@@ -1,9 +1,7 @@
 function print_song_table(music_ui_ctx){
 	
 	var songs = music_ui_ctx.songs;
-
-	//Create song table if it doesn't exsist
-
+	
 	for(var i = music_ui_ctx.songs_table.rows.length; i < music_ui_ctx.songs.length; i = music_ui_ctx.songs_table.rows.length){
 		var bgcolor = (i%2 == 0)? "#444444" : "#666666";
 

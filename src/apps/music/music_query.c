@@ -28,29 +28,86 @@
 #include "database/db_query_config.h"
 #include "database/db_query_parameters.h"
 
-int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query* query,query_words_t* query_words, apr_array_header_t* db_queries){
+
+int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context){
+	apr_status_t rv;
+	int status;
+	dir_sync_t* dir_sync;
+	apr_thread_t* thread_sync_dir;
+	music_globals_t* music_globals;
+	const char* shared_directory;
+
+
+	*global_context = music_globals = apr_pcalloc(global_pool, sizeof(music_globals_t));
+
+	rv = apr_temp_dir_get(&shared_directory,global_pool);
+
+	music_globals->dir_sync_shm_file = apr_pstrcat(global_pool,shared_directory,"/mp_dir_sync",NULL);
+	music_globals->decoding_queue_shm_file = apr_pstrcat(global_pool,shared_directory,"/mp_decoding_queue",NULL);
+
+
+	status = setup_shared_memory(&(music_globals->dir_sync_shm),sizeof(dir_sync_t),music_globals->dir_sync_shm_file, global_pool);
+	if(status != 0){
+		return status;
+	}
+
+	//Create thread to connect to database and synchronize
+	dir_sync = (dir_sync_t*)apr_shm_baseaddr_get(music_globals->dir_sync_shm);
+
+	dir_sync->pool = global_pool;
+	dir_sync->num_files = NULL;
+	dir_sync->dir_path = external_directory;
+	dir_sync->error_messages = error_messages;
+	dir_sync->sync_progress = 0.0;
+
+	rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync, global_pool);
+	if(rv != APR_SUCCESS){
+		return rv;
+	}
+
+	apr_pool_cleanup_register(global_pool, music_globals->dir_sync_shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
+
+	rv = create_decoding_queue(global_pool, music_globals->decoding_queue_shm_file,&(music_globals->decoding_queue));
+	if(rv != 0){
+		return rv;
+	}
+
+	return 0;
+}
+
+int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context){
+	apr_status_t rv;
+	music_globals_t* music_globals = (music_globals_t*) global_context;
+
+	if(music_globals->dir_sync_shm_file){
+		rv = apr_shm_attach(&(music_globals->dir_sync_shm), music_globals->dir_sync_shm_file, child_pool);
+		if(rv != APR_SUCCESS){
+			return rv;
+		}
+		music_globals->dir_sync_progress = &(((dir_sync_t*) apr_shm_baseaddr_get(music_globals->dir_sync_shm))->sync_progress);
+	}
+
+	rv = reattach_decoding_queue(child_pool, music_globals->decoding_queue, music_globals->decoding_queue_shm_file, error_messages);
+	if(rv != 0){
+		return rv;
+	}
+	return 0;
+}
+
+static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,music_query_t* music_query,query_words_t* query_words, apr_array_header_t* db_queries){
 
 	const char** query_nouns = query_words->words;
 	int status;
-	music_query_t* music_query;
-
-	music_query_t** music_query_ptr = (music_query_t**) query;
+	const char* error_header = "Error With Music Query";
 
 	int num_words;
-	int table_elem;
-	int col_elem;
+
 	int noun_num;
-	int num_columns = 0;
 
-	table_t* table;
 	column_table_t* column;
-
-	query_t* db_query;
 
 	char cus_par_set = 0;//Flag custom parameters set in db query
 
-	*music_query_ptr = apr_pcalloc(pool,sizeof(music_query_t));
-	music_query = *music_query_ptr;
 	music_query->error_messages = error_messages;
 
 
@@ -58,6 +115,7 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 
 	if(query_nouns == NULL || query_nouns[1] == NULL){
 		//Not enough info
+		add_error_list(error_messages, ERROR, error_header, "Query doesn't contain enough words.");
 		return -3;
 	}
 
@@ -76,19 +134,22 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 	}else if(apr_strnatcasecmp(query_nouns[1], "transcode") == 0){
 		music_query->type = TRANSCODE;
 	}else{
-		return -2;
 		//Invlaid type
+		add_error_list(error_messages, ERROR, error_header, apr_pstrcat(pool,"Query type ",query_nouns[1]," is not supported by API.",NULL));
+		return -2;
+
 	}
 
 
 	//We have valid type lets get DB query if set
 	status = find_query_by_id(&(music_query->db_query),db_queries,query_nouns[1]);
 	if(status != 0){
-		//no query found
+		add_error_list(error_messages, ERROR, error_header, apr_pstrcat(pool, "Query type ",query_nouns[1],"is not supported by Database.", NULL ));
 		return -1;
 	}
 
 	if(num_words < 4){
+
 		return 0;
 	}
 
@@ -96,7 +157,7 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 	//Copy array
 	if(music_query->db_query->custom_parameters){
 		cus_par_set = 1;
-	music_query->query_parameters->query_custom_parameters = apr_array_copy(pool,music_query->db_query->custom_parameters);
+		music_query->query_parameters->query_custom_parameters = apr_array_copy(pool,music_query->db_query->custom_parameters);
 	}
 
 	//Look for query parameters; every second uri part
@@ -111,9 +172,9 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 			//found a match continue for loop
 			continue;
 		}
+
+
 		//Look for query parameter (row_count, offset, sort by)
-
-
 		for(sql_clauses =0;sql_clauses < NUM_SQL_CLAUSES;sql_clauses++){
 			if(music_query->query_parameters->query_sql_clauses[sql_clauses].freindly_name == NULL){
 				//Skip null friendly names
@@ -144,6 +205,7 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 		}
 
 		//Query noun is not valid abort
+		add_error_list(error_messages,ERROR,error_header,apr_pstrcat(pool,"Query word ", query_nouns[noun_num], " is not supported by server.", NULL));
 		return -9;
 	}
 
@@ -153,6 +215,7 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 		if(find_column_from_query_by_friendly_name(music_query->db_query,music_query->query_parameters->query_sql_clauses[ORDER_BY].value,&column) == 0){
 			music_query->query_parameters->query_sql_clauses[ORDER_BY].value = apr_pstrcat(pool,column->table->name,".",column->name,NULL);
 		}else{
+			add_error_list(error_messages, ERROR, "Error with query", apr_pstrcat(pool, "Column ",music_query->query_parameters->query_sql_clauses[ORDER_BY].value,"doesn't exists in the database schema.", NULL ));
 			return -20;
 		}
 
@@ -160,99 +223,106 @@ int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,app_query*
 	return 0;
 }
 
-int output_json(request_rec* r, music_query_t* query){
-
-	mediaplayer_rec_cfg* rec_cfg = ap_get_module_config(r->request_config, &mediaplayer_module);
+int output_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query){
 	int print_query_results = 0;
 
-	if(query->db_query == NULL || query->results == NULL || query->results->rows == NULL){
+	if(query->db_query == NULL || query->db_query->id == NULL || query->results == NULL || query->results->rows == NULL){
 		//Heavy debug
 		add_error_list(query->error_messages, ERROR, "Error printing query","URI: %s, query->db_query: %d, query->results: %d, query->results->rows: %d");
 	}else{
 		print_query_results = 1;
 	}
-	//Apply header
-	apr_table_set(r->headers_out, "Access-Control-Allow-Origin", "*");
-	ap_set_content_type(r, "application/json") ;
 
-	ap_rputs(	"{\n",r);
+	apr_brigade_puts(bb, NULL,NULL, "{\n");
 
-	print_error_messages(r, rec_cfg->error_messages);
+	print_error_messages(pool,bb,query->error_messages);
 	if(print_query_results){
 		int row_count = 0;
 		int column_index = 0;
 		row_t row;
 
-		ap_rprintf(r, ",\n\t\"%s\" :[\n",query->db_query->id);
+		apr_brigade_printf(bb, NULL,NULL, ",\n\t\"%s\" :[\n",query->db_query->id);
 
 		for(row_count = 0;row_count < query->results->rows->nelts;row_count++){
 			row = APR_ARRAY_IDX(query->results->rows,row_count,row_t);
-			ap_rputs("\t\t\t{\n",r);
+			apr_brigade_puts(bb, NULL,NULL, "\t\t\t{\n");
 			for(column_index = 0;column_index < query->db_query->select_columns->nelts;column_index++){
-				ap_rprintf(r,"\t\t\t\t\"%s\": \"%s\"",APR_ARRAY_IDX(query->db_query->select_columns,column_index,column_table_t*)->freindly_name,json_escape_char(r->pool,row.results[column_index]));
+				apr_brigade_printf(bb, NULL,NULL, "\t\t\t\t\"%s\": \"%s\"",APR_ARRAY_IDX(query->db_query->select_columns,column_index,column_table_t*)->freindly_name,json_escape_char(pool,row.results[column_index]));
 				if(column_index+1 < query->db_query->select_columns->nelts){
-					ap_rputs(", ",r);
+					apr_brigade_puts(bb, NULL,NULL, ", ");
 				}
-				ap_rputs("\n",r);
+				apr_brigade_puts(bb, NULL,NULL, "\n");
 			}
-			ap_rputs("\t\t\t}",r);
+			apr_brigade_puts(bb, NULL,NULL, "\t\t\t}");
 			if(row_count+1 < query->results->rows->nelts){
-				ap_rputs(",",r);
+				apr_brigade_puts(bb, NULL,NULL, ",");
 			}
 		}
-		ap_rputs("\n\t]",r);
+		apr_brigade_puts(bb, NULL,NULL, "\n\t]");
 	}
-	ap_rputs(	"\n}\n",r);
+	apr_brigade_puts(bb, NULL,NULL, "\n}\n");
 	return 0;
 }
 
-int run_music_query(request_rec* r, app_query app_query,db_config* dbd_config, apr_dbd_prepared_t**** select){
+int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries,const void* global_context){
 	int error_num = 0;
+	int status;
 	//We should check if database is connected somewhere
 
-	music_query_t* music =(music_query_t*)app_query;
+	music_query_t* music_query = apr_pcalloc(pool, sizeof(music_query_t));
 
-	//Why not add some headers
-	apr_table_add(r->headers_out, "Access-Control-Allow-Origin", "*");
 
-	if(music->db_query == NULL){
-		 output_status_json(r);
-		 return OK;
+	status = get_music_query(pool,error_messages, music_query, query_words, db_queries);
+	if(status != 0){
+		output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
+		return OK;
 	}
-	error_num = select_db_range(r->pool,dbd_config, music->query_parameters,music->db_query,&(music->results),music->error_messages);
-	if(error_num != 0){
-		add_error_list(music->error_messages, ERROR,"Select DB Range Error", "Couln't run music query");
-		output_status_json(r);
+	music_query->music_globals = (music_globals_t*) global_context;
+	music_query->output_bb = output_bb;
+	music_query->output_headers = output_headers;
+	music_query->output_content_type = output_content_type;
+
+
+	if(music_query->db_query == NULL){
+		output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
+		return OK;
+	}
+	error_num = select_db_range(pool,dbd_config, music_query->query_parameters,music_query->db_query,&(music_query->results),music_query->error_messages);
+	if(error_num != 0 && music_query->results != NULL){
+		add_error_list(music_query->error_messages, ERROR,"Select DB Range Error", "Couln't run music query");
+		output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
 		return OK;
 	}else{
-		switch(music->type){
-			case SONGS:{
-				output_json(r,music);
-				break;
-			}
-			case ALBUMS:{
-				output_json(r,music);
-				break;
-			}
-			case ARTISTS:{
-				output_json(r,music);
-				break;
-			}
+		switch(music_query->type){
+			case SONGS:
+			case ALBUMS:
+			case ARTISTS:
 			case SOURCES:{
-				output_json(r,music);
+				apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
+				apr_cpystrn(output_content_type, "application/json", 255);
+				error_num = output_json(pool,output_bb,music_query);
 				break;
 			}
 			case PLAY:{
-				//output_json(r,music);
-				play_song(dbd_config,r,music);
+				error_num = play_song(pool,dbd_config,music_query);
+				 if(error_num != 0){
+					 add_error_list(music_query->error_messages, ERROR, "Error playing audio", apr_itoa(pool, error_num));
+					 output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
+				 }
 				break;
 			}
 			case TRANSCODE:{
-				 transcode_audio(r,dbd_config,music);
+				apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
+				apr_cpystrn(output_content_type, "application/json", 255);
+				 error_num = transcode_audio(pool, global_pool, dbd_config,music_query);
+				 if(error_num != 0){
+					 add_error_list(music_query->error_messages, ERROR, "Error transcoding audio", apr_itoa(pool, error_num));
+					 output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
+				 }
 				 break;
 			}
 			default:{
-				output_status_json(r);
+				error_num = output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
 				 break;
 			}
 		}

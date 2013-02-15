@@ -23,6 +23,13 @@
 #ifndef DIR_SYNC_H_
 #define DIR_SYNC_H_
 
+#include "database/dbd.h"
+#include "database/db_typedef.h"
+#include "apps/app_typedefs.h"
+#include "error_handler.h"
+
+
+
 typedef struct {
 	int* num_files;
 

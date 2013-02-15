@@ -58,7 +58,7 @@ function decode_song(song, music_ui_ctx){
 	
 	music_ui_ctx.song_loaded = false;
 	
-	transcode_query = new music_query("mp.attiyat.net", 0, "transcode", null, 0, 0, song.song_id,update_decoding_status);
+	transcode_query = new music_query(music_ui_ctx.domain, 0, "transcode", null, 0, 0, song.song_id,update_decoding_status);
 	var dec_job = new decoding_job(transcode_query, song);
 	
 	//Add to decdoing_job array
@@ -89,7 +89,7 @@ function find_playable_source(song, music_ui_ctx){
 	if(!('sources' in song) || song.sources.length < 1){
 		//song has no sources
 		//Fetch sources
-		var sources_query = new music_query("mp.attiyat.net", 0, "sources", null, 0, 0, song.song_id,sources_query_loaded);
+		var sources_query = new music_query(music_ui_ctx.domain, 0, "sources", null, 0, 0, song.song_id,sources_query_loaded);
 		sources_query.song = song;
 		sources_query.source_type = "ogg";
 	
@@ -121,7 +121,7 @@ function play_song(song, music_ui_ctx){
 
 	music_ui_ctx.playing = 1;
 	
-	music_ui_ctx.audio_ele.src = "http://mp.attiyat.net/music/play/source_id/" + song.sources[0].source_id;
+	music_ui_ctx.audio_ele.src = "http://"+music_ui_ctx.domain+"/music/play/source_id/" + song.sources[0].source_id;
 	music_ui_ctx.audio_ele.load;
 	
 	//scroll to song
