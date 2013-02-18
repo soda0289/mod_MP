@@ -45,29 +45,20 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	music_file* song;
 
 	dir_sync_t* dir_sync = (dir_sync_t*) ptr;
-	db_config* dbd_config;
 	apr_pool_t* pool;
 
-
-	char dbd_error_message[256];
+	char error_message[256];
 
 	//Create sub pool used for sync
 	rv = apr_pool_create_ex(&pool, dir_sync->pool, NULL, NULL);
 	if(rv != APR_SUCCESS){
-		add_error_list(dir_sync->error_messages, ERROR ,"Memory Pool Error", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
+		add_error_list(dir_sync->error_messages, ERROR ,"Memory Pool Error", apr_strerror(rv, error_message, sizeof(error_message)));
 		return 0;
 	}
 
-
-	rv = connect_database(dir_sync->pool, dir_sync->error_messages,&(dbd_config));
-	if(rv != APR_SUCCESS){
-		add_error_list(dir_sync->error_messages, ERROR ,"Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
-		return 0;
-	}
-	dir_sync->dbd_config = dbd_config;
-	status = prepare_database(dir_sync->app_list,dbd_config);
+	status = prepare_database(dir_sync->app_list,dir_sync->dbd_config);
 	if(status != 0){
-		dbd_error = apr_dbd_error(dbd_config->dbd_driver,dbd_config->dbd_handle, status);
+		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver,dir_sync->dbd_config->dbd_handle, status);
 		add_error_list(dir_sync->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
 		return 0;
 	}
@@ -75,7 +66,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	file_list = apr_pcalloc(pool, sizeof(List));
 	dir_sync->num_files = apr_pcalloc(pool, sizeof(int));
 
-	if(dbd_config->connected != 1){
+	if(dir_sync->dbd_config->connected != 1){
 		add_error_list(dir_sync->error_messages, ERROR, "Database not connected","ERROR ERROR");
 		return 0;
 	}
@@ -88,9 +79,9 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		return 0;
 	}
 
-	status = apr_dbd_transaction_start(dbd_config->dbd_driver, pool, dbd_config->dbd_handle,&dbd_config->transaction);
+	status = apr_dbd_transaction_start(dir_sync->dbd_config->dbd_driver, pool, dir_sync->dbd_config->dbd_handle,&(dir_sync->dbd_config->transaction));
 	if(status != 0){
-		dbd_error = apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, status);
+		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver, dir_sync->dbd_config->dbd_handle, status);
 		add_error_list(dir_sync->error_messages,ERROR, "Database error start transaction", dbd_error);
 		return 0;
 	}
@@ -133,8 +124,8 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 			  //We have song get musicbrainz ids
 			  //status = get_musicbrainz_release_id(pool, song, dir_sync->error_messages);
 			  //Update or Insert song
-			  if (dbd_config->connected == 1){
-				  status = sync_song(pool, dbd_config, song);
+			  if (dir_sync->dbd_config->connected == 1){
+				  status = sync_song(pool, dir_sync->dbd_config, song);
 				  if (status != 0){
 					add_error_list(dir_sync->error_messages, ERROR, apr_psprintf(pool,"Failed to sync song:"),  apr_psprintf(pool, "(%d) Song title: %s Song artist: %s song album:%s song file path: %s",status, song->title, song->artist, song->album, song->file->path));
 				  }
@@ -149,15 +140,15 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  files_synced++;
 		  file_list = file_list->next;
 	}
-	status = apr_dbd_transaction_end(dbd_config->dbd_driver, pool, dbd_config->transaction);
+	status = apr_dbd_transaction_end(dir_sync->dbd_config->dbd_driver, pool, dir_sync->dbd_config->transaction);
 	if(status != 0){
-		dbd_error = apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, status);
+		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver, dir_sync->dbd_config->dbd_handle, status);
 		add_error_list(dir_sync->error_messages, ERROR, "Database error couldn't end transaction",dbd_error);
 		return 0;
 	}
 
 
-	apr_dbd_close(dbd_config->dbd_driver,dbd_config->dbd_handle);
+	apr_dbd_close(dir_sync->dbd_config->dbd_driver,dir_sync->dbd_config->dbd_handle);
 	apr_pool_clear(pool);
 	return 0;
 }

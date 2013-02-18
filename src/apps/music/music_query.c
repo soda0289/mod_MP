@@ -37,6 +37,8 @@ int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, 
 	music_globals_t* music_globals;
 	const char* shared_directory;
 
+	char dbd_error_message[256];
+
 
 	*global_context = music_globals = apr_pcalloc(global_pool, sizeof(music_globals_t));
 
@@ -59,6 +61,15 @@ int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, 
 	dir_sync->dir_path = external_directory;
 	dir_sync->error_messages = error_messages;
 	dir_sync->sync_progress = 0.0;
+	dir_sync->dbd_config = NULL;
+
+	//We must connect to the database in the main thread as we have to wait for dynamic module loading
+	// to unlock before forking.
+	rv = connect_database(global_pool, dir_sync->error_messages,&(dir_sync->dbd_config));
+	if(rv != APR_SUCCESS){
+		add_error_list(error_messages, ERROR ,"Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
+		return 0;
+	}
 
 	rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync, global_pool);
 	if(rv != APR_SUCCESS){

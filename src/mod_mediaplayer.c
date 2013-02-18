@@ -168,18 +168,19 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 			init_error_messages(pconf,&(srv_conf->error_messages), srv_conf->errors_shm_file);
 			srv_conf->pid = getpid();
 
-			srv_conf->apps = apr_pcalloc(pconf,sizeof(app_list_t));
-			srv_conf->apps->pool = pconf;
-
-			config_app(srv_conf->apps,"music","music",init_music_query,reattach_music_query,run_music_query);
-			init_apps(srv_conf->apps,pconf, srv_conf->error_messages,srv_conf->external_directory);
-
 
 			rv = apr_dbd_init(pconf);
 			if (rv != APR_SUCCESS){
 			  //Run error function
 			  return rv;
 			}
+
+
+			srv_conf->apps = apr_pcalloc(pconf,sizeof(app_list_t));
+			srv_conf->apps->pool = pconf;
+
+			config_app(srv_conf->apps,"music","music",init_music_query,reattach_music_query,run_music_query);
+			init_apps(srv_conf->apps,pconf, srv_conf->error_messages,srv_conf->external_directory);
 		}
 	}while ((s = s->next) != NULL);
 
@@ -200,7 +201,7 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 		if(srv_conf->enable){
 
 			//Reattach shared memory
-			if(/*getpid() != srv_conf->pid*/1){
+			if(getpid() != srv_conf->pid){
 				//Only when in new proccess do we re attach shared memory
 				//If we are in the same proccess we dont need shared memory do we.
 				//Reattach shared memory
@@ -211,7 +212,7 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 				reattach_apps(srv_conf->apps,child_pool,srv_conf->error_messages);
 
 				//Setup Database Connection
-				rv = connect_database(child_pool, srv_conf->error_messages,&(srv_conf->dbd_config));
+				rv = connect_database(s->process->pconf, srv_conf->error_messages,&(srv_conf->dbd_config));
 				if(rv != APR_SUCCESS){
 					add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
 				}else{

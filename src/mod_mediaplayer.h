@@ -56,6 +56,7 @@ typedef struct {
 	const char* external_directory;
 	db_config* dbd_config;
 
+
 	pid_t pid;
 
 
