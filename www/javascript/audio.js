@@ -185,42 +185,41 @@ function audio_obj(player){
 		
 		//Change Play button to pause
 		player.play_button.src = "svg/pause.svg";
-		player.play_button.onclick = function (){
+		player.play_button.onclick = function (audio_obj){
 			return function(){
-				this.stop_song();
+				audio_obj.stop_song();
 			};
-		};
+		}(this);
 	
-		
+		//Decode next 4 songs in playlist
 		for(var i = 1;i <= 4; i++){
-			var song_next = player.playlist.query.results[this.playing_index + i];
+			var song_next = player.playlist.songs[this.playing_index + i];
 			if(typeof song_next !== 'undefined'){
 				this.player.find_playable_source(song_next, this.domain);
 			}else{
 				break;
 			}
 		}
-	}
+	};
 	
-	this.stop_song = function (player){
-		var audio_ele = document.createElement("audio");
+	this.stop_song = function (){
 		//Change Play button back
-		player.play_button.src = "svg/play.svg";
-		player.play_button.onclick = function (player){
+		this.player.play_button.src = "svg/play.svg";
+		this.player.play_button.onclick = function (player){
 			return function(){
 				//Change Play button to pause
-				player.audio_ele.play();
+				player.audio_obj.audio_ele.play();
 				player.play_button.src = "svg/pause.svg";
 				player.play_button.onclick = function (player){
 					return function(){
-						stop_song(player);
+						player.audio_obj.stop_song();
 					};
-				}(mplayer);
+				}(player);
 				
 			}
-		}(player)
+		}(this.player)
 		
-		player.audio_ele.pause();
+		this.player.audio_obj.audio_ele.pause();
 		
 	}
 }

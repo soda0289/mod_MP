@@ -19,7 +19,7 @@ function playlist(parent_div,music_ui_ctx){
 					}];
 	
 	
-	this.suffle = function (){
+	this.shuffle = function (){
 		//Set playlist songs array to current query results of table
 		this.songs = this.songs_table.query.results;
 		

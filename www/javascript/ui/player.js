@@ -61,7 +61,7 @@ function player(playlist, music_ui_ctx){
 		return function(event){
 			//Play first song
 			player.audio_obj.playing_index = 0;
-			player.audio_obj.play_song(player.playlist.query.results[0]);
+			player.audio_obj.play_song(player.playlist.songs[0]);
 		}
 	}(this);
 	this.player_div.appendChild(this.play_button);
@@ -72,18 +72,18 @@ function player(playlist, music_ui_ctx){
 	this.previous_button.src = "svg/previous.svg";
 	this.previous_button.style.display = "block-inline";
 	//this.previous_button.style.vertical-align = "middle";
-	this.previous_button.onclick = function (music_ui_ctx){
+	this.previous_button.onclick = function (player){
 		return function(event){
-			unhighlight_song(music_ui_ctx);
-			music_ui_ctx.playing = 0;
+			//unhighlight_song(music_ui_ctx);
+			player.audio_obj.playing = 0;
 			
-			music_ui_ctx.playing_index -= 1;
-			if(music_ui_ctx.playing_index< 0){
-				music_ui_ctx.playing_index = playlist.query.results.length -1;
+			player.audio_obj.playing_index -= 1;
+			if(player.audio_obj.playing_index< 0){
+				player.audio_obj.playing_index = playlist.songs.length -1;
 			}
-			play_song(playlist.query.results[music_ui_ctx.playing_index], music_ui_ctx);
+			player.audio_obj.play_song(player.playlist.songs[player.audio_obj.playing_index]);
 		}
-	}(playlist, music_ui_ctx);
+	}(this);
 	this.player_div.appendChild(this.previous_button);
 	
 	this.next_button = document.createElement("img");
@@ -93,7 +93,7 @@ function player(playlist, music_ui_ctx){
 	this.next_button.onclick = function (player){
 		return function(event){
 			//play next song
-			player.audio_obj.play_song(player.playlist.query.results[player.get_next_song_index(music_ui_ctx)]);
+			player.audio_obj.play_song(player.playlist.songs[player.get_next_song_index(music_ui_ctx)]);
 		}
 	}(this);
 	this.player_div.appendChild(this.next_button);
