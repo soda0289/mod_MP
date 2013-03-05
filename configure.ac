@@ -1,6 +1,5 @@
 dnl adjust for the name and version of your 
 AC_INIT(mod_mediaplayer, 0.0.1)
-MAKE_CONFIG_NICE(config.nice)
 AC_PREREQ(2.53)
 dnl adjust for your main source file name
 AC_CONFIG_SRCDIR([src/mod_mediaplayer.c])
@@ -20,7 +19,7 @@ AC_PROG_INSTALL
 dnl if you are using a different version of apache, or don't want to require
 dnl the latest, set this to something else.
 AP_VERSION=2.2.4
-CHECK_APACHE(,$AP_VERSION,
+CHECK_APACHE(,[$AP_VERSION],
     :,:,
     AC_MSG_ERROR([*** Apache version $AP_VERSION not found!])
 )

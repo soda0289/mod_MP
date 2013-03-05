@@ -56,6 +56,7 @@ AC_ARG_ENABLE(
         AP_BINDIR="`$APXS_BIN -q bindir 2>/dev/null`"
         AP_SBINDIR="`$APXS_BIN -q sbindir 2>/dev/null`"
 
+	#AP_PROG_PATH="${AP_SBINGDIR}/`$APXS_BIN -q progname 2>/dev/null`"
         APXS_CFLAGS=""
         for flag in CFLAGS EXTRA_CFLAGS EXTRA_CPPFLAGS NOTEST_CFLAGS; do
             APXS_CFLAGS="$APXS_CFLAGS `$APXS_BIN -q $flag 2>/dev/null`"
@@ -89,6 +90,8 @@ AC_ARG_ENABLE(
                     AC_MSG_RESULT(yes)
                     AC_DEFINE(WITH_APACHE20,1,[Define to 1 if we are compiling with Apache 2.0.x])
                     AP_VERSION="2.0"
+		    #AP2_VERSION=[`AP_PROG_PATH  -V | sed 's/@<:@://@:>@/ /g' | awk '/version/ { print @S|@4 }' | awk -F. '{ printf("%s.%s", @S|@1, @S|@2) }'`]
+		    #AC_DEFINE(APACHE_VERSION,[$AP2_VERSIO]N,[Define to the actual apache version])
                     APXS_EXTENSION=.la
                     AP_CFLAGS="$AP_CFLAGS $APU_INCLUDES $APR_INCLUDES"
                     AP_CPPFLAGS="$AP_CPPFLAGS $APU_INCLUDES $APR_INCLUDES"

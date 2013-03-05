@@ -9614,4 +9614,3 @@ AC_SUBST([am__untar])
 
 m4_include([m4/apache.m4])
 m4_include([m4/apache_test.m4])
-m4_include([m4/config_nice.m4])

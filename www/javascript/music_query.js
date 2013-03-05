@@ -1,21 +1,29 @@
 
 //Music query object
-function music_query(hostname, num_results, type, sort_by,artist_id,album_id, song_id,print_results_function){
+function music_query(hostname, num_results, type,print_results_function){
 	this.running = 1;
 	this.count = 0;
+	
+	this.results = [];
 	this.num_results = num_results;
 	
 	this.hostname = hostname;
 	this.type = type;
-	this.sort_by = sort_by;
-	this.artist_id = artist_id;
-	this.album_id = album_id;
-	this.song_id = song_id;
+	this.sort_by;
+	this.artist_id;
+	this.album_id ;
+	this.song_id;
 	this.source_id;
 	this.result = null;
 	
 	this.source_type = "ogg";
 	this.url;
+	
+	this.reset = function () {
+		this.count = 0;
+		this.running = 1;
+		this.results = [];
+	}
 	
 	
 	this.set_url = function (){
@@ -35,7 +43,7 @@ function music_query(hostname, num_results, type, sort_by,artist_id,album_id, so
 		if (this.source_id > 0) {
 			this.url += "/source_id/" + this.source_id;
 		}
-		if (this.sort_by !== null) {
+		if (this.sort_by !== null && this.sort_by !== undefined) {
 			this.url += "/sort_by/" + this.sort_by;
 		}
 		if (type === "sources"){
@@ -57,37 +65,28 @@ function music_query(hostname, num_results, type, sort_by,artist_id,album_id, so
 	this.print_results = print_results_function;
 }
 
-function concat_query_results(music_query, music_ui_ctx, json_object){
+function concat_query_results(music_query, json_object){
 	var json_length;
-	switch (music_query.type){
-	case "songs":
-		music_ui_ctx.songs = music_ui_ctx.songs.concat(json_object.songs);
-		json_length = json_object.songs.length; 
-		break;
-	case "artists":
-		music_ui_ctx.artists = music_ui_ctx.artists.concat(json_object.artists);
-		json_length = json_object.artists.length;
-		break;
-	case "albums":
-		music_ui_ctx.albums = music_ui_ctx.albums.concat(json_object.albums);
-		json_length = json_object.albums.length;
-		break;
-	case "sources":
-		music_ui_ctx.sources = music_ui_ctx.sources.concat(json_object.sources);
-		json_length = json_object.sources.length;
-		break;
-	case "transcode":
-		music_query.result = json_object.decoding_job;
-		json_length = json_object.decoding_job.length;
-		break;
+	
+	var object_name;
+
+
+	if(music_query.type === "transcode"){
+		object_name = "decoding_job";
+	}else{
+		object_name = music_query.type;
 	}
+	
+	
+	music_query.results = music_query.results.concat(json_object[object_name]);
+	json_length = json_object[object_name].length; 
 	//If nothing was returned or if the amount returned is less than num expected stop query
 	if (json_length === 0 || music_query.num_results === 0 || music_query.num_results > json_length){
 		music_query.running = 0;
 	}
 }
 
-function proccess_query(music_query, music_ui_ctx){
+function proccess_query(music_query){
 	if (music_query.xmlhttp.readyState == 4 && music_query.xmlhttp.status == 200){
 		try{
 			var json_object = JSON.parse(String(music_query.xmlhttp.responseText), null);
@@ -95,7 +94,7 @@ function proccess_query(music_query, music_ui_ctx){
 			alert("error: " + err + " on request number. URL:" + music_query.url);
 			
 			//Re run query
-			load_query(music_query, music_ui_ctx);
+			load_query(music_query);
 		}
 		//Is the query running
 		//Did the server list any results
@@ -112,20 +111,20 @@ function proccess_query(music_query, music_ui_ctx){
 			}
 		
 		}
-		concat_query_results(music_query, music_ui_ctx, json_object);
+		concat_query_results(music_query, json_object);
 		if(music_query.print_results != null){
-			music_query.print_results(music_ui_ctx);
+			music_query.print_results(music_query.results);
 		}
 		
 		if(music_query.running == 1){
 			music_query.count++;
-			load_query(music_query, music_ui_ctx);
+			load_query(music_query);
 		}
 		
 	}
 }
 
-function load_query(music_query, music_ui_ctx){
+function load_query(music_query){
 
 		music_query.set_url();
 		var upper = music_query.num_results;
@@ -143,22 +142,16 @@ function load_query(music_query, music_ui_ctx){
 		music_query.xmlhttp.open("GET",url,true); //Async
 		
 		//Since each xmlhttp request is an array we pass the index of it to the new function
-		music_query.xmlhttp.onreadystatechange=function(music_query, music_ui_ctx){
+		music_query.xmlhttp.onreadystatechange=function(music_query){
 			//we then must return a function that takes no parameters to satisfy onreadystatechange
 			return function(){
-				proccess_query(music_query, music_ui_ctx);
+				proccess_query(music_query);
 			}
-		}(music_query, music_ui_ctx);
+		}(music_query);
 		
 		try{
 			music_query.xmlhttp.send();
 		}catch(error){
 			console.log("Error could send query:" + error);
 		}
-}
-
-function load_queries(music_ui_ctx){
-	load_query(music_ui_ctx.songs_query, music_ui_ctx);
-	load_query(music_ui_ctx.albums_query, music_ui_ctx);
-	load_query(music_ui_ctx.artists_query, music_ui_ctx);
 }

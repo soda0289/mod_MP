@@ -123,7 +123,7 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
 	buf.shm_ctime = t;
 	buf.shm_perm.gid = ap_unixd_config.group_id;
 	buf.shm_perm.uid = ap_unixd_config.user_id;
-	buf.shm_perm.mode = 0664;
+	buf.shm_perm.mode = 0666;
 	status = shmctl(shm_id, IPC_SET, &buf);
 	if(status != 0){
 		return -3;

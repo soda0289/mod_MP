@@ -2253,24 +2253,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-  echo configure: creating config.nice
-  rm -f config.nice
-  cat >config.nice<<EOF
-#! /bin/sh
-#
-# Created by configure
-
-EOF
-
-  for arg in $0 "$@"; do
-    if test "$arg" != "--no-create" -a "$arg" != "--no-recursion"; then
-        echo "\"$arg\" \\" >> config.nice
-    fi
-  done
-  echo '"$@"' >> config.nice
-  chmod +x config.nice
-
-
 
 ac_aux_dir=
 for ac_dir in config "$srcdir"/config; do
@@ -15730,6 +15712,7 @@ fi
         AP_BINDIR="`$APXS_BIN -q bindir 2>/dev/null`"
         AP_SBINDIR="`$APXS_BIN -q sbindir 2>/dev/null`"
 
+	#AP_PROG_PATH="${AP_SBINGDIR}/`$APXS_BIN -q progname 2>/dev/null`"
         APXS_CFLAGS=""
         for flag in CFLAGS EXTRA_CFLAGS EXTRA_CPPFLAGS NOTEST_CFLAGS; do
             APXS_CFLAGS="$APXS_CFLAGS `$APXS_BIN -q $flag 2>/dev/null`"
@@ -15845,6 +15828,8 @@ $as_echo "yes" >&6; }
 $as_echo "#define WITH_APACHE20 1" >>confdefs.h
 
                     AP_VERSION="2.0"
+		    #AP2_VERSION=[`AP_PROG_PATH  -V | sed 's/[://]/ /g' | awk '/version/ { print $4 }' | awk -F. '{ printf("%s.%s", $1, $2) }'`]
+		    #AC_DEFINE(APACHE_VERSION,[$AP2_VERSIO]N,[Define to the actual apache version])
                     APXS_EXTENSION=.la
                     AP_CFLAGS="$AP_CFLAGS $APU_INCLUDES $APR_INCLUDES"
                     AP_CPPFLAGS="$AP_CPPFLAGS $APU_INCLUDES $APR_INCLUDES"

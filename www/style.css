@@ -23,3 +23,14 @@ background: linear-gradient(to bottom,  #000000 0%,#222222 80%,#000000 100%); /*
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
 color: white;
 }
+
+#songs_table{
+	color: white;
+}
+
+#songs_table .even{
+	background: #222222;
+}
+#songs_table .odd{
+	background: #666666;
+}

@@ -32,6 +32,56 @@
 #include "decoding_queue.h"
 #include "music_typedefs.h"
 
+static int add_new_source_db(apr_pool_t* pool, db_config* dbd_config,decoding_job_t* decoding_job,error_messages_t* error_messages){
+	apr_status_t rv;
+	int error_num = 0;
+	const char* args[4];
+	const char* links_args[7];
+
+	char* source_id = NULL;
+
+	char error_message[512];
+
+	//add row to soruce table
+	rv = apr_thread_mutex_lock(dbd_config->mutex);
+	if(rv != APR_SUCCESS){
+		add_error_list(error_messages,ERROR,"Error locking dbd mutex",apr_strerror(rv, error_message,512));
+	}
+
+	//`type`, `path`, `quality`,`mtime`
+	args[0] = (decoding_job)->output_file_type;
+	args[1] = (decoding_job)->output_file_path;
+	args[2] = apr_itoa(pool, 100);
+	args[3] = apr_ltoa(pool,1337);
+	error_num = insert_db(&source_id, dbd_config, dbd_config->statements.add_source, args);
+	//Check if insert db worked
+	if (error_num != 0 || source_id == NULL){
+		add_error_list(error_messages, ERROR, "DBD insert_source error(Encoder Thread)", apr_dbd_error(dbd_config->dbd_driver, dbd_config->dbd_handle, error_num));
+		error_num = -1;
+	}else{//ADD LINK
+		//artistid, albumid, songid, sourceid, feature, track_no, disc_no
+		links_args[0] = (decoding_job)->artist_id;
+		links_args[1] =(decoding_job)->album_id;
+		links_args[2] =(decoding_job)->song_id;
+		links_args[3] = source_id;
+		links_args[4] = "0";
+		links_args[5] = "0";
+		links_args[6] = "0";
+
+		error_num = insert_db(NULL, dbd_config, dbd_config->statements.add_link, links_args);
+		if (error_num != 0){
+			add_error_list(error_messages, ERROR, "DBD insert_link error:", apr_dbd_error(dbd_config->dbd_driver,dbd_config->dbd_handle, error_num));
+			error_num = -2;
+		}
+	}
+	rv = apr_thread_mutex_unlock(dbd_config->mutex);
+	if(rv != APR_SUCCESS){
+		add_error_list(error_messages,ERROR,"Error unlocking dbd mutex",apr_strerror(rv, error_message,512));
+	}
+
+	return error_num;
+}
+
 
 
 void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
@@ -56,10 +106,6 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 	UNLOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex, transcode_thread->decoding_queue->error_messages,"Error Unlocking encoding thread");
 
 	while((decoding_job = get_decoding_job_queue(transcode_thread->decoding_queue, transcode_thread->decoding_queue->error_messages)) != NULL){
-		const char* args[4];
-		const char* links_args[7];
-
-		char* source_id;
 		input_file_t input_file;
 
 		int (*encoder_function)(apr_pool_t*, input_file_t*,encoding_options_t*,const char*);
@@ -112,43 +158,10 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 			goto remove_from_queue;
 		}
 
-		//add row to soruce table
-		rv = apr_thread_mutex_lock(transcode_thread->dbd_config->mutex);
-		if(rv != APR_SUCCESS){
-			add_error_list(transcode_thread->decoding_queue->error_messages,ERROR,"Error locking dbd",apr_strerror(rv, error_message,512));
+		status = add_new_source_db(pool, transcode_thread->dbd_config, decoding_job, transcode_thread->decoding_queue->error_messages);
+		if(status != 0){
+			add_error_list(transcode_thread->error_messages,ERROR,"Failed to add decoding job to database",apr_itoa(pool,status));
 		}
-		//`type`, `path`, `quality`,`mtime`
-		args[0] = (decoding_job)->output_file_type;
-		args[1] = (decoding_job)->output_file_path;
-		args[2] = apr_itoa(pool, 100);
-		args[3] = apr_ltoa(pool,1337);
-		error_num = insert_db(&source_id, transcode_thread->dbd_config, transcode_thread->dbd_config->statements.add_source, args);
-		if (error_num != 0){
-			add_error_list(transcode_thread->error_messages, ERROR, "DBD insert_source error(Encoder Thread)", apr_dbd_error(transcode_thread->dbd_config->dbd_driver, transcode_thread->dbd_config->dbd_handle, error_num));
-			goto remove_from_queue;
-		}
-
-
-
-		//artistid, albumid, songid, sourceid, feature, track_no, disc_no
-		links_args[0] = (decoding_job)->artist_id;
-		links_args[1] =(decoding_job)->album_id;
-		links_args[2] =(decoding_job)->song_id;
-		links_args[3] = source_id;
-		links_args[4] = "0";
-		links_args[5] = "0";
-		links_args[6] = "0";
-
-		error_num = insert_db(NULL, transcode_thread->dbd_config, transcode_thread->dbd_config->statements.add_link, links_args);
-		if (error_num != 0){
-			add_error_list( transcode_thread->error_messages, ERROR, "DBD insert_link error:", apr_dbd_error( transcode_thread->dbd_config->dbd_driver,  transcode_thread->dbd_config->dbd_handle, error_num));
-			goto remove_from_queue;
-		}
-		rv = apr_thread_mutex_unlock(transcode_thread->dbd_config->mutex);
-		if(rv != APR_SUCCESS){
-			add_error_list(transcode_thread->decoding_queue->error_messages,ERROR,"Error unlocking dbd",apr_strerror(rv, error_message,512));
-		}
-
 		remove_from_queue:
 
 		LOCK_CHECK_ERRORS(transcode_thread->decoding_queue->mutex, transcode_thread->decoding_queue->error_messages,"Error Locking encoding thread");
@@ -297,7 +310,10 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 		return -21;
 	}
 
-
+	if(music_query->query_parameters == NULL){
+		add_error_list(music_query->error_messages,ERROR,error_header,"No parameters given in query");
+		return -98;
+	}
 
 	//Setup decoding job
 	status = find_custom_parameter_by_friendly(music_query->query_parameters->query_custom_parameters,"output_type",&output_type_parameter);
