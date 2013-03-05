@@ -85,6 +85,14 @@ static const char* mediaplayer_set_external_dir (cmd_parms* cmd, void* cfg, cons
 	return NULL;
 }
 
+static const char* mediaplayer_set_db_schema (cmd_parms* cmd, void* cfg, const char* arg){
+
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(cmd->server->module_config, &mediaplayer_module);
+
+	srv_conf->db_schema_xml = arg;
+	return NULL;
+}
+
 int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool){
 	apr_status_t rv;
     apr_uid_t uid;
@@ -216,7 +224,7 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 				if(rv != APR_SUCCESS){
 					add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
 				}else{
-					status = prepare_database(srv_conf->apps,srv_conf->dbd_config);
+					status = prepare_database(srv_conf->apps,srv_conf->dbd_config, srv_conf->db_schema_xml);
 					if(status != 0){
 						dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
 						add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
@@ -356,9 +364,10 @@ static int mediaplayer_handler(request_rec* r) {
 
 /*Define Configuration file parameters*/
 static const command_rec mediaplayer_cmds[] = {
-		AP_INIT_FLAG("Mediaplayer", mediaplayer_set_enable, NULL, RSRC_CONF, "Enable mod_mediaplayer on server(On/Off"),
-		AP_INIT_TAKE1("Music_Dir", mediaplayer_set_external_dir, NULL, RSRC_CONF, "Directory containing media files") ,
-  { NULL }
+	AP_INIT_FLAG("Mediaplayer", mediaplayer_set_enable, NULL, RSRC_CONF, "Enable mod_mediaplayer on server(On/Off"),
+	AP_INIT_TAKE1("Music_Dir", mediaplayer_set_external_dir, NULL, RSRC_CONF, "Directory containing media files") ,
+	AP_INIT_TAKE1("DB_Schema", mediaplayer_set_db_schema, NULL, RSRC_CONF, "XML File of DB Schema used by apps to locate data in DB") ,
+	{ NULL }
 };
 
 /* Hook our handler into Apache at startup */
@@ -368,12 +377,13 @@ static void mediaplayer_hooks(apr_pool_t* pool) {
 	ap_hook_handler(mediaplayer_handler, NULL, NULL, APR_HOOK_MIDDLE) ;
 }
 
+/*Define apache module*/
 module AP_MODULE_DECLARE_DATA mediaplayer_module = {
-        STANDARD20_MODULE_STUFF,
-        NULL,
-        NULL,
-        mediaplayer_config_srv,
-        NULL,
-        mediaplayer_cmds,
-        mediaplayer_hooks
+	STANDARD20_MODULE_STUFF,
+	NULL,
+	NULL,
+	mediaplayer_config_srv,
+	NULL,
+	mediaplayer_cmds,
+	mediaplayer_hooks
 } ;

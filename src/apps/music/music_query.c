@@ -36,6 +36,7 @@ int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, 
 	apr_thread_t* thread_sync_dir;
 	music_globals_t* music_globals;
 	const char* shared_directory;
+	const char* dbd_error;
 
 	char dbd_error_message[256];
 
@@ -68,7 +69,14 @@ int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, 
 	rv = connect_database(global_pool, dir_sync->error_messages,&(dir_sync->dbd_config));
 	if(rv != APR_SUCCESS){
 		add_error_list(error_messages, ERROR ,"Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
-		return 0;
+		return -5;
+	}
+
+	status = prepare_database(NULL,dir_sync->dbd_config, NULL);
+	if(status != 0){
+		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver,dir_sync->dbd_config->dbd_handle, status);
+		add_error_list(dir_sync->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
+		return -6;
 	}
 
 	rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync, global_pool);

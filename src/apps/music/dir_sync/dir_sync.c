@@ -56,13 +56,6 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		return 0;
 	}
 
-	status = prepare_database(dir_sync->app_list,dir_sync->dbd_config);
-	if(status != 0){
-		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver,dir_sync->dbd_config->dbd_handle, status);
-		add_error_list(dir_sync->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
-		return 0;
-	}
-
 	file_list = apr_pcalloc(pool, sizeof(List));
 	dir_sync->num_files = apr_pcalloc(pool, sizeof(int));
 

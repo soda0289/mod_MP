@@ -311,7 +311,7 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 }
 
 
-int init_db_schema(app_list_t* app_list,char* file_path, db_config* dbd_config){
+int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config){
 	apr_xml_parser* xml_parser;
 	apr_xml_doc* xml_doc;
 	apr_xml_elem* xml_elem;

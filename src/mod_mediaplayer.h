@@ -54,19 +54,14 @@ module AP_MODULE_DECLARE_DATA mediaplayer_module;
 typedef struct {
 	int enable;
 	const char* external_directory;
+	const char* db_schema_xml;
 	db_config* dbd_config;
 
 
 	pid_t pid;
 
-
-
 	apr_shm_t* errors_shm;
 	const char* errors_shm_file;
-
-
-
-
 	error_messages_t* error_messages;
 
 	app_list_t* apps;

@@ -26,7 +26,7 @@
 
 #define SUCCESS 0
 
-int init_db_schema(app_list_t* app_list,char* file_path, db_config* dbd_config);
+int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config);
 int find_query_by_id(query_t** element, apr_array_header_t*array, const char* id);
 int find_column_from_query_by_friendly_name(query_t* query,const char* friendly_name, column_table_t** column);
 int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,query_t* query, const char* table_id, const char* column_id);

@@ -25,7 +25,7 @@
 #include "database/db_typedef.h"
 
 
-apr_status_t connect_database(apr_pool_t* db_pool, error_messages_t* error_messages,db_config** dbd_config){
+apr_status_t connect_database(apr_pool_t* db_pool,error_messages_t* error_messages,db_config** dbd_config){
 	apr_status_t rv;
 
 	*dbd_config = apr_pcalloc(db_pool, sizeof(db_config));
@@ -60,7 +60,7 @@ apr_status_t connect_database(apr_pool_t* db_pool, error_messages_t* error_messa
 	return rv;
 }
 
-int prepare_database(app_list_t* app_list,db_config* dbd_config){
+int prepare_database(app_list_t* app_list,db_config* dbd_config, const char* db_schema_file){
 	int error_num = 0;
 
 	//Set Databse name
@@ -69,13 +69,14 @@ int prepare_database(app_list_t* app_list,db_config* dbd_config){
 		return error_num;
 	}
 
-	//Setup database configuration
-	if(app_list != NULL){
-		error_num = init_db_schema(app_list,"/home/reyad/Workspace/MediaPlayer/sql_tables.xml",dbd_config);
+
+	if(app_list != NULL && db_schema_file != NULL){
+		error_num = init_db_schema(app_list,db_schema_file,dbd_config);
 		if (error_num != 0){
 			return error_num;
 		}
 	}
+
 	//allocate_app_prepared_statments(app_list,dbd_config);
 
 	error_num = apr_dbd_prepare(dbd_config->dbd_driver, dbd_config->pool, dbd_config->dbd_handle, "SELECT LAST_INSERT_ID();",NULL, &(dbd_config->statements.select_last_id));
