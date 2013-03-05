@@ -290,6 +290,10 @@ int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade
 
 	music_query_t* music_query = apr_pcalloc(pool, sizeof(music_query_t));
 
+	if(db_queries == NULL){
+		output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
+		return OK;
+	}
 
 	status = get_music_query(pool,error_messages, music_query, query_words, db_queries);
 	if(status != 0){
