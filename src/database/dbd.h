@@ -51,7 +51,7 @@ struct column_table_{
 
 
 
-struct query_{
+struct db_query_{
 	const char* id;
 	int num_columns;
 	apr_array_header_t* tables;
@@ -110,10 +110,11 @@ apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages
 int prepare_database(app_list_t* app_list,db_config* dbd_config, const char* db_schema_file);
 void close_database(db_config* dbd_config);
 int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song);
-int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);
+int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, db_query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);
 int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);
-int get_column_results_for_row(query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result);
+int get_column_results_for_row(db_query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result);
 int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args);
+int output_db_result_json(results_table_t* results, db_query_t* db_query,apr_pool_t* pool,apr_bucket_brigade* bb);
 
 #endif /* DBD_H_ */
 

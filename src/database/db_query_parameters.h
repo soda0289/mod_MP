@@ -31,7 +31,8 @@ typedef enum{
 	LIKE,
 	GREATER,
 	LESS,
-	BETWEEN
+	BETWEEN,
+	IN
 }condition_operator;
 
 typedef enum{
@@ -81,6 +82,6 @@ struct query_parameters_{
 int init_query_parameters(apr_pool_t* pool, query_parameters_t** query_parameters);
 void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname);
 int find_custom_parameter_by_friendly(apr_array_header_t*,const char* friendly_name, custom_parameter_t** custom_parameter);
-int add_where_query_parameter(query_parameters_t* query_parameters,column_table_t* column,const char* condition);
+int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition);
 
 #endif /* DB_QUERY_PARAMETERS_H_ */

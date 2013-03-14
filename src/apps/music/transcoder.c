@@ -84,7 +84,7 @@ static int add_new_source_db(apr_pool_t* pool, db_config* dbd_config,decoding_jo
 
 
 
-void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
+static void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 	int status, error_num;
 	transcode_thread_t* transcode_thread = (transcode_thread_t*)ptr;
 	apr_pool_t* pool = transcode_thread->pool;
@@ -181,7 +181,7 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 	return 0;
 }
 
-int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db_config* dbd_config,query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages){
+static int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db_config* dbd_config,db_query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages){
 	//Check database
 	results_table_t* results_table;
 	query_parameters_t* query_parameters;
@@ -190,8 +190,8 @@ int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db
 
 	init_query_parameters(pool,&query_parameters);
 
-	add_where_query_parameter(query_parameters,song_id_col,song_id);
-	add_where_query_parameter(query_parameters,type,output_type);
+	add_where_query_parameter(pool, query_parameters,song_id_col,song_id);
+	add_where_query_parameter(pool, query_parameters,type,output_type);
 	status = select_db_range(pool, dbd_config,query_parameters,db_query,&results_table,error_messages);
 	if(status != 0){
 		 return -11;

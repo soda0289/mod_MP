@@ -22,7 +22,7 @@ function create_inital_queries(domain){
 	//Initalize UI
 	var playlist_if = new playlist(music_window, music_ui_ctx);
 	var player_if = new player(playlist_if, music_ui_ctx);
-	playlist_if.player = player_if;
+
 	
 	music_window.appendChild(player_if.div);
 

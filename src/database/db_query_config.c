@@ -109,11 +109,11 @@ static int read_tables(apr_xml_elem* tables,db_config* dbd_config){
 	return 0;
 }
 
-int find_query_by_id(query_t** element, apr_array_header_t*array, const char* id){
+int find_query_by_id(db_query_t** element, apr_array_header_t*array, const char* id){
 	int i;
 	for(i = 0;i < array->nelts;i++){
-		if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, query_t).id,id)==0){
-			*element = &(APR_ARRAY_IDX(array, i, query_t));
+		if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, db_query_t).id,id)==0){
+			*element = &(APR_ARRAY_IDX(array, i, db_query_t));
 			return 0;
 		}
 	}
@@ -153,7 +153,7 @@ static int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){
 	return -1;
 }
 
-int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,query_t* query, const char* table_id, const char* column_id){
+int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id){
 	int column_index;
 	column_table_t* column;
 
@@ -172,7 +172,7 @@ int find_select_column_from_query_by_table_id_and_query_id(column_table_t** sele
 }
 
 //long function name
-int find_column_from_query_by_friendly_name(query_t* query,const char* friendly_name, column_table_t** column){
+int find_column_from_query_by_friendly_name(db_query_t* query,const char* friendly_name, column_table_t** column){
 	table_t* table;
 	column_table_t* column_temp;
 	int table_index, col_index;
@@ -207,11 +207,9 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 	const char* column_id = NULL;
 	const char* app_id = NULL;
 
-	query_t* query;
-	table_t* table;
-	table_t** table_ptr;
-	column_table_t* column;
-	column_table_t** column_ptr;
+	db_query_t* query;
+
+
 	int status;
 
 	app_t* app = NULL;
@@ -229,7 +227,7 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 		if(status != 0){
 			return -2;
 		}
-		app->db_queries = apr_array_make(dbd_config->pool,10,sizeof(query_t));
+		app->db_queries = apr_array_make(dbd_config->pool,10,sizeof(db_query_t));
 		//Read queries
 		for(query_elem=app_elem->first_child;query_elem != NULL; query_elem = query_elem->next){
 			if(apr_strnatcmp(query_elem->name,"query") == 0){
@@ -242,8 +240,12 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 				query->tables = apr_array_make(dbd_config->pool,10,sizeof(table_t*));
 
 				//Read tables used in query
-				for(query_child_elem = table_elem = query_elem->first_child;table_elem != NULL; query_child_elem = table_elem = table_elem->next){
-					if(apr_strnatcmp(table_elem->name,"table") == 0){
+				for(query_child_elem = query_elem->first_child;query_child_elem != NULL; query_child_elem =query_child_elem->next){
+					if(apr_strnatcmp(query_child_elem->name,"table") == 0){
+						table_t* table;
+						table_t** table_ptr;
+
+						table_elem = query_child_elem;
 						get_xml_attr(dbd_config->pool,table_elem,"id",&table_id);
 						if(status != APR_SUCCESS){
 								return -1;
@@ -265,7 +267,11 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 						//Read columns used in Select statement of Query
 						for(col_elem = table_elem->first_child;col_elem != NULL;col_elem = col_elem->next){
 							if(apr_strnatcmp(col_elem->name,"column") == 0){
+								column_table_t* column;
+								column_table_t** column_ptr;
 								const char* table_column_name;
+
+
 								status = get_xml_attr(dbd_config->pool,col_elem,"id",&column_id);
 								if(status != APR_SUCCESS){
 									//no column id found
@@ -287,7 +293,7 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 							}
 						}
 					}else if(apr_strnatcmp(query_child_elem->name,"group_by") == 0){
-						apr_xml_to_text(dbd_config->pool,table_elem,APR_XML_X2T_INNER,NULL,NULL,&(query->group_by_string),&max_element_size);
+						apr_xml_to_text(dbd_config->pool,query_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(query->group_by_string),&max_element_size);
 					}else if(apr_strnatcmp(query_child_elem->name,"custom_parameters") == 0){
 
 						query->custom_parameters =  apr_array_make(dbd_config->pool,5,sizeof(custom_parameter_t));
@@ -300,6 +306,49 @@ static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config
 								}else if(apr_strnatcmp(parameter_child_elem->name, "type") == 0){
 									apr_xml_to_text(dbd_config->pool,parameter_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(custom_parameter->type),&max_element_size);
 								}
+							}
+						}
+					}else if(apr_strnatcmp(query_child_elem->name,"count") == 0){
+						const char* select_count;
+						apr_xml_elem* count_child_elem;
+						for(count_child_elem = query_child_elem->first_child;count_child_elem != NULL; count_child_elem = count_child_elem->next){
+							if(apr_strnatcmp(count_child_elem->name,"table") == 0){
+								table_t* table;
+								table_t** table_ptr;
+								column_table_t* column;
+								column_table_t** column_ptr;
+
+								table_elem = count_child_elem;
+								get_xml_attr(dbd_config->pool,table_elem,"id",&table_id);
+								if(status != APR_SUCCESS){
+										return -1;
+								}
+								//Find table id in known tables
+								status = find_table_by_id(&table,dbd_config->tables,table_id);
+								if(status != APR_SUCCESS){
+									//no table found
+									return -1;
+								}
+								//Add table to query
+
+								//Add table point to table list
+								//if we add to list we will create select from
+								//table_ptr = (table_t**)apr_array_push(query->tables);
+								//*table_ptr = table;
+
+								column = apr_pcalloc(dbd_config->pool, sizeof(column_table_t));
+
+								column->freindly_name=apr_pstrcat(dbd_config->pool, table->name, " Count", NULL);
+
+								column_ptr = (column_table_t**)apr_array_push(query->select_columns);
+								*column_ptr = column;
+
+
+								//Create Select string
+								//In this special case the columns are derived from select
+								//statements. For example SELECT (SELECT COUNT(*) FROM Table1) as "Table 1 Count");
+								select_count = apr_pstrcat(dbd_config->pool, "(SELECT COUNT(*) FROM ", table->name,")",  NULL);
+								query->select_columns_string = (query->select_columns_string) ? apr_pstrcat(dbd_config->pool, query->select_columns_string,",",select_count,NULL)  : select_count;
 							}
 						}
 					}

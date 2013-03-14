@@ -190,11 +190,14 @@
 					</table>
 				<group_by>links.songid, links.albumid,links.artistid,links.sourceid</group_by>
 			</query>
-			<query id="play">
-					<table id="sources">
-						<column id="path" />
-						<column id="type" />
-					</table>
+			<query id="status">
+			    <count>
+					<table id="songs"/>
+					<table id="artists"/>
+					<table id="albums"/>
+					<table id="sources"/>
+					<table id="links"/>
+				</count>
 			</query>
 			<query id="transcode">
 				<table id="links">
@@ -215,6 +218,12 @@
 						<value>ogg</value>
 					</parameter>
 				</custom_parameters>
+			</query>
+			<query id="play">
+				<table id="sources">
+					<column id="path" />
+					<column id="type" />
+				</table>
 			</query>
 		</app>
 	</queries>

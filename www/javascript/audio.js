@@ -82,7 +82,7 @@ function audio_obj(player){
 	this.playing = 0;
 	//Info about playing song
 	this.song_backgroundColor;
-	this.playing_index = -1;
+
 	this.next_to_play = null;
 	
 	//Audio Element
@@ -161,20 +161,22 @@ function audio_obj(player){
 			this.playing = 0;
 			return 0;
 		}
-	
+		//Set audio obj to playing
 		this.playing = 1;
+
 		
 		this.audio_ele.src = "http://"+this.domain+"/music/play/source_id/" + song.sources[0].source_id;
 		this.audio_ele.load;
 		
 		//scroll to song
-		//var song_listing = document.getElementById("song_" + song.song_id);
-		//song_listing.scrollIntoView();
-		//var scrollBack = (music_ui_ctx.songs_div.scrollHeight - music_ui_ctx.songs_div.scrollTop <= music_ui_ctx.songs_div.clientHeight) ? 0 : music_ui_ctx.songs_div.clientHeight/4;
-		//music_ui_ctx.songs_div.scrollTop -= scrollBack;
+		var songs_table = player.playlist.songs_table.table;
+		var song_row= songs_table.rows[song.index];
+		song_row.scrollIntoView();
+		var scrollBack = (player.playlist.songs_table.table_scrollbar.scrollHeight - player.playlist.songs_table.table_scrollbar.scrollTop <= player.playlist.songs_table.table_scrollbar.clientHeight) ? 0 : player.playlist.songs_table.table_scrollbar.clientHeight/4;
+		player.playlist.songs_table.table_scrollbar.scrollTop -= scrollBack;
 	    //Highlight Song
-		//this.song_backgroundColor = song_listing.style.backgroundColor;
-		//song_listing.style.backgroundColor = "black";
+		this.song_backgroundColor = song_row.style.backgroundColor;
+		song_row.style.backgroundColor = "black";
 		
 	
 	
@@ -193,7 +195,7 @@ function audio_obj(player){
 	
 		//Decode next 4 songs in playlist
 		for(var i = 1;i <= 4; i++){
-			var song_next = player.playlist.songs[this.playing_index + i];
+			var song_next = player.playlist.songs[this.player.playing_index + i];
 			if(typeof song_next !== 'undefined'){
 				this.player.find_playable_source(song_next, this.domain);
 			}else{

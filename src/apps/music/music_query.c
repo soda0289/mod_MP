@@ -57,6 +57,8 @@ int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, 
 	//Create thread to connect to database and synchronize
 	dir_sync = (dir_sync_t*)apr_shm_baseaddr_get(music_globals->dir_sync_shm);
 
+	music_globals->dir_sync = dir_sync;
+
 	dir_sync->pool = global_pool;
 	dir_sync->num_files = NULL;
 	dir_sync->dir_path = external_directory;
@@ -99,11 +101,14 @@ int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_message
 	music_globals_t* music_globals = (music_globals_t*) global_context;
 
 	if(music_globals->dir_sync_shm_file){
+		dir_sync_t* dir_sync;
+
 		rv = apr_shm_attach(&(music_globals->dir_sync_shm), music_globals->dir_sync_shm_file, child_pool);
 		if(rv != APR_SUCCESS){
 			return rv;
 		}
-		music_globals->dir_sync_progress = &(((dir_sync_t*) apr_shm_baseaddr_get(music_globals->dir_sync_shm))->sync_progress);
+		dir_sync = apr_shm_baseaddr_get(music_globals->dir_sync_shm);
+		music_globals->dir_sync = dir_sync;
 	}
 
 	rv = reattach_decoding_queue(child_pool, music_globals->decoding_queue, music_globals->decoding_queue_shm_file, error_messages);
@@ -152,6 +157,8 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 		music_query->type = PLAY;
 	}else if(apr_strnatcasecmp(query_nouns[1], "transcode") == 0){
 		music_query->type = TRANSCODE;
+	}else if(apr_strnatcasecmp(query_nouns[1], "status") == 0){
+		music_query->type = STATUS;
 	}else{
 		//Invlaid type
 		add_error_list(error_messages, ERROR, error_header, apr_pstrcat(pool,"Query type ",query_nouns[1]," is not supported by API.",NULL));
@@ -163,7 +170,7 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 	//We have valid type lets get DB query if set
 	status = find_query_by_id(&(music_query->db_query),db_queries,query_nouns[1]);
 	if(status != 0){
-		add_error_list(error_messages, ERROR, error_header, apr_pstrcat(pool, "Query type ",query_nouns[1],"is not supported by Database.", NULL ));
+		add_error_list(error_messages, ERROR, error_header, apr_pstrcat(pool, "Query type ",query_nouns[1]," is not supported by Database.", NULL ));
 		return -1;
 	}
 
@@ -185,9 +192,9 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 		int sql_clause_found = 0;
 		//Look for WHERE columns
 		if(find_column_from_query_by_friendly_name(music_query->db_query,query_nouns[noun_num],&column) == 0){
-			//Column found that matches freidnly name
+			//Column found that matches friendly name
 			//Add column to list of where conditions
-			add_where_query_parameter(music_query->query_parameters,column,query_nouns[noun_num+1]);
+			add_where_query_parameter(pool, music_query->query_parameters,column,query_nouns[noun_num+1]);
 			//found a match continue for loop
 			continue;
 		}
@@ -212,15 +219,13 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 		}
 
 		if(cus_par_set == 1){
-
-		custom_parameter_t* custom_parameter;
-		//Look for custom parameters
-		if(find_custom_parameter_by_friendly(music_query->query_parameters->query_custom_parameters,query_nouns[noun_num],&custom_parameter) == 0){
-			//Change default value
-			custom_parameter->value = apr_pstrdup(pool,query_nouns[noun_num+1]);
-			continue;
-		}
-
+			custom_parameter_t* custom_parameter;
+			//Look for custom parameters
+			if(find_custom_parameter_by_friendly(music_query->query_parameters->query_custom_parameters,query_nouns[noun_num],&custom_parameter) == 0){
+				//Change default value
+				custom_parameter->value = apr_pstrdup(pool,query_nouns[noun_num+1]);
+				continue;
+			}
 		}
 
 		//Query noun is not valid abort
@@ -242,8 +247,12 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 	return 0;
 }
 
-int output_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query){
+
+int output_db_query_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query){
 	int print_query_results = 0;
+
+	apr_table_add(query->output_headers,"Access-Control-Allow-Origin", "*");
+	apr_cpystrn(query->output_content_type, "application/json", 255);
 
 	if(query->db_query == NULL || query->db_query->id == NULL || query->results == NULL || query->results->rows == NULL){
 		//Heavy debug
@@ -256,27 +265,9 @@ int output_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query){
 
 	print_error_messages(pool,bb,query->error_messages);
 	if(print_query_results){
-		int row_count = 0;
-		int column_index = 0;
-		row_t row;
-
 		apr_brigade_printf(bb, NULL,NULL, ",\n\t\"%s\" :[\n",query->db_query->id);
 
-		for(row_count = 0;row_count < query->results->rows->nelts;row_count++){
-			row = APR_ARRAY_IDX(query->results->rows,row_count,row_t);
-			apr_brigade_puts(bb, NULL,NULL, "\t\t\t{\n");
-			for(column_index = 0;column_index < query->db_query->select_columns->nelts;column_index++){
-				apr_brigade_printf(bb, NULL,NULL, "\t\t\t\t\"%s\": \"%s\"",APR_ARRAY_IDX(query->db_query->select_columns,column_index,column_table_t*)->freindly_name,json_escape_char(pool,row.results[column_index]));
-				if(column_index+1 < query->db_query->select_columns->nelts){
-					apr_brigade_puts(bb, NULL,NULL, ", ");
-				}
-				apr_brigade_puts(bb, NULL,NULL, "\n");
-			}
-			apr_brigade_puts(bb, NULL,NULL, "\t\t\t}");
-			if(row_count+1 < query->results->rows->nelts){
-				apr_brigade_puts(bb, NULL,NULL, ",");
-			}
-		}
+		output_db_result_json(query->results, query->db_query, pool, bb);
 		apr_brigade_puts(bb, NULL,NULL, "\n\t]");
 	}
 	apr_brigade_puts(bb, NULL,NULL, "\n}\n");
@@ -321,9 +312,7 @@ int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade
 			case ALBUMS:
 			case ARTISTS:
 			case SOURCES:{
-				apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
-				apr_cpystrn(output_content_type, "application/json", 255);
-				error_num = output_json(pool,output_bb,music_query);
+				error_num = output_db_query_json(pool,output_bb,music_query);
 				break;
 			}
 			case PLAY:{
@@ -343,6 +332,11 @@ int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade
 					 output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);
 				 }
 				 break;
+			}
+			case STATUS:{
+				music_query->music_globals->dir_sync = (dir_sync_t*)apr_shm_baseaddr_get(music_query->music_globals->dir_sync_shm);
+				output_dirsync_status(music_query,pool, output_bb, output_headers, output_content_type, error_messages);
+				break;
 			}
 			default:{
 				error_num = output_status_json(pool,output_bb,output_headers, output_content_type,error_messages);

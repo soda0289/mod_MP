@@ -56,11 +56,13 @@ int find_custom_parameter_by_friendly(apr_array_header_t* parameter_array,const 
 	return -1;
 }
 
-int add_where_query_parameter(query_parameters_t* query_parameters,column_table_t* column,const char* condition){
+int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition){
 	query_where_condition_t* query_where_condition;
 
 	query_where_condition = apr_array_push(query_parameters->query_where_conditions);
 	query_where_condition->column = column;
+
+	//Check for * Wild Card
 	if(strchr(condition,'*') == NULL){
 		query_where_condition->operator = EQUAL;
 	}else{
@@ -72,6 +74,15 @@ int add_where_query_parameter(query_parameters_t* query_parameters,column_table_
 		}
 		//Since query word contains % change to operator to LIKE
 		query_where_condition->operator = LIKE;
+	}
+
+	//Check for , Comma and add Parentheses
+	if(strchr(condition, ',') != NULL){
+		query_where_condition->operator = IN;
+		condition = apr_pstrcat(pool,"(", condition, ")", NULL);
+	}else{
+		//wrap double qoutes around it
+		condition = apr_pstrcat(pool,"\"", condition, "\"", NULL);
 	}
 	query_where_condition->condition = condition;
 	return 0;

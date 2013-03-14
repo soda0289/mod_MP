@@ -35,6 +35,9 @@
 #include "apps/app_config.h"
 #include "music_typedefs.h"
 #include "decoding_queue.h"
+#include "dir_sync/dir_sync.h"
+
+typedef struct dir_sync_ dir_sync_t;
 
 enum query_types{
 	SONGS = 0,
@@ -42,13 +45,14 @@ enum query_types{
 	ARTISTS,
 	SOURCES,
 	TRANSCODE,
-	PLAY
+	PLAY,
+	STATUS
 };
 
 struct music_query_{
 	music_globals_t* music_globals;
 	enum query_types type;
-	query_t* db_query;
+	db_query_t* db_query;
 	query_parameters_t* query_parameters;
 	apr_bucket_brigade* output_bb;
 	apr_table_t* output_headers;
@@ -74,12 +78,11 @@ struct music_globals_{
 	int num_decoding_threads;
 	decoding_queue_t* decoding_queue;
 
-	float* dir_sync_progress;
+	dir_sync_t* dir_sync;
 	float* musicbrainz_progress;
 };
 
 int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries, const void* global_context);
-int output_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query);
 int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context);
 int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context);
 

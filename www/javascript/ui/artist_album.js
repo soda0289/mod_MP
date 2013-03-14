@@ -12,6 +12,7 @@ function artist_album_browser(parent_div, music_ui_ctx){
 		return function(artist){
 			var query = aritst_album_browser.albums_table.query;
 			return function(event){
+				aritst_album_browser.artists_table.select_row(artist.index);
 				query.artist_id = artist.artist_id;
 				aritst_album_browser.albums_table.clear();
 				load_query(query);
@@ -34,6 +35,7 @@ function artist_album_browser(parent_div, music_ui_ctx){
 		return function(album){
 			var query = aritst_album_browser.artists_table.query;
 			return function(event){
+				aritst_album_browser.albums_table.select_row(album.index);
 				query.album_id = album.album_id;
 				aritst_album_browser.artists_table.clear();
 				load_query(query);

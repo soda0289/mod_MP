@@ -27,10 +27,11 @@
 #include "database/db_typedef.h"
 #include "apps/app_typedefs.h"
 #include "error_handler.h"
+#include "apps/music/music_typedefs.h"
 
 
 
-typedef struct {
+typedef struct dir_sync_{
 	int* num_files;
 
 	db_config* dbd_config;
@@ -39,9 +40,12 @@ typedef struct {
 	const char* dir_path;
 	//This is the only variable that can be accessed by all processes
 	float sync_progress;
+	int files_scanned;
+
 	app_list_t* app_list;
 }dir_sync_t;
 
 void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr);
+int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages);
 
 #endif /* DIR_SYNC_H_ */

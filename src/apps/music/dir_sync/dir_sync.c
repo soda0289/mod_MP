@@ -35,6 +35,36 @@
 #include "error_handler.h"
 #include "dir_sync.h"
 
+int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){
+	apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
+	apr_cpystrn(output_content_type, "application/json", 255);
+
+	apr_brigade_puts(output_bb, NULL,NULL, "{\n");
+
+	//Print Status
+
+	if(music_query->music_globals->dir_sync){
+		apr_brigade_puts(output_bb, NULL,NULL,"\t\"dirsync_status\" : {\n");
+		apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Progress\" :  \"%.2f\",\n",music_query->music_globals->dir_sync->sync_progress);
+		apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Files Scanned\" :  \"%d\"\n", music_query->music_globals->dir_sync->files_scanned);
+		apr_brigade_puts(output_bb, NULL,NULL,"\t},\n");
+	}
+	apr_brigade_puts(output_bb, NULL,NULL,"\t\"db_status\" : ");
+	output_db_result_json(music_query->results,music_query->db_query,pool,output_bb);
+	apr_brigade_puts(output_bb, NULL,NULL,"\n,");
+
+	print_error_messages(pool,output_bb, error_messages);
+
+	apr_brigade_puts(output_bb, NULL,NULL,"\n}\n");
+	return 0;
+}
+
+int count_table_rows(){
+
+
+	return 0;
+}
+
 void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	int files_synced = 0;
 	int status;
@@ -63,6 +93,8 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		add_error_list(dir_sync->error_messages, ERROR, "Database not connected","ERROR ERROR");
 		return 0;
 	}
+
+	count_table_rows();
 
 
 	read_dir(pool, file_list, dir_sync->dir_path, dir_sync->num_files,  dir_sync->error_messages);
@@ -130,6 +162,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  }
 		  //Calculate the percent of files synchronized
 		  dir_sync->sync_progress =(float) files_synced*100 / (*(dir_sync->num_files) - 1);
+		  dir_sync->files_scanned = files_synced;
 		  files_synced++;
 		  file_list = file_list->next;
 	}

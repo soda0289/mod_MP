@@ -34,3 +34,7 @@ color: white;
 #songs_table .odd{
 	background: #666666;
 }
+
+.selected{
+	background: #000000 ! important;
+}

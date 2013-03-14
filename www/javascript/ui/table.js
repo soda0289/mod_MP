@@ -1,4 +1,4 @@
-function table(columns, row_click_cb){
+function table(columns, row_click_cb, row_unique_id){
 	
 	var column_header_height = "33px";
 	
@@ -11,6 +11,10 @@ function table(columns, row_click_cb){
 	this.clear = function() {
 		this.table.innerHTML = "";
 		this.query.reset();
+	};
+	
+	this.select_row = function(index){
+		this.table.rows[index].className += " selected";
 	};
 	
 
@@ -26,8 +30,8 @@ function table(columns, row_click_cb){
 		head_row.style.backgroundColor= "black";
 		head_row.style.color = "orange";
 		
-		for(col in this.columns){
-			var new_col
+		for(var col in this.columns){
+			var new_col;
 			new_col = document.createElement('th');
 			new_col.style.width = (100 / this.columns.length) + "%";
 			new_col.innerHTML =  this.columns[col].header;
@@ -37,7 +41,7 @@ function table(columns, row_click_cb){
 					table_obj.query.sort_by = col_fname;
 					table_obj.clear();
 					load_query(table_obj.query);
-				}
+				};
 			}(this, this.columns[col].friendly_name);
 		}
 		
@@ -76,14 +80,18 @@ function table(columns, row_click_cb){
 	
 	this.create_table();
 	
-	this.add_rows_cb = function(table_c,column_list, row_click_cb){
+	this.add_rows_cb = function(table_c,column_list, row_click_cb, row_unique_id){
 		
 		return function(data){
 			for(var i = table_c.rows.length; i < data.length; i = table_c.rows.length){
+				var data_elem = data[i];
+				data_elem.index = i;
+				
 				var new_row = document.createElement('tr');
-				new_row.className = (i%2 == 0) ? "even" : "odd";
-				var data_elem = data[i]
-				for(col in column_list){
+				var parity = (i%2 === 0) ? "even" : "odd";
+				new_row.className = parity;
+				
+				for(var col in column_list){
 					var new_col;
 					new_col = document.createElement('td');
 					new_col.style.width = (100 / column_list.length) + "%";
@@ -97,13 +105,13 @@ function table(columns, row_click_cb){
 				table_c.appendChild(new_row);
 			}
 		};
-	}(this.table,this.columns, row_click_cb);
+	}(this.table,this.columns, row_click_cb, row_unique_id);
 	
 	this.win_resize = function (table_obj){
 		return function(){
 		table_obj.header_table.style.width = table_obj.table.offsetWidth;
-		}
-	}(this)
+		};
+	}(this);
 	
 	window.addEventListener('resize', this.win_resize);
 	

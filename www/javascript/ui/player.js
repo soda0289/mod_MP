@@ -1,16 +1,11 @@
-function shuffle_playlist(music_ui_ctx){
-	
-	//var shuffle_text_elem = document.createElement("span");
-	
-	//music_ui_ctx.player_status.appendChild(shuffle_text_elem);
-	
-	
-	shuffle_text_elem.innerHTML = "shuffled";
-}
+
 
 function player(playlist, music_ui_ctx){	
+	playlist.player = this;
 	
 	this.domain = music_ui_ctx.domain;
+	//Playing index of songs in playlist
+	this.playing_index = -1;
 	
 	//Setup player div and set playlist
 	this.player_div = document.createElement("div");
@@ -45,11 +40,19 @@ function player(playlist, music_ui_ctx){
 	}
 	
 	this.get_next_song_index = function (){
-		this.audio_obj.playing_index += 1;
-		if(this.audio_obj.playing_index === this.playlist.query.results.length){
-			this.audio_obj.playing_index = 0;
+		this.playing_index += 1;
+		if(this.playing_index === this.playlist.songs.length){
+			this.playing_index = 0;
 		}
-		return this.audio_obj.playing_index;
+		return this.playing_index;
+	}
+	
+	this.get_prev_song_index = function (){
+		this.playing_index -= 1;
+		if(this.playing_index < 0){
+			this.playing_index === this.playlist.songs.length;
+		}
+		return this.playing_index;
 	}
 
 	//Setup Buttons
@@ -60,8 +63,7 @@ function player(playlist, music_ui_ctx){
 	this.play_button.onclick = function (player){
 		return function(event){
 			//Play first song
-			player.audio_obj.playing_index = 0;
-			player.audio_obj.play_song(player.playlist.songs[0]);
+			player.audio_obj.play_song(player.playlist.songs[player.get_next_song_index()]);
 		}
 	}(this);
 	this.player_div.appendChild(this.play_button);
@@ -75,13 +77,8 @@ function player(playlist, music_ui_ctx){
 	this.previous_button.onclick = function (player){
 		return function(event){
 			//unhighlight_song(music_ui_ctx);
-			player.audio_obj.playing = 0;
-			
-			player.audio_obj.playing_index -= 1;
-			if(player.audio_obj.playing_index< 0){
-				player.audio_obj.playing_index = playlist.songs.length -1;
-			}
-			player.audio_obj.play_song(player.playlist.songs[player.audio_obj.playing_index]);
+
+			player.audio_obj.play_song(player.playlist.songs[player.get_prev_song_index()]);
 		}
 	}(this);
 	this.player_div.appendChild(this.previous_button);
@@ -93,7 +90,7 @@ function player(playlist, music_ui_ctx){
 	this.next_button.onclick = function (player){
 		return function(event){
 			//play next song
-			player.audio_obj.play_song(player.playlist.songs[player.get_next_song_index(music_ui_ctx)]);
+			player.audio_obj.play_song(player.playlist.songs[player.get_next_song_index()]);
 		}
 	}(this);
 	this.player_div.appendChild(this.next_button);

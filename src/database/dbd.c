@@ -192,11 +192,15 @@ static const char* operator_to_string(condition_operator operator){
 			return "BETWEEN";
 			break;
 		}
+		case (IN):{
+			return "IN";
+			break;
+		}
 	}
 	return NULL;
 }
 
-static int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_parameters,query_t* db_query,const char** select,error_messages_t* error_messages){
+static int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_parameters,db_query_t* db_query,const char** select,error_messages_t* error_messages){
 	//int num_tables;
 	apr_status_t status;
 
@@ -211,73 +215,83 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 	const char* offset = NULL;
 	const char* group_by = db_query->group_by_string;
 	char* where = NULL;
+	const char* select_statement = NULL;
 
 	int i;
-	if(query_parameters != NULL && query_parameters->query_sql_clauses != NULL){
-		order_by = query_parameters->query_sql_clauses[ORDER_BY].value;
-		limit = query_parameters->query_sql_clauses[LIMIT].value;
-		offset = query_parameters->query_sql_clauses[OFFSET].value;
-	}
-
-
-
-
-
 	status = apr_pool_create(&statement_pool,dbd_config->pool);
 	if (status != APR_SUCCESS){
 		return -11;
 	}
 
-	if(query_parameters != NULL && query_parameters->query_where_conditions != NULL){
-		//Add together where conditions
-		for(i = 0;i <query_parameters->query_where_conditions->nelts; i++){
-			query_where_condition_t* query_where_condition = &(((query_where_condition_t*)query_parameters->query_where_conditions->elts)[i]);
-			column_table_t* column = query_where_condition->column;
-			char* where_condition = apr_pstrcat(statement_pool,column->table->name,".",column->name," ",operator_to_string(query_where_condition->operator)," \"",query_where_condition->condition,"\"",NULL);
-			where = (where) ? apr_pstrcat(statement_pool, where, " AND ", where_condition,NULL) : where_condition;
+	//Start SQL Select Statment
+	if(select_columns){
+		select_statement = apr_psprintf(statement_pool,"SELECT %s",select_columns);
+	}
+
+	//Add SQL query from tables
+	if(tables) {
+		select_statement = apr_pstrcat(statement_pool, select_statement," FROM ", tables);
+	}
+
+	//Add SQL query parameters
+	//WHERE, LIMIT, GROUP BY, ...
+	if(query_parameters != NULL){
+		//Add SQL query where parameters
+		if(query_parameters->query_where_conditions != NULL){
+			//Add together where conditions
+			for(i = 0;i <query_parameters->query_where_conditions->nelts; i++){
+				query_where_condition_t* query_where_condition = &(((query_where_condition_t*)query_parameters->query_where_conditions->elts)[i]);
+				column_table_t* column = query_where_condition->column;
+				char* where_condition = apr_pstrcat(statement_pool,column->table->name,".",column->name," ",operator_to_string(query_where_condition->operator)," ",query_where_condition->condition,NULL);
+				where = (where) ? apr_pstrcat(statement_pool, where, " AND ", where_condition,NULL) : where_condition;
+			}
+
+			if(where){
+				select_statement = apr_pstrcat(statement_pool,select_statement," WHERE ",where,NULL);
+			}
+		}
+
+
+		//Add SQL query parameters
+		//GROUP BY, ORDER BY, LIMIT
+		if(query_parameters->query_sql_clauses != NULL){
+			order_by = query_parameters->query_sql_clauses[ORDER_BY].value;
+			limit = query_parameters->query_sql_clauses[LIMIT].value;
+			offset = query_parameters->query_sql_clauses[OFFSET].value;
+
+			if (group_by){
+				select_statement = apr_pstrcat(statement_pool,select_statement," GROUP BY ", group_by , NULL);
+			}
+
+			if (order_by){
+				select_statement = apr_pstrcat(dbd_config->pool,select_statement," ORDER BY ",  order_by, NULL);
+			}
+
+			//LIMIT must come after order by
+			if(limit){
+				select_statement = apr_pstrcat(dbd_config->pool,select_statement," LIMIT ", limit,NULL);
+				if(offset){
+					select_statement = apr_pstrcat(dbd_config->pool,select_statement," OFFSET ",offset, NULL);
+				}
+			}
 		}
 	}
 
-
-	if(select_columns && tables){
-		const char* select_statement = NULL;
-		select_statement = apr_psprintf(statement_pool,"SELECT %s FROM %s",select_columns,tables);
-
-		if(where){
-			select_statement = apr_pstrcat(statement_pool,select_statement," WHERE ",where,NULL);
-		}
-		if (group_by){
-			select_statement = apr_pstrcat(statement_pool,select_statement," GROUP BY ", group_by , NULL);
-		}
-
-		if (order_by){
-			select_statement = apr_pstrcat(dbd_config->pool,select_statement," ORDER BY ",  order_by, NULL);
-		}
-
-		//LIMIT must come after order by
-		if(limit){
-			select_statement = apr_pstrcat(dbd_config->pool,select_statement," LIMIT ", limit,NULL);
-			if(offset){
-				select_statement = apr_pstrcat(dbd_config->pool,select_statement," OFFSET ",offset, NULL);
-			}
-		}
 
 		if(select_statement){
 			*select = apr_pstrcat(dbd_config->pool,select_statement,";",NULL);
 			apr_pool_destroy(statement_pool);
+			add_error_list(error_messages, WARN,"SELECT statment", *select);
 		}else{
 			return -1;
 		}
-	}else{
-		return -3;
-	}
 
 
 
 	return 0;
 }
 
-int get_column_results_for_row(query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result){
+int get_column_results_for_row(db_query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result){
 	int i;
 	column_table_t* select_column;
 	if(query_results->rows == NULL || query_results->rows->nelts == 0){
@@ -295,7 +309,7 @@ int get_column_results_for_row(query_t* db_query, results_table_t* query_results
 	return -1;
 }
 
-int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, query_t* db_query,results_table_t** query_results,error_messages_t* error_messages){
+int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, db_query_t* db_query,results_table_t** query_results,error_messages_t* error_messages){
 
 	int error_num;
 
@@ -568,5 +582,28 @@ int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song){
 		apr_thread_mutex_unlock(dbd_config->mutex); return -6;
 	}
 	apr_thread_mutex_unlock(dbd_config->mutex);
+	return 0;
+}
+
+int output_db_result_json(results_table_t* results, db_query_t* db_query,apr_pool_t* pool,apr_bucket_brigade* bb){
+	int row_count;
+
+	for(row_count = 0;row_count < results->rows->nelts;row_count++){
+		row_t row;
+		int column_index;
+		row = APR_ARRAY_IDX(results->rows,row_count,row_t);
+		apr_brigade_puts(bb, NULL,NULL, "\t\t\t{\n");
+		for(column_index = 0;column_index < db_query->select_columns->nelts;column_index++){
+			apr_brigade_printf(bb, NULL,NULL, "\t\t\t\t\"%s\": \"%s\"",APR_ARRAY_IDX(db_query->select_columns,column_index,column_table_t*)->freindly_name,json_escape_char(pool,row.results[column_index]));
+			if(column_index+1 < db_query->select_columns->nelts){
+				apr_brigade_puts(bb, NULL,NULL, ", ");
+			}
+			apr_brigade_puts(bb, NULL,NULL, "\n");
+		}
+		apr_brigade_puts(bb, NULL,NULL, "\t\t\t}");
+		if(row_count+1 < results->rows->nelts){
+			apr_brigade_puts(bb, NULL,NULL, ",");
+		}
+	}
 	return 0;
 }

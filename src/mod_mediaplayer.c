@@ -233,6 +233,9 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 				}
 
 			}else{
+				//WE ARE IN DEBUG MODE
+				//THERE WILL BE NO NEW PROCCESS
+
 
 			}
 		}
