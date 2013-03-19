@@ -24,6 +24,8 @@
 #include "db_typedef.h"
 #include "apps/app_typedefs.h"
 
+
+
 #define SUCCESS 0
 
 int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config);

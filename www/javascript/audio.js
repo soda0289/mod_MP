@@ -74,10 +74,10 @@ function sources_query_loaded(results){
 	}
 }
 
-function audio_obj(player){
+function audio_obj(player, music_ui_ctx){
 	this.player = player;
 	//Domain for sources and decoding queries
-	this.domain = player.playlist.query.hostname;
+	this.domain = music_ui_ctx.domain;
 	//Is audio playing
 	this.playing = 0;
 	//Info about playing song

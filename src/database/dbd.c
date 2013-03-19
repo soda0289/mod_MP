@@ -359,6 +359,7 @@ int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* 
 }
 
 int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args){
+	static int tries = 0;
 	int error_num = 0;
 	int nrows = 1;
 	apr_pool_t* pool = dbd_config->pool;
@@ -368,6 +369,15 @@ int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const
 
 	if (id !=NULL && error_num == 0){
 		error_num = get_insert_last_id(id, dbd_config);
+	}else if(error_num == 2013){
+		//Database disconnected
+		//reconnect
+		error_num = prepare_database(NULL,dbd_config, NULL);
+		if(error_num == 0 && tries == 0){
+			//recurse try again only once
+			tries++;
+			insert_db(id, dbd_config, query, args);
+		}
 	}
 	return error_num;
 }

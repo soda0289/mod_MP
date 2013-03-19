@@ -5,7 +5,6 @@ function table(columns, row_click_cb, row_unique_id){
 	this.columns = columns;
 	
 	this.table_div = document.createElement('div');
-	this.table_div.style.minHeight = "inherit";
 	this.table_div.style.position = "relative";
 	
 	this.clear = function() {
@@ -29,6 +28,7 @@ function table(columns, row_click_cb, row_unique_id){
 		head_row.id = "table_header";
 		head_row.style.backgroundColor= "black";
 		head_row.style.color = "orange";
+		head_row.style.cursor = "pointer";
 		
 		for(var col in this.columns){
 			var new_col;
@@ -90,6 +90,7 @@ function table(columns, row_click_cb, row_unique_id){
 				var new_row = document.createElement('tr');
 				var parity = (i%2 === 0) ? "even" : "odd";
 				new_row.className = parity;
+				new_row.style.cursor = "pointer";
 				
 				for(var col in column_list){
 					var new_col;

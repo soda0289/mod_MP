@@ -1,7 +1,7 @@
 
 
 function player(playlist, music_ui_ctx){	
-	playlist.player = this;
+	//playlist.player = this;
 	
 	this.domain = music_ui_ctx.domain;
 	//Playing index of songs in playlist
@@ -18,7 +18,7 @@ function player(playlist, music_ui_ctx){
 	//Create decoding jobs array
 	this.decoding_jobs = [];
 	
-	this.audio_obj = new audio_obj(this);
+	this.audio_obj = new audio_obj(this, music_ui_ctx);
 	
 	this.find_playable_source = function(song, domain){
 		if(!('sources' in song) || song.sources.length < 1){

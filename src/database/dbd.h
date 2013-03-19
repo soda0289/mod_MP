@@ -31,6 +31,12 @@
 #include "db_typedef.h"
 #include "apps/music/music_typedefs.h"
 
+enum column_types {
+		INT = 0,
+		VARCHAR,
+		DATETIME,
+		BIGINT
+};
 
 
 
@@ -46,6 +52,7 @@ struct column_table_{
 		const char* id;
 		const char* name;
 		const char* freindly_name;
+		enum column_types type;
 		table_t* table;
 };
 

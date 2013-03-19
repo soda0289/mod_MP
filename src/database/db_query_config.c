@@ -61,6 +61,19 @@ static int read_columns(table_t* table,apr_xml_elem* table_elem, db_config* dbd_
 					 apr_xml_to_text(dbd_config->pool,column_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(column->name),&max_element_size);
 				}else if(apr_strnatcmp(column_elem_child->name,"fname") == 0){
 					apr_xml_to_text(dbd_config->pool,column_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(column->freindly_name),&max_element_size);
+				}else if(apr_strnatcmp(column_elem_child->name,"type") == 0){
+					const char* type_string;
+					apr_xml_to_text(dbd_config->pool,column_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(type_string),&max_element_size);
+					if(apr_strnatcmp(type_string, "int") == 0){
+						column->type = INT;
+					}else if(apr_strnatcmp(type_string, "varchar") == 0){
+						column->type = VARCHAR;
+					}else if(apr_strnatcmp(type_string, "datetime") == 0){
+						column->type = DATETIME;
+					}else if(apr_strnatcmp(type_string, "bigint") == 0){
+						column->type = BIGINT;
+					}
+
 				}
 			}
 

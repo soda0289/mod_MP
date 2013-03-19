@@ -1,8 +1,8 @@
 
 
-function playlist(parent_div,music_ui_ctx){	
-	//Setup song table
-	var top_height = "266px";
+function playlist(domain, parameters){
+	
+	
 	
 	this.songs = [];
 	
@@ -25,7 +25,7 @@ function playlist(parent_div,music_ui_ctx){
 			playlist.songs_table.add_rows_cb(new_songs);
 			//Update playlist.songs with results
 			playlist.songs = playlist.songs_table.query.results;
-		}
+		};
 	}(this);
 	
 	
@@ -34,7 +34,7 @@ function playlist(parent_div,music_ui_ctx){
 		this.songs = this.songs_table.query.results;
 		
 		//Create temp array of shuffled list
-		this.shuffled_playlist = new Array();
+		this.shuffled_playlist = [];
 		
 		//Fisher–Yates shuffle, as implemented by Durstenfeld
 		this.shuffled_playlist[0] = this.songs[0];
@@ -47,41 +47,43 @@ function playlist(parent_div,music_ui_ctx){
 		
 		this.unshuffled_playlist = this.songs;
 		this.songs = this.shuffled_playlist;
-	}
+	};
 	
 	this.song_click = function(plist){
 		
 		return function(song){
 			return function(event){
 				if(plist.player === undefined || plist.player === null){
-					alert("no player set for this playlist");
+					console.log("no player set for this playlist");
 				}else{
 					//Set player playing index to this songs index (table row index)
 					plist.player.playing_index = song.index;
 					plist.player.audio_obj.play_song(song);
 				}
-			}
-		}
-		
+			};
+		};
 	}(this);
+	
+	this.insert_into_div = function(div){
+		div.appendChild(this.div);
+		//Resize header
+		//this should be removed
+		this.songs_table.win_resize();
+	};
 	
 	this.songs_table = new table(this.song_columns, this.song_click, "song_id");
 	
 	this.songs_table.table_div.style.position = "absolute";
-	this.songs_table.table_div.style.top = top_height;
+	this.songs_table.table_div.style.top = "0";
 	this.songs_table.table_div.style.bottom = "0";
 	this.songs_table.table_div.style.width = "100%";
 	
 	this.div = this.songs_table.table_div;
+		
+	this.query = this.songs_table.query = new music_query(domain, parameters, this.song_added);
+
 	
-	this.query = this.songs_table.query = new music_query(music_ui_ctx.domain, 750, "songs",this.song_added);
-	
-	this.songs_table.query .sort_by = "song_title";
-	
-	
-	load_query(this.songs_table.query);
-	
-	parent_div.appendChild(this.div);
-	
-	this.songs_table.win_resize();
+	if(this.query !== null){
+		this.songs_table.query.load();
+	}
 }

@@ -194,7 +194,10 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 		if(find_column_from_query_by_friendly_name(music_query->db_query,query_nouns[noun_num],&column) == 0){
 			//Column found that matches friendly name
 			//Add column to list of where conditions
-			add_where_query_parameter(pool, music_query->query_parameters,column,query_nouns[noun_num+1]);
+			status = add_where_query_parameter(pool, music_query->query_parameters,column,query_nouns[noun_num+1]);
+			if(status != 0){
+				add_error_list(error_messages, ERROR,"Error with query", "There was an error adding the where query parameter");
+			}
 			//found a match continue for loop
 			continue;
 		}

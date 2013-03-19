@@ -30,11 +30,21 @@ color: white;
 
 #songs_table .even{
 	background: #222222;
+	cursor: "pointer";
 }
 #songs_table .odd{
 	background: #666666;
+	cursor: "pointer";
 }
 
 .selected{
 	background: #000000 ! important;
+}
+
+#tab_buttons{
+	background: #CCCCCC;
+}
+
+#tab_buttons .current_tab{
+	background: #FFFFFF;
 }

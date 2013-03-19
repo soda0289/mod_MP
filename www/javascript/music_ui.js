@@ -10,28 +10,31 @@ function music_ui() {
 
 }
 
-function create_inital_queries(domain){
-
-		
+function create_inital_queries(domain){	
 	//Load music ui
 	var music_ui_ctx = new music_ui();
 	music_ui_ctx.domain = domain;
 	
 	var music_window =  document.getElementById("right");
 	
-	//Initalize UI
-	var playlist_if = new playlist(music_window, music_ui_ctx);
-	var player_if = new player(playlist_if, music_ui_ctx);
 
+	//Defualt playlist
+	var parameters = new query_parameters("songs");
+	parameters.num_results = 1000;
+	parameters.sort_by = "song_title";
 	
+	var default_playlist = new playlist(domain, parameters);
+	
+	//player
+	var player_if = new player(default_playlist, music_ui_ctx);
 	music_window.appendChild(player_if.div);
-
+	
+	
 	var artist_album_if = new artist_album_browser(music_window,music_ui_ctx);
 	
-	window.onresize = function (){
-		console.log("good");
-	}
-
+	music_ui_ctx.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
+	
+	music_ui_ctx.playlist_tabs_if.add_tab("all", default_playlist);
 }
 
 

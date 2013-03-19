@@ -269,12 +269,9 @@ int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table
 
 	apr_brigade_puts(output_bb, NULL,NULL, "{\n");
 
-	//Print Status
-	apr_brigade_puts(output_bb, NULL,NULL,"\t\"status\" : {\n");
-	//apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Progress\" :  \"%.2f\",\n", dir_sync->sync_progress);
 	print_error_messages(pool,output_bb, error_messages);
 
-	apr_brigade_puts(output_bb, NULL,NULL,"\t}\n}\n");
+	apr_brigade_puts(output_bb, NULL,NULL,"\n}\n");
 		return 0;
 }
 
