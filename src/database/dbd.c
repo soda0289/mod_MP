@@ -215,7 +215,7 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 	const char* offset = NULL;
 	const char* group_by = db_query->group_by_string;
 	char* where = NULL;
-	const char* select_statement = NULL;
+	char* select_statement = NULL;
 
 	int i;
 	status = apr_pool_create(&statement_pool,dbd_config->pool);
@@ -223,14 +223,14 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 		return -11;
 	}
 
-	//Start SQL Select Statment
+	//Start SQL Select Statement
 	if(select_columns){
 		select_statement = apr_psprintf(statement_pool,"SELECT %s",select_columns);
 	}
 
 	//Add SQL query from tables
 	if(tables) {
-		select_statement = apr_pstrcat(statement_pool, select_statement," FROM ", tables);
+		select_statement = apr_pstrcat(statement_pool, select_statement," FROM ", tables, NULL);
 	}
 
 	//Add SQL query parameters
@@ -251,6 +251,10 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 			}
 		}
 
+		if (group_by){
+			select_statement = apr_pstrcat(statement_pool,select_statement," GROUP BY ", group_by , NULL);
+		}
+
 
 		//Add SQL query parameters
 		//GROUP BY, ORDER BY, LIMIT
@@ -258,10 +262,6 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 			order_by = query_parameters->query_sql_clauses[ORDER_BY].value;
 			limit = query_parameters->query_sql_clauses[LIMIT].value;
 			offset = query_parameters->query_sql_clauses[OFFSET].value;
-
-			if (group_by){
-				select_statement = apr_pstrcat(statement_pool,select_statement," GROUP BY ", group_by , NULL);
-			}
 
 			if (order_by){
 				select_statement = apr_pstrcat(dbd_config->pool,select_statement," ORDER BY ",  order_by, NULL);
