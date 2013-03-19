@@ -251,11 +251,6 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 			}
 		}
 
-		if (group_by){
-			select_statement = apr_pstrcat(statement_pool,select_statement," GROUP BY ", group_by , NULL);
-		}
-
-
 		//Add SQL query parameters
 		//GROUP BY, ORDER BY, LIMIT
 		if(query_parameters->query_sql_clauses != NULL){
@@ -277,14 +272,18 @@ static int generate_sql_statement(db_config* dbd_config, query_parameters_t* que
 		}
 	}
 
+	if (group_by){
+		select_statement = apr_pstrcat(statement_pool,select_statement," GROUP BY ", group_by , NULL);
+	}
 
-		if(select_statement){
-			*select = apr_pstrcat(dbd_config->pool,select_statement,";",NULL);
-			apr_pool_destroy(statement_pool);
-			add_error_list(error_messages, WARN,"SELECT statment", *select);
-		}else{
-			return -1;
-		}
+
+	if(select_statement){
+		*select = apr_pstrcat(dbd_config->pool,select_statement,";",NULL);
+		apr_pool_destroy(statement_pool);
+		add_error_list(error_messages, WARN,"SELECT statment", *select);
+	}else{
+		return -1;
+	}
 
 
 
