@@ -6,14 +6,13 @@ function unhighlight_song(music_ui_ctx){
 }
 
 //Music UI context object
-function music_ui() {
-
+function music_ui(domain) {
+	this.domain = domain;
 }
 
 function create_inital_queries(domain){	
 	//Load music ui
-	var music_ui_ctx = new music_ui();
-	music_ui_ctx.domain = domain;
+	var music_ui_ctx = new music_ui(domain);
 	
 	var music_window =  document.getElementById("right");
 	
@@ -26,11 +25,11 @@ function create_inital_queries(domain){
 	var default_playlist = new playlist(domain, parameters);
 	
 	//player
-	var player_if = new player(default_playlist, music_ui_ctx);
-	music_window.appendChild(player_if.div);
+	music_ui_ctx.player_if = new player(default_playlist, music_ui_ctx);
+	music_window.appendChild(music_ui_ctx.player_if.div);
 	
 	
-	var artist_album_if = new artist_album_browser(music_window,music_ui_ctx);
+	music_ui_ctx.artist_album_if = new artist_album_browser(music_window,music_ui_ctx);
 	
 	music_ui_ctx.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
 	

@@ -58,6 +58,7 @@ function playlist(domain, parameters){
 				}else{
 					//Set player playing index to this songs index (table row index)
 					plist.player.playing_index = song.index;
+					plist.player.playlist = plist;
 					plist.player.audio_obj.play_song(song);
 				}
 			};

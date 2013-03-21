@@ -24,13 +24,15 @@ function player(playlist, music_ui_ctx){
 		if(!('sources' in song) || song.sources.length < 1){
 			//song has no sources
 			//Fetch sources
-			var sources_query = new music_query(domain, 0, "sources", sources_query_loaded);
+			var sources_parameters = new query_parameters("sources");
+			sources_parameters.source_type = "ogg";
+			sources_parameters.song_id.push(song.song_id);
+			
+			var sources_query = new music_query(domain, sources_parameters, sources_query_loaded);
 			sources_query.song = song;
 			sources_query.player = this;
-			sources_query.source_type = "ogg";
-			sources_query.song_id = song.song_id;
 		
-			load_query(sources_query);
+			sources_query.load();
 			
 			return 0;
 		}else{
@@ -99,11 +101,12 @@ function player(playlist, music_ui_ctx){
 	this.shuffle.id = "shuffle_button";
 	this.shuffle.src = "svg/shuffle.svg";
 	this.shuffle.style.display = "block-inline";
-	this.shuffle.onclick = function (playlist){
+	this.shuffle.onclick = function (player_if){
 		return function(event){
-			playlist.shuffle();
+			player_if.playlist.shuffle();
 		}
-	}(playlist);
+	}(this);
+	
 	this.player_div.appendChild(this.shuffle);
 	
 	

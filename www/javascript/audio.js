@@ -26,7 +26,7 @@ function decoding_job(song, player){
 				function(query){
 					return function(){
 						query.reset();
-						load_query(query);
+						query.load();
 					}
 				}(this),3000);
 				
@@ -49,13 +49,17 @@ function decoding_job(song, player){
 		}
 	}(player, this);
 	
-	this.transcode_query = new music_query(player.domain, 0, "transcode", this.update_decoding_status);
-	this.transcode_query.song_id = song.song_id;
+	var transcode_parameters = new query_parameters("transcode");
+	transcode_parameters.song_id.push(song.song_id);
+	transcode_parameters.output_type = "ogg";
+	
+	this.transcode_query = new music_query(player.domain, transcode_parameters, this.update_decoding_status);
+
 	
 	//Add to decdoing_job array
 	player.decoding_jobs.push(this);
 	
-	load_query(this.transcode_query);
+	this.transcode_query.load();
 }
 
 function sources_query_loaded(results){

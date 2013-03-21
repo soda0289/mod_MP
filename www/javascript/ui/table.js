@@ -21,6 +21,7 @@ function table(columns, row_click_cb, row_unique_id){
 	this.create_column_header = function (){
 		//Use header
 		this.header_table = document.createElement('table');
+		this.header_table.cellSpacing = "0";
 		
 		//Create table header
 		var head_row = document.createElement('tr');
@@ -38,9 +39,9 @@ function table(columns, row_click_cb, row_unique_id){
 			head_row.appendChild(new_col);
 			new_col.onclick = function(table_obj, col_fname){
 				return function(){
-					table_obj.query.sort_by = col_fname;
+					table_obj.query.parameters.sort_by = col_fname;
 					table_obj.clear();
-					load_query(table_obj.query);
+					table_obj.query.load();
 				};
 			}(this, this.columns[col].friendly_name);
 		}
@@ -72,6 +73,7 @@ function table(columns, row_click_cb, row_unique_id){
 		this.table = document.createElement('table');
 		this.table.id = "songs_table";
 		this.table.style.width = "100%";
+		this.table.cellSpacing = "0";
 
 		this.table_scrollbar.appendChild(this.table);
 		this.table_div.appendChild(this.table_scrollbar);

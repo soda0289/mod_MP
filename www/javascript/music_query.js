@@ -6,6 +6,8 @@ function query_parameters(type){
 	this.album_id = [];
 	this.song_id = [];
 	this.source_id = [];
+	this.source_type = null;
+	this.output_type = null;
 }
 
 
@@ -22,7 +24,6 @@ function music_query(hostname, parameters,print_results_function){
 	
 	this.result = null;
 	
-	this.source_type = "ogg";
 	this.url = null;
 	
 	this.reset = function () {
@@ -59,7 +60,9 @@ function music_query(hostname, parameters,print_results_function){
 			}
 		}
 		if (this.parameters.type === "transcode"){
-			this.url += "/output_type/" + this.parameters.source_type;
+			if(this.parameters.output_type !== null){
+				this.url += "/output_type/" + this.parameters.output_type;
+			}
 		}
 		if(this.parameters.num_results > 0){
 			this.url += "/limit/" + this.parameters.num_results;
@@ -138,7 +141,8 @@ function music_query(hostname, parameters,print_results_function){
 				object_name = "decoding_job";
 			}
 			
-			if(object_name in json_object && (json_length = json_object[object_name].length) > 0){
+			if(object_name in json_object){
+				json_length = json_object[object_name].length;
 				this.results = this.results.concat(json_object[object_name]);
 			}else{
 				json_length = 0;
