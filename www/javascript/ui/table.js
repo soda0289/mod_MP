@@ -12,8 +12,34 @@ function table(columns, row_click_cb, row_unique_id){
 		this.query.reset();
 	};
 	
+	this.deselect_row = function(index){
+		var row = this.table.rows[index];
+		if(row.selected === 1){
+			var classes;
+			classes = row.className.split(" ");
+			var i = classes.indexOf("selected");
+			if(i !=-1){
+				classes.splice(i,1);
+				row.className = classes.join(" ");
+				row.selected = 0;
+				return 0;
+			}
+
+		}
+		return -1;
+	}
+	
 	this.select_row = function(index){
-		this.table.rows[index].className += " selected";
+		var row = this.table.rows[index];
+		if(!("selected" in row) || row.selected === 0){
+			row.className += " selected";
+			row.selected = 1;
+			return 0;
+		}else{
+			this.deselect_row(index);
+		}
+		
+		return -1;
 	};
 	
 
@@ -71,7 +97,7 @@ function table(columns, row_click_cb, row_unique_id){
 		this.table_scrollbar.style.top = column_header_height;
 		
 		this.table = document.createElement('table');
-		this.table.id = "songs_table";
+		this.table.id = "table";
 		this.table.style.width = "100%";
 		this.table.cellSpacing = "0";
 
@@ -112,7 +138,7 @@ function table(columns, row_click_cb, row_unique_id){
 	
 	this.win_resize = function (table_obj){
 		return function(){
-		table_obj.header_table.style.width = table_obj.table.offsetWidth;
+		table_obj.header_table.style.width = table_obj.table.offsetWidth + "px";
 		};
 	}(this);
 	

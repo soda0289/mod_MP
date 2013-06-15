@@ -266,6 +266,7 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 	 if(status != 0){
 		 return -11;
 	 }
+
 	 status = find_select_column_from_query_by_table_id_and_query_id(&file_type_col,music_query->db_query,"sources","type");
 	 if(status != 0){
 		 return -12;

@@ -14,6 +14,7 @@ function playlist_tabs(parent_div, music_ui_ctx){
 	this.tab_buttons_ul.style.listStyleType = "none";
 	this.tab_buttons_ul.style.margin = "0";
 	this.tab_buttons_ul.style.padding = "0";
+	this.tab_buttons_ul.style.height = "20px";
 	
 	//+ button for new tab creation
 	this.new_tab_button = document.createElement('li');
@@ -26,7 +27,7 @@ function playlist_tabs(parent_div, music_ui_ctx){
 	this.new_tab_button.style.paddingRight = "5px";
 	this.new_tab_button.style.paddingLeft = "5px";
 	this.new_tab_button.style.backgroundColor = "orange";
-	this.new_tab_button.style.height = "30px";
+	this.new_tab_button.style.height = "20px";
 	this.new_tab_button.style.cursor = "pointer";
 	this.new_tab_button.innerHTML = "+";
 	this.new_tab_button.onclick = function (event){

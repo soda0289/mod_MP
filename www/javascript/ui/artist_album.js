@@ -23,10 +23,10 @@ function artist_album_browser(parent_div, music_ui_ctx){
 		
 	};
 	
-	this.artist_click = function(aab){
+	this.click = function(aab, type){
 
-		return function(artist){
-			var query = aab.albums_table.query;
+		return function(data_elem){
+			
 			return function(event){
 				var right = 0;
 				//Check if right click
@@ -44,8 +44,20 @@ function artist_album_browser(parent_div, music_ui_ctx){
 			        event.cancelBubble = true;
 					aab.new_playlist_from_selection();
 				}else{
-					aab.artists_table.select_row(artist.index);
-					query.parameters.artist_id.push(artist.artist_id);
+					var selected = null;
+					var ids = aab[type];
+					var query = aab[type + "_table"].query;		
+					
+					
+					selected = aab[type].select_row(data_elem.index);
+					if(selected !== 0){
+						var index = ids.indexOf(data_elem[type + "_id"]);
+						if(index !== -1){
+							ids.splice(index, 1);
+						}
+					}else{
+						query.parameters.artist_id.push(data_elem[type + "_id"]);
+					}
 					aab.albums_table.clear();
 					query.load();
 				
@@ -54,14 +66,14 @@ function artist_album_browser(parent_div, music_ui_ctx){
 			};
 		};
 		
-	}(this);
+	};
 	
 	//Double click adds to current playlist except All
 	this.artists_dblclick = function(){
 		
 	};
 	
-	this.artists_table = new table(this.artist_column, this.artist_click);
+	this.artists_table = new table(this.artist_column, this.artist_click(this, "artists"));
 
 
 	
