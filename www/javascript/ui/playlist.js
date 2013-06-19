@@ -72,7 +72,7 @@ function playlist(domain, parameters){
 		this.songs_table.win_resize();
 	};
 	
-	this.songs_table = new table(this.song_columns, this.song_click, "song_id");
+	this.songs_table = new table(this.song_columns, this.song_click);
 	
 	this.songs_table.table_div.style.position = "absolute";
 	this.songs_table.table_div.style.top = "0";

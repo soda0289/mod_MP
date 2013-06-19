@@ -29,7 +29,11 @@ function create_inital_queries(domain){
 	music_window.appendChild(music_ui_ctx.player_if.div);
 	
 	
-	music_ui_ctx.artist_album_if = new artist_album_browser(music_window,music_ui_ctx);
+	//music_ui_ctx.artist_album_if = new artist_album_browser(music_window,music_ui_ctx);
+	
+	music_ui_ctx.browser_if = new browser(music_window, music_ui_ctx);
+	//music_ui_ctx.browser_if.add_table([{"header" : "Artist","friendly_name" : "artist_name"}], "artists");
+	//music_ui_ctx.browser_if.add_table([{"header" : "Albums","friendly_name" : "album_name"}], "albums");
 	
 	music_ui_ctx.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
 	
@@ -50,10 +54,11 @@ function loadUI(){
 
 	
 	var server_url = document.createElement("input");
-	server_url.id = "server_url"
+	server_url.className = "textbox";
 	server_url.type = "text";
 	
 	var server_url_div = document.createElement("div");
+	server_url_div.id = "login_server_url";
 	server_url_div.innerHTML = "Server URL: ";
 	server_url_div.appendChild(server_url);
 	login_box.appendChild(server_url_div);
@@ -61,18 +66,22 @@ function loadUI(){
 	
 	
 	var username = document.createElement("input");
+	username.className = "textbox";
 	username.type = "text";
 	
 	var username_div = document.createElement("div");
+	username_div.id = "login_username";
 	username_div.innerHTML = "User name: ";
 	username_div.appendChild(username);
 	login_box.appendChild(username_div);
 	
 	
 	var password = document.createElement("input");
+	password.className = "textbox";
 	password.type = "password";
 	
 	var password_div = document.createElement("div");
+	password_div.id = "login_password";
 	password_div.innerHTML = "Passowrd: ";
 	password_div.appendChild(password);
 	login_box.appendChild(password_div);
@@ -83,8 +92,10 @@ function loadUI(){
 	ok_button.type = "button";
 	ok_button.value = "OK";
 	ok_button.id = "ok_button"
+	ok_button.class = "ok_button";
 	ok_button.onclick = function(event){
-		var server_url = document.getElementById("server_url");
+		var server_url_div = document.getElementById("login_server_url");
+		var server_url = server_url_div.getElementsByClassName("textbox")[0];
 		var login_box = document.getElementById("login_box");
 		create_inital_queries(server_url.value);
 		login_box.style.visibility = "hidden";

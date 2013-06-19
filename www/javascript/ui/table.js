@@ -1,15 +1,17 @@
-function table(columns, row_click_cb, row_unique_id){
+function table(columns, row_click_cb, col_click_cb){
 	
 	var column_header_height = "33px";
 	
 	this.columns = columns;
+	this.col_click_cb = col_click_cb;
 	
 	this.table_div = document.createElement('div');
 	this.table_div.style.position = "relative";
+	this.table_div.style.display = "inline-block";
+	this.table_div.style.height = "100%";
 	
 	this.clear = function() {
 		this.table.innerHTML = "";
-		this.query.reset();
 	};
 	
 	this.deselect_row = function(index){
@@ -42,7 +44,10 @@ function table(columns, row_click_cb, row_unique_id){
 		return -1;
 	};
 	
-
+	this.invert_table = function (){
+		
+		
+	}
 	
 	this.create_column_header = function (){
 		//Use header
@@ -59,17 +64,14 @@ function table(columns, row_click_cb, row_unique_id){
 		
 		for(var col in this.columns){
 			var new_col;
+			
 			new_col = document.createElement('th');
 			new_col.style.width = (100 / this.columns.length) + "%";
 			new_col.innerHTML =  this.columns[col].header;
 			head_row.appendChild(new_col);
-			new_col.onclick = function(table_obj, col_fname){
-				return function(){
-					table_obj.query.parameters.sort_by = col_fname;
-					table_obj.clear();
-					table_obj.query.load();
-				};
-			}(this, this.columns[col].friendly_name);
+			if(this.col_click_cb !== undefined){
+				new_col.onclick = this.col_click_cb(col);
+			}
 		}
 		
 		this.header_table.appendChild(head_row);
@@ -108,7 +110,7 @@ function table(columns, row_click_cb, row_unique_id){
 	
 	this.create_table();
 	
-	this.add_rows_cb = function(table_c,column_list, row_click_cb, row_unique_id){
+	this.add_rows_cb = function(table_p, table_c,column_list, row_click_cb){
 		
 		return function(data){
 			for(var i = table_c.rows.length; i < data.length; i = table_c.rows.length){
@@ -128,13 +130,13 @@ function table(columns, row_click_cb, row_unique_id){
 					new_row.appendChild(new_col);
 				}
 				if(row_click_cb !== undefined){
-					new_row.onclick = row_click_cb(data_elem);
+					new_row.onclick = row_click_cb(data_elem, table_p);
 				}
 				
 				table_c.appendChild(new_row);
 			}
 		};
-	}(this.table,this.columns, row_click_cb, row_unique_id);
+	}(this, this.table,this.columns, row_click_cb);
 	
 	this.win_resize = function (table_obj){
 		return function(){

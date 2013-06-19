@@ -1,5 +1,27 @@
 @CHARSET "UTF-8";
 
+#browser_div{
+	height: 200px;
+}
+
+#browser_div .create_table{
+	background-color: orange;
+	height: 100%;
+	position: relative;
+	width: 20px;
+	line-height: 50px;
+	text-align: center;
+	font-size: 44px;
+	float: left;
+}
+
+#login_server_url, #login_password, #login_username{
+	height: 27px;
+}
+#login_server_url .textbox, #login_password .textbox, #login_username .textbox{
+	float: right;
+}
+
 #left{
 	
 	background: #4c4c4c; /* Old browsers */

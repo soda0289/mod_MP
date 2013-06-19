@@ -17,7 +17,7 @@ old_library='mod_mediaplayer.a'
 inherited_linker_flags=' -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -lmusicbrainz5 -lm -lssl -lcrypto -lFLAC -logg -lvorbisenc -lvorbis -lvorbisfile /usr/local/apr/lib/libapr-2.la -luuid -lrt -lcrypt -lpthread -ldl -lexpat'
+dependency_libs=' -lmusicbrainz5 -lm -lssl -lcrypto -lFLAC -logg -lvorbisenc -lvorbis -lvorbisfile /usr/local/apr/lib/libapr-2.la -lrt -lcrypt -lpthread -ldl -lexpat'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

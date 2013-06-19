@@ -137,15 +137,15 @@ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/reyad/Workspace/MediaPlayer/config/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 APR_CONFIG = /usr/local/apr/bin/apr-2-config
-APR_INCLUDES =  -I/usr/local/apr/include/apr-2 -I/usr/include -I/usr/include/mysql
+APR_INCLUDES =  -I/usr/local/apr/include/apr-2 
 APU_CONFIG = /apu-config
 APU_INCLUDES = 
 APXS_BIN = /usr/local/apache2/bin/apxs
-APXS_CFLAGS =   -g -O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -pthread -Wpointer-arith -Wdeclaration-after-statement -Werror=declaration-after-statement -Wformat -Wformat-security -Werror=format-security -DLINUX -D_REENTRANT -D_GNU_SOURCE -DAP_DEBUG 
+APXS_CFLAGS =   -g -O2 -pthread -DLINUX -D_REENTRANT -D_GNU_SOURCE 
 APXS_EXTENSION = .la
 AP_BINDIR = /usr/local/apache2/bin
-AP_CFLAGS =   -g -O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -pthread -Wpointer-arith -Wdeclaration-after-statement -Werror=declaration-after-statement -Wformat -Wformat-security -Werror=format-security -DLINUX -D_REENTRANT -D_GNU_SOURCE -DAP_DEBUG  -I/usr/local/apache2/include   -I/usr/local/apr/include/apr-2 -I/usr/include -I/usr/include/mysql
-AP_CPPFLAGS =  -I/usr/local/apache2/include   -I/usr/local/apr/include/apr-2 -I/usr/include -I/usr/include/mysql
+AP_CFLAGS =   -g -O2 -pthread -DLINUX -D_REENTRANT -D_GNU_SOURCE  -I/usr/local/apache2/include   -I/usr/local/apr/include/apr-2 
+AP_CPPFLAGS =  -I/usr/local/apache2/include   -I/usr/local/apr/include/apr-2 
 AP_DEFS = -DWITH_APACHE20
 AP_INCLUDEDIR = /usr/local/apache2/include
 AP_INCLUDES = -I/usr/local/apache2/include
@@ -158,7 +158,7 @@ AUTOCONF = ${SHELL} /home/reyad/Workspace/MediaPlayer/config/missing --run autoc
 AUTOHEADER = ${SHELL} /home/reyad/Workspace/MediaPlayer/config/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/reyad/Workspace/MediaPlayer/config/missing --run automake-1.11
 AWK = gawk
-BIN_LDFLAGS =   /usr/local/apr/lib/libapr-2.la     -lcrypt -luuid -lrt -lcrypt  -lpthread -ldl -lexpat
+BIN_LDFLAGS =   /usr/local/apr/lib/libapr-2.la     -lcrypt -lrt -lcrypt  -lpthread -ldl -lexpat
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -198,7 +198,7 @@ MAINT = #
 MAKEINFO = ${SHELL} /home/reyad/Workspace/MediaPlayer/config/missing --run makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
-MODULE_CFLAGS =   -g -O2 -Wall -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -pthread -Wpointer-arith -Wdeclaration-after-statement -Werror=declaration-after-statement -Wformat -Wformat-security -Werror=format-security -DLINUX -D_REENTRANT -D_GNU_SOURCE -DAP_DEBUG  -I/usr/local/apache2/include  -I/usr/local/apr/include/apr-2 -I/usr/include -I/usr/include/mysql 
+MODULE_CFLAGS =   -g -O2 -pthread -DLINUX -D_REENTRANT -D_GNU_SOURCE  -I/usr/local/apache2/include  -I/usr/local/apr/include/apr-2  
 MODULE_LDFLAGS =   /usr/local/apr/lib/libapr-2.la 
 NM = /usr/bin/nm -B
 NMEDIT = 

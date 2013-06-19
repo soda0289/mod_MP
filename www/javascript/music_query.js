@@ -32,6 +32,8 @@ function music_query(hostname, parameters,print_results_function){
 		this.results = [];
 	};
 	
+
+	
 	
 	this.set_url = function (){
 		this.upper = (this.count * this.parameters.num_results).toString();

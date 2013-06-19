@@ -198,6 +198,7 @@
 					<table id="albums">
 						<column id="name"/>
 						<column id="album_artist"/>
+						<column id="date"/>
 					</table>
 					<table id="sources">
 					</table>
