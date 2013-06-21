@@ -31,7 +31,7 @@ function playlist_tabs(parent_div, music_ui_ctx){
 	this.new_tab_button.style.cursor = "pointer";
 	this.new_tab_button.innerHTML = "+";
 	this.new_tab_button.onclick = function (event){
-		music_ui_ctx.artist_album_if.new_playlist_from_selection();
+		music_ui_ctx.browser_if.new_playlist_from_selection();
 	};
 	
 	this.tab_buttons_ul.appendChild(this.new_tab_button);
@@ -39,9 +39,9 @@ function playlist_tabs(parent_div, music_ui_ctx){
 	this.tab_buttons_div.appendChild(this.tab_buttons_ul);
 	
 	
-	
+	//This is the main div that holds the tabs and the playlist divs
 	this.tabs_div = document.createElement('div');
-	this.tabs_div.style.height = "266px";
+	this.tabs_div.style.height = "100%";
 	this.tabs_div.style.position = "relative";
 	
 	this.div.appendChild(this.tab_buttons_div);

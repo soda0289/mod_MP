@@ -1,5 +1,8 @@
 @CHARSET "UTF-8";
-
+#body{
+	margin:0px;
+	overflow:hidden;
+}
 #browser_div{
 	height: 200px;
 }
@@ -11,8 +14,8 @@
 	width: 20px;
 	line-height: 50px;
 	text-align: center;
-	font-size: 44px;
-	float: left;
+	font-size: 24px;
+	float: right;
 }
 
 #login_server_url, #login_password, #login_username{
@@ -20,6 +23,12 @@
 }
 #login_server_url .textbox, #login_password .textbox, #login_username .textbox{
 	float: right;
+}
+
+#right{
+	display: inline-block;
+	position: absolute;
+	width: 100%;
 }
 
 #left{

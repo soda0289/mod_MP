@@ -1,4 +1,6 @@
 function table(columns, row_click_cb, col_click_cb){
+	//Selected id in the current table
+	this.selected_ids = [];
 	
 	var column_header_height = "33px";
 	
@@ -11,6 +13,7 @@ function table(columns, row_click_cb, col_click_cb){
 	this.table_div.style.height = "100%";
 	
 	this.clear = function() {
+		this.selected_ids = [];
 		this.table.innerHTML = "";
 	};
 	
