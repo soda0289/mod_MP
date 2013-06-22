@@ -170,7 +170,7 @@ function browser(parent_div, music_ui_ctx){
 		this.add_ids(query_param);
 		
 		new_table.query = new music_query(music_ui_ctx.domain, query_param,new_table.add_rows_cb);
-		new_table.query.sort_by = "artist_name";
+		new_table.query.parameters.sort_by = query_type.substring(0,query_type.length-1) + "_name";
 		
 		
 		if(this.tables.length > 0){

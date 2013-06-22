@@ -60,9 +60,7 @@ function table(columns, row_click_cb, col_click_cb){
 		//Create table header
 		var head_row = document.createElement('tr');
 		
-		head_row.id = "table_header";
-		head_row.style.backgroundColor= "black";
-		head_row.style.color = "orange";
+		head_row.className = "table_header";
 		head_row.style.cursor = "pointer";
 		
 		for(var col in this.columns){
@@ -70,7 +68,32 @@ function table(columns, row_click_cb, col_click_cb){
 			
 			new_col = document.createElement('th');
 			new_col.style.width = (100 / this.columns.length) + "%";
-			new_col.innerHTML =  this.columns[col].header;
+			
+			var column_title = document.createElement("div");
+			column_title.className = "column_title";
+			column_title.innerHTML =  this.columns[col].header;
+			
+			new_col.appendChild(column_title);
+			
+			var arrows_div = document.createElement("div");
+			arrows_div.className = "sort_arrows";
+			
+			var up_arrow = document.createElement("div");
+			up_arrow.className = "up_arrow";
+			
+			var down_arrow = document.createElement("div");
+			down_arrow.className = "down_arrow";
+			
+			up_arrow.onclick = function(){
+				console.log("kkk");
+			}
+
+			arrows_div.appendChild(up_arrow);
+			arrows_div.appendChild(down_arrow);
+			
+			new_col.appendChild(arrows_div);
+			
+			
 			head_row.appendChild(new_col);
 			if(this.col_click_cb !== undefined){
 				new_col.onclick = this.col_click_cb(col);

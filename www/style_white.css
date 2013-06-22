@@ -1,0 +1,125 @@
+@CHARSET "UTF-8";
+#body{
+	margin:0px;
+	overflow:hidden;
+}
+#browser_div{
+	height: 200px;
+}
+
+#browser_div .create_table{
+	background-color: orange;
+	height: 100%;
+	position: relative;
+	width: 20px;
+	line-height: 50px;
+	text-align: center;
+	font-size: 24px;
+	float: right;
+}
+
+#login_server_url, #login_password, #login_username{
+	height: 27px;
+}
+#login_server_url .textbox, #login_password .textbox, #login_username .textbox{
+	float: right;
+}
+
+#right{
+	display: inline-block;
+	position: absolute;
+	width: 100%;
+}
+
+#left{
+	
+	background: #4c4c4c; /* Old browsers */
+background: -moz-linear-gradient(left, #4c4c4c 0%, #666666 68%, #474747 90%, #2c2c2c 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right top, color-stop(0%,#4c4c4c), color-stop(68%,#666666), color-stop(90%,#474747), color-stop(100%,#2c2c2c)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(left, #4c4c4c 0%,#666666 68%,#474747 90%,#2c2c2c 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(left, #4c4c4c 0%,#666666 68%,#474747 90%,#2c2c2c 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(left, #4c4c4c 0%,#666666 68%,#474747 90%,#2c2c2c 100%); /* IE10+ */
+background: linear-gradient(to right, #4c4c4c 0%,#666666 68%,#474747 90%,#2c2c2c 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4c4c4c', endColorstr='#2c2c2c',GradientType=1 ); /* IE6-9 */
+}
+
+#player{
+background: #FFFFFF; /* Old browsers */
+
+color: grey;
+}
+
+#table{
+	color: darkgrey;
+	border-collapse: collapse;
+	
+	
+}
+
+.table_header{
+	background-color: #DDDDDD;
+}
+
+#table .even{
+	background: #FFFFFF;
+	cursor: "pointer";
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+
+}
+#table .odd{
+	background: #F8F8F8; /* Old browsers */
+	cursor: "pointer";
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+
+}
+
+#table td{
+		border-left-width: 2px;
+	border-left-style: solid;
+}
+
+.selected{
+	background: #000000 ! important;
+}
+
+#tab_buttons{
+	background: #CCCCCC;
+}
+
+#tab_buttons .current_tab{
+	background: #FFFFFF;
+}
+
+.table_header .column_title{
+		color: orange;
+		display: inline-block;
+		width:90%;
+		height: 100%;
+		vertical-align: top;
+}
+
+
+.table_header .sort_arrows{
+		display: inline-block;
+		width:10%
+}
+
+.table_header .up_arrow{
+	width: 0; 
+	height: 0;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-bottom: 8px solid black;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.table_header .down_arrow{
+	width: 0; 
+	height: 0;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-top: 8px solid black;
+}
