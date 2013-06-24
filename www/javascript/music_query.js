@@ -6,6 +6,9 @@ function query_parameters(type){
 	this.album_id = [];
 	this.song_id = [];
 	this.source_id = [];
+	this.album_name;
+	this.artist_name;
+	this.song_title;
 	this.source_type = null;
 	this.output_type = null;
 }
@@ -52,7 +55,15 @@ function music_query(hostname, parameters,print_results_function){
 		if (this.parameters.source_id instanceof Array && this.parameters.source_id.length) {
 			this.url += "/source_id/" + this.parameters.source_id;
 		}
-		
+		if (this.parameters.song_title !== null && this.parameters.song_title !== undefined) {
+			this.url += "/song_title/" + this.parameters.song_title;
+		}
+		if (this.parameters.album_name !== null && this.parameters.album_name !== undefined) {
+			this.url += "/album_name/" + this.parameters.album_name;
+		}
+		if (this.parameters.artist_name !== null && this.parameters.artist_name !== undefined) {
+			this.url += "/artist_name/" + this.parameters.artist_name;
+		}
 		if (this.parameters.sort_by !== null && this.parameters.sort_by !== undefined) {
 			this.url += "/sort_by/" + this.parameters.sort_by;
 		}

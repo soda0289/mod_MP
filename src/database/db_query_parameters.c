@@ -65,9 +65,9 @@ int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parame
 	if(column->type == VARCHAR){
 		//Varchar string
 		int i;
-		//check if valid chars
+		//check if valid chars in condition string
 		for(i = 0; i < strlen(condition); i++){
-			if(!isalnum	(condition[i]) && condition[i] != '*'){
+			if(!isalnum	(condition[i]) && !isprint(condition[i])){
 				//Error not alphanumeric
 				return -1;
 			}

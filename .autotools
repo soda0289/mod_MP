@@ -16,7 +16,7 @@
 <option id="libdir" value=""/>
 <option id="bindir" value=""/>
 <option id="sbindir" value=""/>
-<option id="includedir" value=""/>
+<option id="includedir" value="/usr/local/apr/include/"/>
 <option id="datadir" value=""/>
 <option id="sysconfdir" value=""/>
 <option id="infodir" value=""/>

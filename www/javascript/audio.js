@@ -173,14 +173,13 @@ function audio_obj(player, music_ui_ctx){
 		this.audio_ele.load;
 		
 		//scroll to song
-		var songs_table = player.playlist.songs_table.table;
-		var song_row= songs_table.rows[song.index];
+		var songs_table = player.playlist.songs_table;
+		var song_row= songs_table.table.rows[song.index];
 		song_row.scrollIntoView();
 		var scrollBack = (player.playlist.songs_table.table_scrollbar.scrollHeight - player.playlist.songs_table.table_scrollbar.scrollTop <= player.playlist.songs_table.table_scrollbar.clientHeight) ? 0 : player.playlist.songs_table.table_scrollbar.clientHeight/4;
 		player.playlist.songs_table.table_scrollbar.scrollTop -= scrollBack;
 	    //Highlight Song
-		this.song_backgroundColor = song_row.style.backgroundColor;
-		song_row.style.backgroundColor = "black";
+		songs_table.select_row(song.index);
 		
 	
 	

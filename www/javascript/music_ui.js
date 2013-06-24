@@ -33,6 +33,7 @@ function create_inital_queries(domain){
 	//music_ui_ctx.browser_if.add_table([{"header" : "Albums","friendly_name" : "album_name"}], "albums");
 	
 	music_ui_ctx.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
+	//Resize playlist tabs
 	music_ui_ctx.playlist_tabs_if.div.style.height = (parseInt(document.documentElement.clientHeight, 10) - 20 - (parseInt(music_ui_ctx.player_if.div.style.height,10) + parseInt(window.getComputedStyle(music_ui_ctx.browser_if.div).height,10))) + "px";
 	
 	music_ui_ctx.playlist_tabs_if.add_tab("all", default_playlist);
@@ -40,17 +41,8 @@ function create_inital_queries(domain){
 
 
 function loadUI(){
-	var login_box = document.createElement("div");
-	login_box.id = "login_box";
-	login_box.style.position = "absolute";
-	login_box.style.top = "50%";
-	login_box.style.left = "50%";
-	login_box.style.width = "300px";
-	login_box.style.height = "150px";
-	login_box.style.backgroundColor = "white";
-	
 
-	
+	var login_window = new floating_box("login_box", ((parseInt(document.documentElement.clientHeight, 10) / 2) - 75) + "px", ((parseInt(document.documentElement.clientWidth, 10) / 2) - 150) + "px",300 + "px",150 + "px");
 	var server_url = document.createElement("input");
 	server_url.className = "textbox";
 	server_url.type = "text";
@@ -59,7 +51,7 @@ function loadUI(){
 	server_url_div.id = "login_server_url";
 	server_url_div.innerHTML = "Server URL: ";
 	server_url_div.appendChild(server_url);
-	login_box.appendChild(server_url_div);
+	login_window.appendChild(server_url_div);
 	
 	
 	
@@ -71,7 +63,7 @@ function loadUI(){
 	username_div.id = "login_username";
 	username_div.innerHTML = "User name: ";
 	username_div.appendChild(username);
-	login_box.appendChild(username_div);
+	login_window.appendChild(username_div);
 	
 	
 	var password = document.createElement("input");
@@ -82,7 +74,7 @@ function loadUI(){
 	password_div.id = "login_password";
 	password_div.innerHTML = "Passowrd: ";
 	password_div.appendChild(password);
-	login_box.appendChild(password_div);
+	login_window.appendChild(password_div);
 	
 	
 	
@@ -96,16 +88,10 @@ function loadUI(){
 		var server_url = server_url_div.getElementsByClassName("textbox")[0];
 		var login_box = document.getElementById("login_box");
 		create_inital_queries(server_url.value);
-		login_box.style.visibility = "hidden";
+		login_box.parentNode.removeChild(login_box);
 	}
-	login_box.appendChild(ok_button);
-	
-	
-	
-	
-	
-	var body = document.getElementById("body");
-	body.appendChild(login_box);
+	login_window.appendChild(ok_button);
+	login_window.show();
 }
 //note to self
 //when you set a varible to a function

@@ -65,6 +65,8 @@ function playlist(domain, parameters){
 		};
 	}(this);
 	
+
+	
 	this.insert_into_div = function(div){
 		div.appendChild(this.div);
 		//Resize header
@@ -72,7 +74,11 @@ function playlist(domain, parameters){
 		this.songs_table.win_resize();
 	};
 	
-	this.songs_table = new table(this.song_columns, this.song_click);
+
+	
+	
+	
+	this.songs_table = new table(this.song_columns, this.song_click, this.search_box_change);
 
 	this.songs_table.table_div.style.width = "100%";
 	

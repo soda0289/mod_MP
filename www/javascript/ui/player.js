@@ -78,9 +78,12 @@ function player(playlist, music_ui_ctx){
 	//this.previous_button.style.vertical-align = "middle";
 	this.previous_button.onclick = function (player){
 		return function(event){
-			//unhighlight_song(music_ui_ctx);
-
-			player.audio_obj.play_song(player.playlist.songs[player.get_prev_song_index()]);
+			//Unhilight song
+			player.playlist.songs_table.deselect_row(player.playing_index);
+			//play prev song
+			var prev_song_index = player.get_prev_song_index();
+			var song = player.playlist.songs[prev_song_index];
+			player.audio_obj.play_song(song);
 		}
 	}(this);
 	this.player_div.appendChild(this.previous_button);
@@ -91,8 +94,12 @@ function player(playlist, music_ui_ctx){
 	this.next_button.style.display = "block-inline";
 	this.next_button.onclick = function (player){
 		return function(event){
+			//Unhilight song
+			player.playlist.songs_table.deselect_row(player.playing_index);
 			//play next song
-			player.audio_obj.play_song(player.playlist.songs[player.get_next_song_index()]);
+			var next_song_index = player.get_next_song_index();
+			var song = player.playlist.songs[next_song_index]
+			player.audio_obj.play_song(song);
 		}
 	}(this);
 	this.player_div.appendChild(this.next_button);
@@ -109,7 +116,7 @@ function player(playlist, music_ui_ctx){
 	
 	this.player_div.appendChild(this.shuffle);
 	
-	
+	//Song info
 	this.song_info_div = document.createElement("div");
 	this.song_info_div.id = "song_info"
 	this.song_info_div.style.display = "inline-block";
@@ -120,24 +127,41 @@ function player(playlist, music_ui_ctx){
 	this.player_status = document.createElement("div");
 	this.player_status.id = "player_status";
 	this.player_status.style.display = "inline-block";
-	
+	//Time in song
 	this.time_elem = document.createElement("span");
 	this.player_status.appendChild(this.time_elem);
-	
+	//Buffering status
 	this.buffer_elem = document.createElement("span");
 	this.player_status.appendChild(this.buffer_elem);
-	
+	//Shuffled
 	this.shuffled_elem = document.createElement("span");
 	this.player_status.appendChild(this.shuffled_elem);
 	
 	this.player_div.appendChild(this.player_status);
 	
+	//Decoding status div
 	this.decoding_status_div = document.createElement("div");
 	this.decoding_status_div.id = "decoding_status";
 	this.decoding_status_div.style.overflowY = "scroll";
 	this.decoding_status_div.style.display = "inline-block";
 	
 	this.player_div.appendChild(this.decoding_status_div);
+	
+	this.theme_change_div = document.createElement("div");
+	this.theme_change_div.id = "theme_change";
+	this.theme_change_div.style.display = "inline-block";
+	this.theme_change_div.innerHTML = "Dark/Lite";
+	this.theme_change_div.onclick = function(){
+		var stylesheet = document.getElementById("stylesheet");
+		if(stylesheet.href === stylesheet.baseURI + "style_white.css"){
+			stylesheet.href = "/style_black.css";
+		}else{
+			stylesheet.href = "/style_white.css";
+		}
+	};
+	
+	this.player_div.appendChild(this.theme_change_div);
+	
 	
 	this.div = this.player_div;
 	

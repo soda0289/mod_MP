@@ -1,11 +1,10 @@
-function table(columns, row_click_cb, col_click_cb){
+function table(columns, row_click_cb){
 	//Selected id in the current table
 	this.selected_ids = [];
 	
 	var column_header_height = "33px";
 	
 	this.columns = columns;
-	this.col_click_cb = col_click_cb;
 	
 	this.table_div = document.createElement('div');
 	this.table_div.style.position = "relative";
@@ -66,12 +65,27 @@ function table(columns, row_click_cb, col_click_cb){
 		for(var col in this.columns){
 			var new_col;
 			
-			new_col = document.createElement('th');
+			new_col = document.createElement("th");
 			new_col.style.width = (100 / this.columns.length) + "%";
 			
 			var column_title = document.createElement("div");
 			column_title.className = "column_title";
 			column_title.innerHTML =  this.columns[col].header;
+			
+			var column_search  = document.createElement("input");
+			column_search.type = "text";
+			column_search.className = "search_textbox";
+			column_search.onkeyup = function(table, search_textbox, column_fname){
+				return function(){
+					var search_string = '*' + search_textbox.value + '*';
+					table.query.parameters[column_fname] = search_string;
+					table.query.reset();
+					table.clear();
+					table.query.load();
+				}
+			}(this, column_search, this.columns[col].friendly_name);
+			
+			column_title.appendChild(column_search);
 			
 			new_col.appendChild(column_title);
 			
@@ -80,24 +94,24 @@ function table(columns, row_click_cb, col_click_cb){
 			
 			var up_arrow = document.createElement("div");
 			up_arrow.className = "up_arrow";
+
 			
-			var down_arrow = document.createElement("div");
-			down_arrow.className = "down_arrow";
-			
-			up_arrow.onclick = function(){
-				console.log("kkk");
-			}
+			up_arrow.onclick = function (this_table, col_f_name){
+				return function(event){
+					this_table.query.parameters.sort_by = col_f_name;
+					this_table.clear();
+					this_table.query.reset();
+					this_table.query.load();
+				}
+			}(this, this.columns[col].friendly_name);
 
 			arrows_div.appendChild(up_arrow);
-			arrows_div.appendChild(down_arrow);
+			//arrows_div.appendChild(down_arrow);
 			
 			new_col.appendChild(arrows_div);
 			
 			
 			head_row.appendChild(new_col);
-			if(this.col_click_cb !== undefined){
-				new_col.onclick = this.col_click_cb(col);
-			}
 		}
 		
 		this.header_table.appendChild(head_row);
