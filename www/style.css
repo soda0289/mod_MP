@@ -4,19 +4,23 @@
 	overflow:hidden;
 }
 
+
+
 #browser_div{
 	min-height: 50px;
+	position: relative;
 }
 
 #browser_div .create_table{
 	cursor: pointer;
 	background-color: orange;
-	height: 100%;
 	position: absolute;
 	width: 20px;
 	text-align: center;
 	font-size: 24px;
 	right: 0;
+	bottom: 0;
+	top: 0;
 }
 
 #login_server_url, #login_password, #login_username{
