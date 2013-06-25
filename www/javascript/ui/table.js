@@ -10,6 +10,7 @@ function table(columns, row_click_cb){
 	this.table_div.style.position = "relative";
 	this.table_div.style.display = "inline-block";
 	this.table_div.style.height = "100%";
+	this.table_div.style.overflowX = "scroll";
 	
 	this.clear = function() {
 		this.selected_ids = [];
@@ -125,6 +126,7 @@ function table(columns, row_click_cb){
 	this.create_table = function(){
 		//Div with scrollbars to scroll table
 		this.table_scrollbar = document.createElement('div');
+		this.table_scrollbar.className = "scrolling_div";
 		this.table_scrollbar.addEventListener("scroll",
 				function(music_ui_ctx){
 					return function(event){
@@ -134,12 +136,13 @@ function table(columns, row_click_cb){
 				}(this),false);
 		this.table_scrollbar.style.width = "100%";
 		this.table_scrollbar.style.overflowY = "scroll";
+		this.table_scrollbar.style.overflowX = "hidden";
 		this.table_scrollbar.style.position = "absolute";
 		this.table_scrollbar.style.bottom = "0";
 		this.table_scrollbar.style.top = column_header_height;
 		
 		this.table = document.createElement('table');
-		this.table.id = "table";
+		this.table.className = "table";
 		this.table.style.width = "100%";
 		this.table.cellSpacing = "0";
 

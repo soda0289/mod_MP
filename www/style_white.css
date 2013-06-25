@@ -13,7 +13,7 @@ color: grey;
 	background: #F0F0F0;	
 }
 
-#table{
+.table{
 	color: darkgrey;
 	border-collapse: collapse;
 	
@@ -24,14 +24,14 @@ color: grey;
 	background-color: #DDDDDD;
 }
 
-#table .even{
+.table .even{
 	background: #FFFFFF;
 
 	border-bottom-style: solid;
 	border-bottom-width: 1px;
 
 }
-#table .odd{
+.table .odd{
 	background: #F8F8F8; /* Old browsers */
 	cursor: "pointer";
 	border-bottom-style: solid;
@@ -39,7 +39,7 @@ color: grey;
 
 }
 
-#table td{
+.table td{
 		border-left-width: 2px;
 	border-left-style: solid;
 }

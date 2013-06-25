@@ -79,3 +79,11 @@
 	right:0;
 	cursor: pointer;
 }
+
+.playlist th,.playlist td{
+	min-width: 270px;
+}
+
+.playlist .scrolling_div{
+	min-width: 810px; /*This is three times the min width of td(table row)*/
+}

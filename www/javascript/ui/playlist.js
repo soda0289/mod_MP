@@ -81,6 +81,7 @@ function playlist(domain, parameters){
 	this.songs_table = new table(this.song_columns, this.song_click, this.search_box_change);
 
 	this.songs_table.table_div.style.width = "100%";
+	this.songs_table.table_div.className = "playlist"
 	
 	this.div = this.songs_table.table_div;
 		
