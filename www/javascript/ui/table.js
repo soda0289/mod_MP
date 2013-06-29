@@ -158,7 +158,7 @@ function table(columns, row_click_cb){
 		return function(data){
 			for(var i = table_c.rows.length; i < data.length; i = table_c.rows.length){
 				var data_elem = data[i];
-				data_elem.index = i;
+				data_elem.table_index = i;
 				
 				var new_row = document.createElement('tr');
 				var parity = (i%2 === 0) ? "even" : "odd";

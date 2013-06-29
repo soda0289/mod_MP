@@ -42,11 +42,13 @@ function player(playlist, music_ui_ctx){
 	}
 	
 	this.get_next_song_index = function (){
-		this.playing_index += 1;
-		if(this.playing_index === this.playlist.songs.length){
-			this.playing_index = 0;
+		var next_index = this.playing_index + 1;
+		//Check if array index is outofbound
+		if(next_index === this.playlist.songs.length){
+			//reset
+			next_index = 0;
 		}
-		return this.playing_index;
+		return next_index;
 	}
 	
 	this.get_prev_song_index = function (){
@@ -94,12 +96,11 @@ function player(playlist, music_ui_ctx){
 	this.next_button.style.display = "block-inline";
 	this.next_button.onclick = function (player){
 		return function(event){
-			//Unhilight song
-			player.playlist.songs_table.deselect_row(player.playing_index);
 			//play next song
 			var next_song_index = player.get_next_song_index();
-			var song = player.playlist.songs[next_song_index]
-			player.audio_obj.play_song(song);
+			var next_song = player.playlist.songs[next_song_index];
+			//unhilight row of table equal to song.index
+			player.audio_obj.play_song(next_song);
 		}
 	}(this);
 	this.player_div.appendChild(this.next_button);
@@ -108,9 +109,21 @@ function player(playlist, music_ui_ctx){
 	this.shuffle.id = "shuffle_button";
 	this.shuffle.src = "svg/shuffle.svg";
 	this.shuffle.style.display = "block-inline";
-	this.shuffle.onclick = function (player_if){
+	this.shuffle.onclick = function (player){
 		return function(event){
-			player_if.playlist.shuffle();
+			//get current song
+			var song = player.playlist.songs[player.playing_index];
+			
+			//shuffle playlist
+			player.playlist.shuffle();
+			player.shuffled = 1;
+			
+			//set playing_index to the current playing song
+			//in shuffled array
+			
+			if(player.playing_index >= 0){
+				player.playing_index = player.playlist.songs.map(function(e) { return e.song_id; }).indexOf(song.song_id);
+			}
 		}
 	}(this);
 	

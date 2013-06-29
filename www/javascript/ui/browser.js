@@ -63,7 +63,7 @@ function browser(parent_div, music_ui_ctx){
 					aab.new_playlist_from_selection();
 				}else{
 					//Select the table row
-					var is_selected = table_p.select_row(data_elem.index);
+					var is_selected = table_p.select_row(data_elem.table_index);
 					
 					//Add the artist/album ids to browser
 					var passing_type = table_p.query.parameters.type.substring(0, table_p.query.parameters.type.length -1) + "_id";

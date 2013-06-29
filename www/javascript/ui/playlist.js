@@ -42,7 +42,11 @@ function playlist(domain, parameters){
 			//Random number from [0, i]
 			var random = Math.floor(Math.random() * (i + 1));
 			this.shuffled_playlist[i] = this.shuffled_playlist[random];
+			if(this.shuffled_playlist[i] !== undefined){
+				this.shuffled_playlist[i].shuffled_index = i;
+			}
 			this.shuffled_playlist[random] = this.songs[i];
+			this.shuffled_playlist[random].shuffled_index = random;
 		}
 		
 		this.unshuffled_playlist = this.songs;
@@ -56,8 +60,6 @@ function playlist(domain, parameters){
 				if(plist.player === undefined || plist.player === null){
 					console.log("no player set for this playlist");
 				}else{
-					//Set player playing index to this songs index (table row index)
-					plist.player.playing_index = song.index;
 					plist.player.playlist = plist;
 					plist.player.audio_obj.play_song(song);
 				}

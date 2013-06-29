@@ -91,6 +91,15 @@ function audio_obj(player, music_ui_ctx){
 	
 	//Audio Element
 	this.audio_ele = new Audio;
+	//Detect error
+	this.audio_ele.addEventListener('error', 
+			function (player) {
+				return function(e){
+					alert("error loading audio");
+				}
+			}(player),
+	false);
+	
 	this.audio_ele.addEventListener('timeupdate', 
 	function (player) {
 		return function(e){
@@ -148,14 +157,17 @@ function audio_obj(player, music_ui_ctx){
 			}
 	}(player), false);
 
-
 	this.play_song = function (song){
 		if(typeof(song) !== "object"){
 			alert("passed play_song undefined song");
 			return 0;
 		}
 		//unhighlight current song
-		//unhighlight_song(music_ui_ctx);
+		//song is equal to the playing index for the array of songs
+		if(this.player.playing_index >= 0){
+			var current_song = this.player.playlist.songs[this.player.playing_index];
+			this.player.playlist.songs_table.deselect_row(current_song.table_index);
+		}
 		//stop current song
 		this.playing = 0;
 		
@@ -167,19 +179,32 @@ function audio_obj(player, music_ui_ctx){
 		}
 		//Set audio obj to playing
 		this.playing = 1;
-
 		
+		//Set playing index to index of song
+		var playing_index;
+		
+		//if shuffled set to shuffled index
+		if(this.player.shuffled === 1){
+			playing_index = song.shuffled_index;
+		}else{
+			playing_index = song.table_index;
+		}
+		
+		this.player.playing_index = playing_index;
+
+		//Set url for audio and start loading
 		this.audio_ele.src = "http://"+this.domain+"/music/play/source_id/" + song.sources[0].source_id;
 		this.audio_ele.load;
 		
 		//scroll to song
 		var songs_table = player.playlist.songs_table;
-		var song_row= songs_table.table.rows[song.index];
-		song_row.scrollIntoView();
-		var scrollBack = (player.playlist.songs_table.table_scrollbar.scrollHeight - player.playlist.songs_table.table_scrollbar.scrollTop <= player.playlist.songs_table.table_scrollbar.clientHeight) ? 0 : player.playlist.songs_table.table_scrollbar.clientHeight/4;
-		player.playlist.songs_table.table_scrollbar.scrollTop -= scrollBack;
+		var song_row = songs_table.table.rows[song.table_index];
+		var songs_table_scroll = songs_table.table_scrollbar;
+
+		songs_table_scroll.scrollTop = song_row.offsetTop - songs_table_scroll.clientHeight/4;
+		
 	    //Highlight Song
-		songs_table.select_row(song.index);
+		songs_table.select_row(song.table_index);
 		
 	
 	
