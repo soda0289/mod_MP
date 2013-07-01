@@ -164,7 +164,7 @@ function audio_obj(player, music_ui_ctx){
 		}
 		//unhighlight current song
 		//song is equal to the playing index for the array of songs
-		if(this.player.playing_index >= 0){
+		if(this.player.playing_index !== undefined && this.player.playing_index >= 0 && this.player.playing_index < this.player.playlist.songs.length){
 			var current_song = this.player.playlist.songs[this.player.playing_index];
 			this.player.playlist.songs_table.deselect_row(current_song.table_index);
 		}
