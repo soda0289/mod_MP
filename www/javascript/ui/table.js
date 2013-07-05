@@ -2,7 +2,7 @@ function table(columns, row_click_cb){
 	//Selected id in the current table
 	this.selected_ids = [];
 	
-	var column_header_height = "33px";
+	var column_header_height = "25px";
 	
 	this.columns = columns;
 	
@@ -56,39 +56,55 @@ function table(columns, row_click_cb){
 		//Use header
 		this.header_table = document.createElement('table');
 		this.header_table.cellSpacing = "0";
+		this.header_table.className = "table_header";
+		this.header_table.style.width = "100%";
+		this.header_table.style.height = column_header_height;
 		
-		//Create table header
+		//Create table header (1 row)
 		var head_row = document.createElement('tr');
-		
-		head_row.className = "table_header";
 		head_row.style.cursor = "pointer";
 		
 		for(var col in this.columns){
-			var new_col;
+			var new_col = document.createElement("th");
 			
-			new_col = document.createElement("th");
-			new_col.style.width = (100 / this.columns.length) + "%";
+			var col_div = document.createElement("div");
+			col_div.style.position = "relative";
+			col_div.style.height = column_header_height;
 			
+			//Get column width
+			if(this.columns[col].width === undefined){
+				//Auto should determine best width
+				new_col.style.width = "auto";
+			}else{
+				new_col.style.width = this.columns[col].width;
+			}
+			
+			//Print Title
 			var column_title = document.createElement("div");
 			column_title.className = "column_title";
 			column_title.innerHTML =  this.columns[col].header;
 			
-			var column_search  = document.createElement("input");
-			column_search.type = "text";
-			column_search.className = "search_textbox";
-			column_search.onkeyup = function(table, search_textbox, column_fname){
-				return function(){
-					var search_string = '*' + search_textbox.value + '*';
-					table.query.parameters[column_fname] = search_string;
-					table.query.reset();
-					table.clear();
-					table.query.load();
-				}
-			}(this, column_search, this.columns[col].friendly_name);
+			//Print search box
+			if(this.columns[col].search !== undefined && this.columns[col].search !== 0){
+				var column_search  = document.createElement("input");
+				
+				column_search.type = "text";
+				column_search.className = "search_textbox";
+				column_search.onkeyup = function(table, search_textbox, column_fname){
+					return function(){
+						var search_string = '*' + search_textbox.value + '*';
+						table.query.parameters[column_fname] = search_string;
+						table.query.reset();
+						table.clear();
+						table.query.load();
+					}
+				}(this, column_search, this.columns[col].friendly_name);
+				
+				column_title.appendChild(column_search);
+			}
 			
-			column_title.appendChild(column_search);
+			col_div.appendChild(column_title);
 			
-			new_col.appendChild(column_title);
 			
 			var arrows_div = document.createElement("div");
 			arrows_div.className = "sort_arrows";
@@ -107,18 +123,15 @@ function table(columns, row_click_cb){
 			}(this, this.columns[col].friendly_name);
 
 			arrows_div.appendChild(up_arrow);
-			//arrows_div.appendChild(down_arrow);
 			
-			new_col.appendChild(arrows_div);
+			col_div.appendChild(arrows_div);
 			
+			new_col.appendChild(col_div);
 			
 			head_row.appendChild(new_col);
 		}
 		
 		this.header_table.appendChild(head_row);
-		this.header_table.style.width = "100%";//this.table.offsetWidth;
-		this.header_table.style.height = column_header_height;
-		
 		
 		this.table_div.insertBefore(this.header_table,this.table_scrollbar);
 	};
@@ -168,7 +181,13 @@ function table(columns, row_click_cb){
 				for(var col in column_list){
 					var new_col;
 					new_col = document.createElement('td');
-					new_col.style.width = (100 / column_list.length) + "%";
+					//Get column width
+					if(column_list[col].width === undefined){
+						//Auto should determine best width
+						new_col.style.width = "auto";
+					}else{
+						new_col.style.width = column_list[col].width;
+					}
 					new_col.innerHTML = data_elem[column_list[col].friendly_name];
 					new_row.appendChild(new_col);
 				}

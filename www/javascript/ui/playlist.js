@@ -7,15 +7,28 @@ function playlist(domain, parameters){
 	this.songs = [];
 	
 	this.song_columns = [
-	                {
+ 	                {
+ 	                	"header" : "Disc#",
+						"friendly_name" : "disc_no",
+						"width" : "70px",
+						"search" : 0
+					},{
+						"header" : "Track#",
+						"friendly_name" : "track_no",
+						"width" : "70px",
+						"search" : 0
+					},{
 						"header" : "Title",
-						"friendly_name" : "song_title"
+						"friendly_name" : "song_title",
+						"search" : 1
 					},{
 						"header" : "Artist",
-						"friendly_name" : "artist_name"
+						"friendly_name" : "artist_name",
+						"search" : 1
 					},{
 						"header" : "Albums",
-						"friendly_name" : "album_name"
+						"friendly_name" : "album_name",
+						"search" : 1
 					}];
 	
 	this.song_added = function(playlist){
@@ -23,8 +36,6 @@ function playlist(domain, parameters){
 		return function(new_songs){
 			//Add rows to table and insert row index into song object
 			playlist.songs_table.add_rows_cb(new_songs);
-			//Update playlist.songs with results
-			playlist.songs = playlist.songs_table.query.results;
 		};
 	}(this);
 	

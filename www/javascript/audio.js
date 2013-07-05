@@ -162,6 +162,11 @@ function audio_obj(player, music_ui_ctx){
 			alert("passed play_song undefined song");
 			return 0;
 		}
+		
+		var playlist = this.player.playlist;
+		//Update playlist.songs with results from query
+		playlist.songs = playlist.songs_table.query.results;
+		
 		//unhighlight current song
 		//song is equal to the playing index for the array of songs
 		if(this.player.playing_index !== undefined && this.player.playing_index >= 0 && this.player.playing_index < this.player.playlist.songs.length){

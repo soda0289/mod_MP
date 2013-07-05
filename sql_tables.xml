@@ -32,12 +32,12 @@
 				</column>
 				<column id="trackno">
 					<name>track_no</name>
-					<fname>track_num</fname>
+					<fname>track_no</fname>
 					<type>int</type>
 				</column>
 				<column id="discno">
 					<name>disc_no</name>
-					<fname>disc_num</fname>
+					<fname>disc_no</fname>
 					<type>int</type>
 				</column>
 			</columns>
@@ -157,6 +157,8 @@
 						<column id="artistid"/>
 						<column id="albumid"/>
 						<column id="sourceid"/>
+						<column id="trackno"/>
+						<column id="discno"/>
 					</table>
 					<table id="songs">
 						<column id="name"/>
@@ -216,7 +218,7 @@
 				<group_by>links.songid, links.albumid,links.artistid,links.sourceid</group_by>
 			</query>
 			<query id="status">
-			    <count>
+			   <count>
 					<table id="songs"/>
 					<table id="artists"/>
 					<table id="albums"/>

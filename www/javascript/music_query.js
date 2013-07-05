@@ -16,7 +16,6 @@ function query_parameters(type){
 
 //Music query object
 function music_query(hostname, parameters,print_results_function){
-	this.running = 1;
 	this.count = 0;
 
 	this.print_results = print_results_function;
@@ -86,6 +85,8 @@ function music_query(hostname, parameters,print_results_function){
 	};
 	
 	this.load = function (){
+		
+		this.running = 1;
 
 		this.set_url();
 		var upper = this.parameters.num_results;
@@ -160,17 +161,15 @@ function music_query(hostname, parameters,print_results_function){
 			}else{
 				json_length = 0;
 			}
-
-			//If nothing was returned or if the amount returned is less than num expected stop query
-			if (json_length === 0 || this.parameters.num_results === 0 || this.parameters.num_results > json_length){
-				this.running = 0;
-			}
 			
 			if(this.print_results !== null){
 				this.print_results(this.results);
 			}
-			
-			if(this.running === 1){
+
+			//If nothing was returned or if the amount returned is less than num expected stop query
+			if (json_length === 0 || this.parameters.num_results === 0 || this.parameters.num_results > json_length){
+				this.running = 0;
+			}else{
 				this.count++;
 				this.load();
 			}

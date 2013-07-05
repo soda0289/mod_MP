@@ -27,15 +27,13 @@ function create_inital_queries(domain){
 	//player
 	music_ui_ctx.player_if = new player(default_playlist, music_ui_ctx);
 	music_window.appendChild(music_ui_ctx.player_if.div);
-	
+	//Music Browser/Playlist Creator
 	music_ui_ctx.browser_if = new browser(music_window, music_ui_ctx);
-	//music_ui_ctx.browser_if.add_table([{"header" : "Artist","friendly_name" : "artist_name"}], "artists");
-	//music_ui_ctx.browser_if.add_table([{"header" : "Albums","friendly_name" : "album_name"}], "albums");
-	
+	//Playlist tabs
 	music_ui_ctx.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
 	//Resize playlist tabs
-	music_ui_ctx.playlist_tabs_if.div.style.height = (parseInt(document.documentElement.clientHeight, 10) - 20 - (parseInt(music_ui_ctx.player_if.div.style.height,10) + parseInt(window.getComputedStyle(music_ui_ctx.browser_if.div).height,10))) + "px";
-	
+	music_ui_ctx.playlist_tabs_if.div.style.top = (parseInt(music_ui_ctx.player_if.div.style.height,10) + parseInt(window.getComputedStyle(music_ui_ctx.browser_if.div).height,10)) + "px";
+	//Default playlist
 	music_ui_ctx.playlist_tabs_if.add_tab("all", default_playlist);
 }
 

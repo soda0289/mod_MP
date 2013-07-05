@@ -1,10 +1,9 @@
 @CHARSET "UTF-8";
 #body{
-	margin:0px;
-	overflow:hidden;
+	margin: 0px;
+	overflow: hidden;
+	height: 100%;
 }
-
-
 
 #browser_div{
 	min-height: 50px;
@@ -34,21 +33,28 @@
 	display: inline-block;
 	position: absolute;
 	width: 100%;
-}
-
-
-.table_header .column_title{
-		display: inline-block;
-		width:90%;
-		height: 100%;
-		vertical-align: middle;
-		text-align: left;
-		position: relative;
+	height: 100%;
 }
 
 #browser_div .table_header .search_textbox{
 	width: 80px;
 }
+
+.table {
+	table-layout: fixed;
+}
+
+.table_header .column_title{
+		display: inline-block;
+		height: 100%;
+		vertical-align: middle;
+		text-align: left;
+		position: absolute;
+		left: 2px;
+		top: 2px;
+}
+
+
 
 .table_header .search_textbox {
 		margin-left: 5px;
@@ -57,7 +63,9 @@
 
 .table_header .sort_arrows{
 		display: inline-block;
-		width:10%
+		position: absolute;
+		right: 2px;
+		top: 2px;
 }
 
 .table_header .up_arrow{
@@ -78,14 +86,15 @@
 	border-top: 8px solid black;
 }
 
+.table_header .search_textbox{
+	padding: 0;
+	margin: 0;
+}
+
 #theme_change{
 	position: absolute;
 	right:0;
 	cursor: pointer;
-}
-
-.playlist th,.playlist td{
-	min-width: 270px;
 }
 
 .playlist .scrolling_div{

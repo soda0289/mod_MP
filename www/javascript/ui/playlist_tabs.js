@@ -2,6 +2,12 @@
 function playlist_tabs(parent_div, music_ui_ctx){
 	
 	this.div = document.createElement('div');
+	this.div.id = "playlist_tabs";
+	//Resize playlist tabs
+	this.div.style.position = "absolute";
+	this.div.style.bottom = "50px";
+	this.div.style.right = 0;
+	this.div.style.left = 0;
 	
 	//Div for tab buttons
 	this.tab_buttons_div = document.createElement('div');
