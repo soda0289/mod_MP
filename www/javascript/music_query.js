@@ -6,11 +6,23 @@ function query_parameters(type){
 	this.album_id = [];
 	this.song_id = [];
 	this.source_id = [];
-	this.album_name;
-	this.artist_name;
-	this.song_title;
+	this.album_name = "";
+	this.artist_name = "";
+	this.song_title = "";
 	this.source_type = null;
 	this.output_type = null;
+	
+	this.clone = function(){
+		new_obj = new query_parameters(this.type);
+		
+		for(var attr in this) {
+			if(this.hasOwnProperty(attr)){
+				new_obj[attr] = this[attr];
+			}
+		}
+		
+		return new_obj;
+	};
 }
 
 
@@ -33,7 +45,6 @@ function music_query(hostname, parameters,print_results_function){
 		this.running = 0;
 		this.results = [];
 	};
-	
 
 	
 	
@@ -42,28 +53,28 @@ function music_query(hostname, parameters,print_results_function){
 		this.url = "http://" + this.hostname + "/music/" + this.parameters.type;
 		//Check if artist_id or album_id is set
 	
-		if (this.parameters.album_id instanceof Array && this.parameters.album_id.length) {
+		if (this.parameters.album_id instanceof Array && this.parameters.album_id.length && this.parameters.album_id.length > 0) {
 			this.url += "/album_id/" + this.parameters.album_id;
 		}
-		if (this.parameters.artist_id instanceof Array && this.parameters.artist_id.length) {
+		if (this.parameters.artist_id instanceof Array && this.parameters.artist_id.length && this.parameters.artist_id.length > 0) {
 			this.url += "/artist_id/" + this.parameters.artist_id;
 		}
-		if (this.parameters.song_id instanceof Array && this.parameters.song_id.length) {
+		if (this.parameters.song_id instanceof Array && this.parameters.song_id.length && this.parameters.song_id.length > 0) {
 			this.url += "/song_id/" + this.parameters.song_id;
 		}
-		if (this.parameters.source_id instanceof Array && this.parameters.source_id.length) {
+		if (this.parameters.source_id instanceof Array && this.parameters.source_id.length && this.parameters.source_id.length > 0) {
 			this.url += "/source_id/" + this.parameters.source_id;
 		}
-		if (this.parameters.song_title !== null && this.parameters.song_title !== undefined) {
+		if (this.parameters.song_title !== null && this.parameters.song_title !== undefined && this.parameters.song_title.length > 0) {
 			this.url += "/song_title/" + this.parameters.song_title;
 		}
-		if (this.parameters.album_name !== null && this.parameters.album_name !== undefined) {
+		if (this.parameters.album_name !== null && this.parameters.album_name !== undefined && this.parameters.album_name.length > 0) {
 			this.url += "/album_name/" + this.parameters.album_name;
 		}
-		if (this.parameters.artist_name !== null && this.parameters.artist_name !== undefined) {
+		if (this.parameters.artist_name !== null && this.parameters.artist_name !== undefined && this.parameters.artist_name.length > 0) {
 			this.url += "/artist_name/" + this.parameters.artist_name;
 		}
-		if (this.parameters.sort_by !== null && this.parameters.sort_by !== undefined) {
+		if (this.parameters.sort_by !== null && this.parameters.sort_by !== undefined && this.parameters.sort_by.length > 0) {
 			this.url += "/sort_by/" + this.parameters.sort_by;
 		}
 		if (this.parameters.type === "sources"){
@@ -140,7 +151,7 @@ function music_query(hostname, parameters,print_results_function){
 						console.log(error.header + ":" + error.message);
 						//return -1;
 					}else{
-						console.log(error.header + ":" + error.message)
+						console.log(error.header + ":" + error.message);
 					}
 				}
 			
@@ -169,6 +180,9 @@ function music_query(hostname, parameters,print_results_function){
 			//If nothing was returned or if the amount returned is less than num expected stop query
 			if (json_length === 0 || this.parameters.num_results === 0 || this.parameters.num_results > json_length){
 				this.running = 0;
+				if(this.onComplete !== undefined){
+					this.onComplete();
+				}
 			}else{
 				this.count++;
 				this.load();

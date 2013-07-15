@@ -65,7 +65,7 @@ function playlist_tabs(parent_div, music_ui_ctx){
 		
 		this.hide = function(){
 			this.button.className = "";
-			this.playlist.div.style.display = "none"
+			this.playlist.div.style.display = "none";
 		};
 		
 	}

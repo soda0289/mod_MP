@@ -1,4 +1,4 @@
-function table(columns, row_click_cb){
+function table(columns, row_click_cb, sort_click_cb, search_change_cb){
 	//Selected id in the current table
 	this.selected_ids = [];
 	
@@ -19,7 +19,7 @@ function table(columns, row_click_cb){
 	
 	this.deselect_row = function(index){
 		var row = this.table.rows[index];
-		if(row.selected === 1){
+		if(row !== undefined && row.selected === 1){
 			var classes;
 			classes = row.className.split(" ");
 			var i = classes.indexOf("selected");
@@ -32,7 +32,7 @@ function table(columns, row_click_cb){
 
 		}
 		return -1;
-	}
+	};
 	
 	this.select_row = function(index){
 		var row = this.table.rows[index];
@@ -50,7 +50,7 @@ function table(columns, row_click_cb){
 	this.invert_table = function (){
 		
 		
-	}
+	};
 	
 	this.create_column_header = function (){
 		//Use header
@@ -65,6 +65,8 @@ function table(columns, row_click_cb){
 		head_row.style.cursor = "pointer";
 		
 		for(var col in this.columns){
+			var curr_col = this.columns[col];
+			
 			var new_col = document.createElement("th");
 			
 			var col_div = document.createElement("div");
@@ -72,33 +74,25 @@ function table(columns, row_click_cb){
 			col_div.style.height = column_header_height;
 			
 			//Get column width
-			if(this.columns[col].width === undefined){
+			if(curr_col.width === undefined){
 				//Auto should determine best width
 				new_col.style.width = "auto";
 			}else{
-				new_col.style.width = this.columns[col].width;
+				new_col.style.width = curr_col.width;
 			}
 			
 			//Print Title
 			var column_title = document.createElement("div");
 			column_title.className = "column_title";
-			column_title.innerHTML =  this.columns[col].header;
+			column_title.innerHTML =  curr_col.header;
 			
 			//Print search box
-			if(this.columns[col].search !== undefined && this.columns[col].search !== 0){
+			if(curr_col.search !== undefined && curr_col.search !== 0 && search_change_cb !== undefined){
 				var column_search  = document.createElement("input");
 				
 				column_search.type = "text";
 				column_search.className = "search_textbox";
-				column_search.onkeyup = function(table, search_textbox, column_fname){
-					return function(){
-						var search_string = '*' + search_textbox.value + '*';
-						table.query.parameters[column_fname] = search_string;
-						table.query.reset();
-						table.clear();
-						table.query.load();
-					}
-				}(this, column_search, this.columns[col].friendly_name);
+				column_search.onkeyup = search_change_cb(this, curr_col, column_search);
 				
 				column_title.appendChild(column_search);
 			}
@@ -113,14 +107,7 @@ function table(columns, row_click_cb){
 			up_arrow.className = "up_arrow";
 
 			
-			up_arrow.onclick = function (this_table, col_f_name){
-				return function(event){
-					this_table.query.parameters.sort_by = col_f_name;
-					this_table.clear();
-					this_table.query.reset();
-					this_table.query.load();
-				}
-			}(this, this.columns[col].friendly_name);
+			up_arrow.onclick = sort_click_cb(this, curr_col.friendly_name);
 
 			arrows_div.appendChild(up_arrow);
 			

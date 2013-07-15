@@ -40,7 +40,9 @@ function create_inital_queries(domain){
 
 function loadUI(){
 
-	var login_window = new floating_box("login_box", ((parseInt(document.documentElement.clientHeight, 10) / 2) - 75) + "px", ((parseInt(document.documentElement.clientWidth, 10) / 2) - 150) + "px",300 + "px",150 + "px");
+	var login_window = new floating_box("login_box", "50%","50%",300 + "px",150 + "px");
+	login_window.center();
+	
 	var server_url = document.createElement("input");
 	server_url.className = "textbox";
 	server_url.type = "text";

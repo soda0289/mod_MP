@@ -1,11 +1,10 @@
 
 
-function player(playlist, music_ui_ctx){	
-	//playlist.player = this;
-	
+function player(playlist, music_ui_ctx){
 	this.domain = music_ui_ctx.domain;
+	
 	//Playing index of songs in playlist
-	this.playing_index = -1;
+	this.playing_index = 0;
 	
 	//Setup player div and set playlist
 	this.player_div = document.createElement("div");
@@ -21,6 +20,32 @@ function player(playlist, music_ui_ctx){
 	this.audio_obj = new audio_obj(this, music_ui_ctx);
 	
 	this.find_playable_source = function(song, domain){
+		
+		if(typeof (song) === "undefined"){
+			console.error("ERROR: \nPlayer (find_playable_source): song is undefined");
+			return;
+		}
+		
+		var sources_query_loaded = function(player){
+			return function (results){
+		
+				if (results.length > 0){
+					//Copy sources to song
+					song.sources = results;
+	
+					//Is audio playing
+					if(player.audio_obj.playing === 0 && player.audio_obj.next_to_play !== null){
+						player.audio_obj.play_song(song);
+					}
+					
+				}else{
+					//Decode song no source avalible
+					new decoding_job(song, player);
+				}
+			};
+		}(this);
+		
+		
 		if(!('sources' in song) || song.sources.length < 1){
 			//song has no sources
 			//Fetch sources
@@ -39,25 +64,69 @@ function player(playlist, music_ui_ctx){
 			return song.sources.length;
 		}
 
-	}
+	};
 	
-	this.get_next_song_index = function (){
-		var next_index = this.playing_index + 1;
-		//Check if array index is outofbound
-		if(next_index === this.playlist.songs.length){
-			//reset
-			next_index = 0;
+	this.decode_next_songs = function(num_songs){
+		for(var i = 1;i <= num_songs; i++){
+			var song_next = this.playlist.songs[(this.playing_index + i)%this.playlist.songs.length];
+			if(typeof song_next !== "undefined"){
+				this.find_playable_source(song_next, music_ui_ctx.domain);
+			}else{
+				break;
+			}
 		}
-		return next_index;
-	}
+	};
+
+	//Unhighlight playing song Hilight song
+	//Update playing index
+	this.change_song = function (song){
+		
+		if(typeof (song) === "undefined"){
+			console.error("ERROR: \nPlayer (change_song): song is undefined");
+			return;
+		}
+		
+		//Check if we are displaying search results
+		if(typeof (this.playlist.search_results) === "undefined"){
+			//unhighlight current song
+			//song is equal to the playing index for the array of songs
+			if(this.playing_index !== undefined && this.playing_index >= 0 && this.playing_index < this.playlist.songs.length){
+				var current_song;
+				current_song = this.playlist.songs[this.playing_index];
+				this.playlist.songs_table.deselect_row(current_song.table_index);
+			}
+		
+		
+			//Set playing index
+			if(this.playlist.shuffled === true){
+				//Check if song shuffled index is undefined
+				if(typeof(song.shuffled_index) === "undefined"){
+					//This can happen when the user has the playlist shuffled
+					//and clicks on a song after changing table views(search or sort)
+					console.error("ERROR: Player (change_song): Song doesn't have shuffled index. Shuffled index is being relyed on the set playing index.");
+				}
+				this.playing_index = song.shuffled_index;
+			}else{
+				if(typeof(song.table_index) === "undefined"){
+					console.error("ERROR: Player (change_song): Song doesn't have table_index. This should never happen");
+				}
+				this.playing_index = song.table_index;
+			}
+
+			//scroll to song
+			var songs_table = this.playlist.songs_table;
+			var song_row = songs_table.table.rows[song.table_index];
+			var songs_table_scroll = songs_table.table_scrollbar;
 	
-	this.get_prev_song_index = function (){
-		this.playing_index -= 1;
-		if(this.playing_index < 0){
-			this.playing_index === this.playlist.songs.length;
+			songs_table_scroll.scrollTop = song_row.offsetTop - songs_table_scroll.clientHeight/4;
+			
+			//Highlight Song
+			songs_table.select_row(song.table_index);
+		}else{
+			this.playing_index = this.playlist.get_playlist_index(song.song_id);
 		}
-		return this.playing_index;
-	}
+		
+	};
 
 	//Setup Buttons
 	this.play_button = document.createElement("img");
@@ -67,8 +136,8 @@ function player(playlist, music_ui_ctx){
 	this.play_button.onclick = function (player){
 		return function(event){
 			//Play first song
-			player.audio_obj.play_song(player.playlist.songs[player.get_next_song_index()]);
-		}
+			player.audio_obj.play_song(player.playlist.songs[0]);
+		};
 	}(this);
 	this.player_div.appendChild(this.play_button);
 	
@@ -80,13 +149,13 @@ function player(playlist, music_ui_ctx){
 	//this.previous_button.style.vertical-align = "middle";
 	this.previous_button.onclick = function (player){
 		return function(event){
-			//Unhilight song
-			player.playlist.songs_table.deselect_row(player.playing_index);
 			//play prev song
-			var prev_song_index = player.get_prev_song_index();
-			var song = player.playlist.songs[prev_song_index];
+			//WTF Javascript this should be (player.playing_index - 1)%playlist.songs.length)
+			//but this doesn't work with negatives and instead just returns the negative value
+			var prev_index = (((player.playing_index - 1)%player.playlist.songs.length)+player.playlist.songs.length)%player.playlist.songs.length;
+			var song = player.playlist.songs[prev_index];
 			player.audio_obj.play_song(song);
-		}
+		};
 	}(this);
 	this.player_div.appendChild(this.previous_button);
 	
@@ -97,11 +166,10 @@ function player(playlist, music_ui_ctx){
 	this.next_button.onclick = function (player){
 		return function(event){
 			//play next song
-			var next_song_index = player.get_next_song_index();
-			var next_song = player.playlist.songs[next_song_index];
-			//unhilight row of table equal to song.index
+			var next_index = (player.playing_index + 1)%(player.playlist.songs.length);
+			var next_song = player.playlist.songs[next_index];
 			player.audio_obj.play_song(next_song);
-		}
+		};
 	}(this);
 	this.player_div.appendChild(this.next_button);
 	
@@ -117,21 +185,17 @@ function player(playlist, music_ui_ctx){
 			//shuffle playlist
 			player.playlist.shuffle();
 			player.shuffled = 1;
-			
-			//set playing_index to the current playing song
-			//in shuffled array
-			
-			if(player.playing_index >= 0){
-				player.playing_index = player.playlist.songs.map(function(e) { return e.song_id; }).indexOf(song.song_id);
-			}
-		}
+		};
 	}(this);
 	
 	this.player_div.appendChild(this.shuffle);
 	
+	
+	
+	
 	//Song info
 	this.song_info_div = document.createElement("div");
-	this.song_info_div.id = "song_info"
+	this.song_info_div.id = "song_info";
 	this.song_info_div.style.display = "inline-block";
 	this.player_div.appendChild(this.song_info_div);
 
@@ -179,11 +243,11 @@ function player(playlist, music_ui_ctx){
 	this.div = this.player_div;
 	
 	this.update_time = function (){
-		var current_seconds = ( parseInt(this.audio_obj.audio_ele.currentTime % 60) < 10) ? "0" + parseInt(this.audio_obj.audio_ele.currentTime % 60):parseInt(this.audio_obj.audio_ele.currentTime % 60);
-		var duration_seconds = ( parseInt(this.audio_obj.audio_ele.duration % 60) < 10) ? "0" + parseInt(this.audio_obj.audio_ele.duration % 60):parseInt(this.audio_obj.audio_ele.duration % 60);
+		var current_seconds = ( parseInt(this.audio_obj.audio_ele.currentTime % 60,10) < 10) ? "0" + parseInt(this.audio_obj.audio_ele.currentTime % 60, 10):parseInt(this.audio_obj.audio_ele.currentTime % 60, 10);
+		var duration_seconds = ( parseInt(this.audio_obj.audio_ele.duration % 60,10) < 10) ? "0" + parseInt(this.audio_obj.audio_ele.duration % 60, 10):parseInt(this.audio_obj.audio_ele.duration % 60, 10);
 		
-		this.time_elem.innerHTML = parseInt(this.audio_obj.audio_ele.currentTime / 60) + ":" +  current_seconds  + "/" + parseInt(this.audio_obj.audio_ele.duration /60) + ":" + duration_seconds;	
-	}
+		this.time_elem.innerHTML = parseInt(this.audio_obj.audio_ele.currentTime / 60,10) + ":" +  current_seconds  + "/" + parseInt(this.audio_obj.audio_ele.duration /60, 10) + ":" + duration_seconds;	
+	};
 
 	
 }

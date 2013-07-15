@@ -8,17 +8,17 @@ function browser(parent_div, music_ui_ctx){
 		query_parameters.artist_id = [];
 		query_parameters.album_id = [];
 		query_parameters.song_id= [];
-	}
+	};
 	
 	//add ids(artist/album) from all tables in music browser
 	//to query parameters object
 	this.add_ids = function(query_parameters){
-		for(index in this.tables){
+		for(var index in this.tables){
 			var curr_table = this.tables[index];
 			var table_id_type = curr_table.query.parameters.type.substring(0, curr_table.query.parameters.type.length -1) + "_id";
 			query_parameters[table_id_type] = query_parameters[table_id_type].concat(curr_table.selected_ids);
 		}
-	}
+	};
 	
 
 	this.new_playlist_from_selection = function(){
@@ -57,9 +57,9 @@ function browser(parent_div, music_ui_ctx){
 				
 				if(right){
 					if (event.stopPropagation){
-			            event.stopPropagation();
+						event.stopPropagation();
 					}
-			        event.cancelBubble = true;
+					event.cancelBubble = true;
 					aab.new_playlist_from_selection();
 				}else{
 					//Select the table row
@@ -86,9 +86,9 @@ function browser(parent_div, music_ui_ctx){
 						var selections = query.parameters[passing_type];
 						//Remove selected item
 						if(is_selected !== 0){
-							var index = selections.indexOf(passing_id);
-							if(index !== -1){
-								selections.splice(index, 1);
+							var i = selections.indexOf(passing_id);
+							if(i !== -1){
+								selections.splice(i, 1);
 							}
 						//Add selected item to query
 						}else{
@@ -98,7 +98,7 @@ function browser(parent_div, music_ui_ctx){
 						//Reset query
 						query.reset();
 						//Wipe query ids
-						music_ui_ctx.browser_if.wipe_ids(query.parameters)
+						music_ui_ctx.browser_if.wipe_ids(query.parameters);
 						//Add current ids to query
 						music_ui_ctx.browser_if.add_ids(query.parameters);
 						query.load();
@@ -113,11 +113,12 @@ function browser(parent_div, music_ui_ctx){
 	
 	this.sort = function(){
 		
-	}
+	};
 	
 	this.create_table = function(){
 		
 		var win = new floating_box("create_table_box","50%","50%","300px", "300px");
+		win.center();
 		win.innerHTML("Pick DB table:");
 		
 		var select_db_table = document.createElement("select");
@@ -159,7 +160,7 @@ function browser(parent_div, music_ui_ctx){
 			create_table_box.parentNode.removeChild(create_table_box);
 			//Resize playlist tabs
 			music_ui_ctx.playlist_tabs_if.div.style.top = (parseInt(music_ui_ctx.player_if.div.style.height,10) + parseInt(window.getComputedStyle(music_ui_ctx.browser_if.div).height,10)) + "px";
-		}
+		};
 		
 		win.appendChild(ok_button);
 		win.show();
