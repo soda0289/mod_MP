@@ -95,9 +95,13 @@ function playlist(domain, parameters){
 			for(var i in new_tindexs){
 				var nsong = new_tindexs[i];
 				if(nsong.song_id === song.song_id){
-					song.table_index = new_tindex = nsong.table_index;
+					song.table_index = nsong.table_index;
+					new_tindexs.splice(i,1);
+					//Break out of function
+					return;
 				}
 			}
+			console.error("ERROR: \n playlist (update_table_indexs): Didnt find song in new_tindexs. WTF");
 		});
 	};
 	

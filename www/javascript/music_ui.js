@@ -1,10 +1,3 @@
-function unhighlight_song(music_ui_ctx){
-	if(music_ui_ctx.playing_index >= 0){
-		var old_song = document.getElementById("song_" + music_ui_ctx.songs[music_ui_ctx.playing_index].song_id);
-		old_song.style.backgroundColor = music_ui_ctx.song_backgroundColor;
-	}
-}
-
 //Music UI context object
 function music_ui(domain) {
 	this.domain = domain;
@@ -81,7 +74,7 @@ function loadUI(){
 	var ok_button = document.createElement("input");
 	ok_button.type = "button";
 	ok_button.value = "OK";
-	ok_button.id = "ok_button"
+	ok_button.id = "ok_button";
 	ok_button.class = "ok_button";
 	ok_button.onclick = function(event){
 		var server_url_div = document.getElementById("login_server_url");
@@ -89,7 +82,7 @@ function loadUI(){
 		var login_box = document.getElementById("login_box");
 		create_inital_queries(server_url.value);
 		login_box.parentNode.removeChild(login_box);
-	}
+	};
 	login_window.appendChild(ok_button);
 	login_window.show();
 }
