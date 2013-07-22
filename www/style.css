@@ -101,3 +101,9 @@
 .playlist .scrolling_div{
 	min-width: 810px; /*This is three times the min width of td(table row)*/
 }
+
+#music_statusbar .stats{
+	width: 30%;
+	display: inline-block;
+	font-size: 12px;
+}

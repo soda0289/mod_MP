@@ -1,34 +1,44 @@
 //Music UI context object
 function music_ui(domain) {
 	this.domain = domain;
+
+	//Time to wait before requesting data again
+	this.refresh_interval = 1000;
+
+
+	this.init = function (){	
+			var music_ui_ctx = this;
+			
+			var music_window =  document.getElementById("right");
+			
+
+			//Defualt playlist
+			var obj = {"name" : "songs", "index" : "song_id"};
+
+			var parameters = new query_parameters("songs",obj);
+			parameters.num_results = 1000;
+			parameters.sort_by = "song_title";
+			
+			var default_playlist = new playlist(domain, parameters);
+			
+			//player
+			this.player_if = new player(default_playlist, music_ui_ctx);
+			music_window.appendChild(this.player_if.div);
+			//Music Browser/Playlist Creator
+			this.browser_if = new browser(music_window, music_ui_ctx);
+			//Playlist tabs
+			this.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
+			//Resize playlist tabs
+			this.playlist_tabs_if.div.style.top = (parseInt(this.player_if.div.style.height,10) + parseInt(window.getComputedStyle(this.browser_if.div).height,10)) + "px";
+			//Default playlist
+			this.playlist_tabs_if.add_tab("all", default_playlist);
+			//Statusbar
+			this.status_bar = new status_bar(music_ui_ctx);
+			music_window.appendChild(this.status_bar.div);
+	};
 }
 
-function create_inital_queries(domain){	
-	//Load music ui
-	var music_ui_ctx = new music_ui(domain);
-	
-	var music_window =  document.getElementById("right");
-	
 
-	//Defualt playlist
-	var parameters = new query_parameters("songs");
-	parameters.num_results = 1000;
-	parameters.sort_by = "song_title";
-	
-	var default_playlist = new playlist(domain, parameters);
-	
-	//player
-	music_ui_ctx.player_if = new player(default_playlist, music_ui_ctx);
-	music_window.appendChild(music_ui_ctx.player_if.div);
-	//Music Browser/Playlist Creator
-	music_ui_ctx.browser_if = new browser(music_window, music_ui_ctx);
-	//Playlist tabs
-	music_ui_ctx.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
-	//Resize playlist tabs
-	music_ui_ctx.playlist_tabs_if.div.style.top = (parseInt(music_ui_ctx.player_if.div.style.height,10) + parseInt(window.getComputedStyle(music_ui_ctx.browser_if.div).height,10)) + "px";
-	//Default playlist
-	music_ui_ctx.playlist_tabs_if.add_tab("all", default_playlist);
-}
 
 
 function loadUI(){
@@ -39,6 +49,7 @@ function loadUI(){
 	var server_url = document.createElement("input");
 	server_url.className = "textbox";
 	server_url.type = "text";
+	server_url.value = "mp.attiyat.net";
 	
 	var server_url_div = document.createElement("div");
 	server_url_div.id = "login_server_url";
@@ -80,7 +91,10 @@ function loadUI(){
 		var server_url_div = document.getElementById("login_server_url");
 		var server_url = server_url_div.getElementsByClassName("textbox")[0];
 		var login_box = document.getElementById("login_box");
-		create_inital_queries(server_url.value);
+
+		var music_ui_ctx = new music_ui(server_url.value);
+		music_ui_ctx.init();
+
 		login_box.parentNode.removeChild(login_box);
 	};
 	login_window.appendChild(ok_button);

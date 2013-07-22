@@ -1,4 +1,4 @@
-function query_parameters(type){
+function query_parameters(type, objects){
 	this.type = type;
 	this.num_results = 0;
 	this.sort_by = null;
@@ -11,6 +11,7 @@ function query_parameters(type){
 	this.song_title = "";
 	this.source_type = null;
 	this.output_type = null;
+	this.objects = objects;
 	
 	this.clone = function(){
 		new_obj = new query_parameters(this.type);
@@ -32,7 +33,7 @@ function music_query(hostname, parameters,print_results_function){
 
 	this.print_results = print_results_function;
 	this.parameters = parameters;
-	this.results = [];
+	this.results = {};
 	
 	this.hostname = hostname;
 	
@@ -100,25 +101,21 @@ function music_query(hostname, parameters,print_results_function){
 		this.running = 1;
 
 		this.set_url();
-		var upper = this.parameters.num_results;
 	
-		if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+		if (window.XMLHttpRequest){
 			this.xmlhttp = new XMLHttpRequest();
 		} else {
 			//should really error out
 			return -1;
 		}
-	
-	
-		var lower = this.count * parseInt(upper,10);
+
 		var url = this.url;
 		this.xmlhttp.open("GET",url,true); //Async
 		
-		//Since each xmlhttp request is an array we pass the index of it to the new function
 		this.xmlhttp.onreadystatechange=function(music_query){
 			//we then must return a function that takes no parameters to satisfy onreadystatechange
 			return function(){
-				music_query.proccess();
+				music_query.process();
 			};
 		}(this);
 		
@@ -129,18 +126,25 @@ function music_query(hostname, parameters,print_results_function){
 		}
 	};
 	
-	this.proccess = function (){
+	this.process = function (){
 		var json_object;
 		
 		if (this.xmlhttp.readyState === 4 && this.xmlhttp.status === 200){
 			try{
 				json_object = JSON.parse(String(this.xmlhttp.responseText), null);
 			}catch (err){
-				console.log("error: " + err + " on request number. URL:" + this.url);
+				console.error("error: " + err + " on request number. URL:" + this.url);
 				
 				//Re run query
 				this.load();
+				return;
 			}
+			
+			//Test json_object
+			if(typeof json_object !== "object"){
+				return console.error("Error: \n Error with query did not return json object");
+			}
+			
 			//Is the query running
 			//Did the server list any results
 			
@@ -148,44 +152,73 @@ function music_query(hostname, parameters,print_results_function){
 				for(var x in json_object.Errors){
 					var error = json_object.Errors[x];
 					if(error.type === 0){
-						console.log(error.header + ":" + error.message);
-						//return -1;
+						console.error("ERROR: \n Server: \nType: " + error.type+ "\nHeader: " + error.header + "\nMessage: " + error.message);
 					}else{
-						console.log(error.header + ":" + error.message);
+						console.log("DEBUG: \n Server: \nType: " + error.type+ "\nHeader: " + error.header + "\nMessage: " + error.message);
 					}
 				}
 			
 			}
-			//concat results
-			var json_length;
-			
-			var object_name = this.parameters.type;
+			var json_length = 0;
 
+			//Convert to array to statisfy loop
+			if(!(this.parameters.objects instanceof Array)){
+				var no = this.parameters.objects;
+				this.parameters.objects = [];
+				this.parameters.objects.push(no);
+			}
 
-			if(this.parameters.type === "transcode"){
-				object_name = "decoding_job";
+			for(var obj in this.parameters.objects){
+				var o = this.parameters.objects[obj];
+				var o_name = o.name;
+				var o_index = o.index;
+
+				var q_object = json_object[o_name];
+
+				if(q_object !== undefined){
+					//Check if we need to make array
+
+					if(!(this.results[o_name] instanceof Array)){
+						this.results[o_name] = [];
+					}
+
+					//Check if we got more than 1 object
+					if(q_object instanceof Array){
+						json_length += q_object.length;
+						//Concat the two arrays
+						this.results[o_name] = this.results[o_name].concat(q_object);
+					}else{
+						this.results[o_name] = q_object;
+						json_length += 1;
+					}
+				
+
+					//Call the print result callback
+					if(typeof(this.print_results) === "function"){
+						this.print_results(this.results[o_name], o_name);
+					}
+				}else{
+					json_length = 0;
+				}
+	
+
 			}
 			
-			if(object_name in json_object){
-				json_length = json_object[object_name].length;
-				this.results = this.results.concat(json_object[object_name]);
-			}else{
-				json_length = 0;
-			}
 			
-			if(this.print_results !== null){
-				this.print_results(this.results);
-			}
 
 			//If nothing was returned or if the amount returned is less than num expected stop query
-			if (json_length === 0 || this.parameters.num_results === 0 || this.parameters.num_results > json_length){
+			if (json_length === 0 || this.parameters.num_results > json_length ||
+				this.parameters.num_results === 0 //When we request zero results the query dies
+				){
+				
 				this.running = 0;
-				if(this.onComplete !== undefined){
-					this.onComplete();
+				if(typeof(this.onComplete) === "function"){
+					return this.onComplete();
 				}
-			}else{
+				
+			}else{//Else keep loading query
 				this.count++;
-				this.load();
+				return this.load();
 			}
 			
 		}

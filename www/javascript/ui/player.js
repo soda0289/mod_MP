@@ -18,6 +18,73 @@ function player(playlist, music_ui_ctx){
 	this.decoding_jobs = [];
 	
 	this.audio_obj = new audio_obj(this, music_ui_ctx);
+
+	this.decoding_job = function (song, player){
+		this.song = song;
+
+		this.status = "";
+		this.progress = 0.0;
+			
+		this.update_decoding_status = function (player, dec_job){
+				return function(d_job){
+					var decdoing_status_list = document.getElementById("decoding_status");
+				
+					if(d_job === null){
+						console.error("ERROR: \n Decoding Job (update_decoding_status): Sever did get any results. No decoding JOB WTF! Server must be borked");
+						return 0;
+					}
+					
+					var decoding_status = document.getElementById("decoding_" +d_job.input_source_id);
+					if(decoding_status === null){
+						decoding_status =  document.createElement('span');
+						decoding_status.id = "decoding_" +d_job.input_source_id;
+						decdoing_status_list.appendChild(decoding_status);
+					}
+					decoding_status.innerHTML = d_job.status + " Progress: " + d_job.progress;
+					if(parseFloat(d_job.progress) < 100.0){
+						setTimeout(
+						function(query){
+							return function(){
+								query.reset();
+								query.load();
+							};
+						}(this),music_ui_ctx.refresh_interval);
+						
+					}else{
+						dec_job.song.sources = [];
+						var source = {
+							source_id : d_job.output_source_id,
+							source_type : d_job.output_type
+						};
+						dec_job.song.sources.push(source);
+						
+						if(player.audio_obj.playing === 0 && player.audio_obj.next_to_play !== null &&dec_job.song.song_id === player.audio_obj.next_to_play.song_id){
+							player.audio_obj.play_song(dec_job.song);
+						}
+						
+						decdoing_status_list.removeChild(decoding_status);
+						player.decoding_jobs.splice(player.decoding_jobs.indexOf(dec_job),1);
+					}
+						
+				};
+		}(player, this);
+		var obj = {"name" : "decoding_job"};
+
+
+		var transcode_parameters = new query_parameters("transcode", obj);
+		transcode_parameters.song_id.push(song.song_id);
+		transcode_parameters.output_type = "ogg";
+	
+		this.transcode_query = new music_query(player.domain, transcode_parameters, this.update_decoding_status);
+
+	
+		//Add to decdoing_job array
+		player.decoding_jobs.push(this);
+	
+		this.transcode_query.load();
+	};
+
+
 	
 	this.find_playable_source = function(song, domain){
 		
@@ -40,7 +107,7 @@ function player(playlist, music_ui_ctx){
 					
 				}else{
 					//Decode song no source avalible
-					new decoding_job(song, player);
+					new player.decoding_job(song, player);
 				}
 			};
 		}(this);
@@ -49,7 +116,9 @@ function player(playlist, music_ui_ctx){
 		if(!('sources' in song) || song.sources.length < 1){
 			//song has no sources
 			//Fetch sources
-			var sources_parameters = new query_parameters("sources");
+			var obj = {"name" : "sources", "index" : "source_id"};
+
+			var sources_parameters = new query_parameters("sources",obj);
 			sources_parameters.source_type = "ogg";
 			sources_parameters.song_id.push(song.song_id);
 			

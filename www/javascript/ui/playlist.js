@@ -32,10 +32,12 @@ function playlist(domain, parameters){
 	}];
 	
 	//Callback when songs are added to playlist
-	this.song_added = function(playlist){
+	this.song_added = function(playlist, search){
 		return function(new_songs){
-			//Add rows to table and insert row index into song object
-			playlist.songs_table.add_rows_cb(new_songs);
+			//Add rows to table if we are not searching
+			if(search === true  || playlist.search_results === undefined){
+				playlist.songs_table.add_rows_cb(new_songs);
+			}
 		};
 	};
 	
@@ -135,10 +137,10 @@ function playlist(domain, parameters){
 					plist.query.onComplete = function(){
 						if(plist.shuffled === false){
 							//Change playlist songs array and update playing index
-							plist.change_playlist_songs(plist.query.results);
+							plist.change_playlist_songs(plist.query.results.songs);
 						}else{
 							//Remap the table index to the new sorted playlist
-							plist.update_table_indexs(plist.query.results);
+							plist.update_table_indexs(plist.query.results.songs);
 						}
 						//Update current song since its indexs(table and suffled) have changed after sorting
 						var current_song = plist.songs[plist.player.playing_index];
@@ -215,8 +217,10 @@ function playlist(domain, parameters){
 	this.songs_table.table_div.className = "playlist";
 	
 	this.div = this.songs_table.table_div;
-		
+	
+
 	//Setup playlist songs query
+
 	this.query = new music_query(domain, parameters, this.song_added(this));
 	//Is there a name for this technique
 	//Am I just currying this???
@@ -224,16 +228,16 @@ function playlist(domain, parameters){
 		return function(){
 			//When query complete copy query results
 			//to playlist
-			playlist.songs = playlist.query.results;
+			playlist.songs = playlist.query.results.songs;
 		};
 	}(this);
 	
 	//Setup playlist search query
-	this.search_query = new music_query(domain, parameters.clone(), this.song_added(this));
+	this.search_query = new music_query(domain, parameters.clone(), this.song_added(this, true));
 	this.search_query.onComplete = function(playlist){
 		return function(){
 			//Copy search results to search query
-			playlist.search_results = playlist.search_query.results;
+			playlist.search_results = playlist.search_query.results.songs;
 		};
 	}(this);
 	if(this.query !== null){

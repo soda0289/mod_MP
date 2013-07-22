@@ -22,7 +22,8 @@ function browser(parent_div, music_ui_ctx){
 	
 
 	this.new_playlist_from_selection = function(){
-		var parameters = new query_parameters("songs");
+		var obj = {"name" : "songs"};
+		var parameters = new query_parameters("songs",obj);
 
 		this.add_ids(parameters);
 		
@@ -176,7 +177,9 @@ function browser(parent_div, music_ui_ctx){
 	this.add_table = function(columns, query_type){
 		
 		var new_table = new table(columns, this.click_row(new_table), this.sort);
-		var query_param = new query_parameters(query_type);
+
+		var object = {"name" : query_type};
+		var query_param = new query_parameters(query_type, object);
 		query_param.num_results = "750";
 		this.add_ids(query_param);
 		
