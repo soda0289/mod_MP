@@ -23,7 +23,10 @@
 #include "apps/music/music_query.h"
 #include "apps/music/ogg_encode.h"
 #include "database/db_query_config.h"
+
 #include "apps/music/flac.h"
+#include "apps/music/mpg123.h"
+
 #include "database/dbd.h"
 #include "database/db_query_parameters.h"
 #include <stdio.h>
@@ -84,12 +87,13 @@ static int add_new_source_db(apr_pool_t* pool, db_config* dbd_config,decoding_jo
 
 
 
-static void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
+void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 	int status, error_num;
 	transcode_thread_t* transcode_thread = (transcode_thread_t*)ptr;
 	apr_pool_t* pool = transcode_thread->pool;
 
 	encoding_options_t enc_opt = {0};
+	enc_opt.quality = 2;
 	decoding_job_t* decoding_job = NULL;
 
 	apr_status_t rv;
@@ -117,7 +121,13 @@ static void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 			input_file.open_input_file = read_flac_file;
 			input_file.close_input_file = close_flac;
 			input_file.process_input_file = process_flac_file;
+		}else if(apr_strnatcmp(decoding_job->input_file_type,"mp3") == 0){
+			input_file.open_input_file = read_mp3_file;
+			input_file.close_input_file = close_mp3_file;
+			input_file.process_input_file = process_mp3_file;
+
 		}else{
+
 			//No decoder found
 			goto remove_from_queue;
 		}

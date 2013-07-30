@@ -113,6 +113,15 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 				 song->length = stream_info->total_samples / stream_info->sample_rate;
 				 break;
 			 }
+			 case FLAC__METADATA_TYPE_UNDEFINED :{
+			 	break;
+			 }
+			 case FLAC__METADATA_TYPE_PICTURE :{
+			 	break;
+			 }
+			 case FLAC__METADATA_TYPE_PADDING :{
+			 	break;
+			 }
 	     }
 		 FLAC__metadata_object_delete(block) ;
 	 }

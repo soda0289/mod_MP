@@ -51,6 +51,10 @@ struct music_file_{
 	char* album;
 	char* track_no;
 	char* disc_no;
+	char* discs_in_set;
+	char* total_tracks;
+	char* year;
+	char* date;
 	int   length;
 	struct musicbrainz_{
 		char* mb_release_id;

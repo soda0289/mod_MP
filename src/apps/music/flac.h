@@ -45,10 +45,11 @@ typedef struct {
     int buffer_sample_seek;
     int buffer_sample_count;
 
-}flac_file;
+}flac_file_t;
 
-int read_flac_file (apr_pool_t* pool, flac_file** flac, const char* file_path, encoding_options_t* enc_opt);
-long process_flac_file(void *in, float **buffer, int samples);
-int close_flac(flac_file* flac);
+
+int read_flac_file (apr_pool_t* pool, void** flac, const char* file_path, encoding_options_t* enc_opt);
+long process_flac_file(void* flac, float** buffer, int samples);
+int close_flac(void* flac);
 
 #endif /* PLAY_SONG_H_ */

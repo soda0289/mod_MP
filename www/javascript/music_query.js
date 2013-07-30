@@ -76,7 +76,16 @@ function music_query(hostname, parameters,print_results_function){
 			this.url += "/artist_name/" + this.parameters.artist_name;
 		}
 		if (this.parameters.sort_by !== null && this.parameters.sort_by !== undefined && this.parameters.sort_by.length > 0) {
-			this.url += "/sort_by/" + this.parameters.sort_by;
+			var sort_string = "";
+			for(var s_index in this.parameters.sort_by){
+				var s_col = this.parameters.sort_by[s_index];
+				if(sort_string.length === 0){
+					sort_string = s_col.order + s_col.friendly_name;
+				}else{
+					sort_string += "," + s_col.order + s_col.friendly_name;
+				}
+			}
+			this.url += "/sort_by/" + sort_string;
 		}
 		if (this.parameters.type === "sources"){
 			if(this.parameters.source_type !== null){

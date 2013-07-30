@@ -162,6 +162,7 @@
 					</table>
 					<table id="songs">
 						<column id="name"/>
+						<column id="length"/>
 					</table>
 					<table id="artists">
 						<column id="name"/>

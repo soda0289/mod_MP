@@ -51,6 +51,34 @@ function table(columns, row_click_cb, sort_click_cb, search_change_cb){
 		
 		
 	};
+
+	this.sort_click = function(table, column, order){
+		//If the current column order equals
+		//the one click deselect it the sorting
+		//on this column
+
+		return function(event){
+			//If the column order and the order pressed are equal
+			//then we unhighlight it and set order to null
+			//else the opposite order was pressed and we swap the highlighted
+			//sort button
+			if(column.order === order || (order !== "+" && order !=="-")){
+				column.order = "";
+				this.style.opacity = "0.4";
+			}else{
+				//If column.order is set we must unhighlight it
+				if(column.order === "+" || column.order === "-"){
+					var arrow = table.sort_arrows[column.index][column.order];
+					arrow.style.opacity = "0.4";
+				}
+				column.order = order;
+				this.style.opacity = "1";
+			}
+
+			return sort_click_cb(table, column.friendly_name, column.order)(event);	
+		};
+	
+	};
 	
 	this.create_column_header = function (){
 		//Use header
@@ -63,9 +91,12 @@ function table(columns, row_click_cb, sort_click_cb, search_change_cb){
 		//Create table header (1 row)
 		var head_row = document.createElement('tr');
 		head_row.style.cursor = "pointer";
+
+		this.sort_arrows = [];
 		
-		for(var col in this.columns){
-			var curr_col = this.columns[col];
+		for(var col_index in this.columns){
+			var curr_col = this.columns[col_index];
+			curr_col.index = col_index;
 			
 			var new_col = document.createElement("th");
 			
@@ -103,13 +134,33 @@ function table(columns, row_click_cb, sort_click_cb, search_change_cb){
 			var arrows_div = document.createElement("div");
 			arrows_div.className = "sort_arrows";
 			
-			var up_arrow = document.createElement("div");
-			up_arrow.className = "up_arrow";
+			var up_arrow = document.createElement("img");
+			up_arrow.className = "sort asc";
+			up_arrow.src = "svg/sort_arrow.svg";
+			up_arrow.width = "12";
+			up_arrow.height = "12";
+			if(curr_col.order !== "+"){
+				up_arrow.style.opacity = "0.4";
+			}
 
-			
-			up_arrow.onclick = sort_click_cb(this, curr_col.friendly_name);
+			up_arrow.onclick = this.sort_click(this, curr_col, "+");
+			var down_arrow = document.createElement("img");
+			down_arrow.className = "sort desc";
+			down_arrow.src = "svg/sort_arrow.svg";
+			down_arrow.width = "12";
+			down_arrow.height = "12";
+			down_arrow.style.webkitTransform = "rotate(180deg)";
+			if(curr_col.order !== "-"){
+				down_arrow.style.opacity = "0.4";
+			}
+			down_arrow.onclick = this.sort_click(this, curr_col, "-");
+
+			this.sort_arrows[col_index] = [];
+			this.sort_arrows[col_index]["+"] = up_arrow;
+			this.sort_arrows[col_index]["-"] = down_arrow;
 
 			arrows_div.appendChild(up_arrow);
+			arrows_div.appendChild(down_arrow);
 			
 			col_div.appendChild(arrows_div);
 			
@@ -189,7 +240,8 @@ function table(columns, row_click_cb, sort_click_cb, search_change_cb){
 	
 	this.win_resize = function (table_obj){
 		return function(){
-		table_obj.header_table.style.width = table_obj.table.offsetWidth + "px";
+		//Why minus one??????? It looks way better with minus one!!! Helps table header line up
+		table_obj.header_table.style.width = (table_obj.table.offsetWidth - 1) + "px";
 		};
 	}(this);
 	

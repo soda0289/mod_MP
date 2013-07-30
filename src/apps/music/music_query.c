@@ -118,7 +118,7 @@ int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_message
 	return 0;
 }
 
-static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,music_query_t* music_query,query_words_t* query_words, apr_array_header_t* db_queries){
+int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,music_query_t* music_query,query_words_t* query_words, apr_array_header_t* db_queries){
 
 	const char** query_nouns = query_words->words;
 	int status;
@@ -205,13 +205,60 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 
 		//Look for query parameter (row_count, offset, sort by)
 		for(sql_clauses =0;sql_clauses < NUM_SQL_CLAUSES;sql_clauses++){
-			if(music_query->query_parameters->query_sql_clauses[sql_clauses].freindly_name == NULL){
+			query_sql_clauses_t* query_clause = &(music_query->query_parameters->query_sql_clauses[sql_clauses]);
+
+
+			if(query_clause->freindly_name == NULL){
 				//Skip null friendly names
 				continue;
 			}
-			if(apr_strnatcasecmp(query_nouns[noun_num],music_query->query_parameters->query_sql_clauses[sql_clauses].freindly_name) == 0){
-				music_query->query_parameters->query_sql_clauses[sql_clauses].value = query_nouns[noun_num+1];
-				//set_query_parameters(music_query->query_parameters,SQL,sql_clauses);
+			if(apr_strnatcasecmp(query_nouns[noun_num],query_clause->freindly_name) == 0){
+				apr_size_t max_size = 255; 
+				char* sort_col_list = apr_pstrndup(pool, query_nouns[noun_num+1], max_size);
+				
+				//Check if friendly name is sort by
+				if(sql_clauses == ORDER_BY){
+					char* last; //Last state of strtol
+					char* col_fname;
+					
+
+					//break value entered into segments check for +/- modifier and
+					//convert column friendlt name into real table dot column name
+					for(col_fname = apr_strtok(sort_col_list, ",", &last); col_fname != NULL; col_fname = apr_strtok(NULL, ",", &last)){
+						char a_or_d[6] = "";
+						column_table_t* column;
+						
+						if(col_fname[0] == '+'){
+							//Split string
+							strncpy(a_or_d, " ASC",6);
+							col_fname++;
+						}else if(col_fname[0] == '-'){
+							//Split string
+							strncpy(a_or_d, " DESC", 6);
+							col_fname++;
+						}
+							
+						//Check each comma sperated item and make sure it is valid column friendly name
+						//If it is replace witha actual table name dotted with acutal column name
+						if(find_column_from_query_by_friendly_name(music_query->db_query,col_fname,&column) == 0){
+							
+							if(query_clause->value == NULL){
+								query_clause->value = apr_pstrcat(pool, column->table->name,".",column->name, a_or_d ,NULL);
+
+							}else{
+								query_clause->value = apr_pstrcat(pool, query_clause->value, ",",column->table->name,".",column->name, a_or_d ,NULL);
+							}
+
+						}else{
+							add_error_list(error_messages, ERROR, "Error with query", apr_pstrcat(pool, "Column ",col_fname," doesn't exists in the database schema.", NULL ));
+						}
+
+							
+					}				
+				}else{
+					query_clause->value = query_nouns[noun_num+1];
+				}
+				
 				sql_clause_found = 1;
 				break;
 			}
@@ -237,16 +284,13 @@ static int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,mus
 	}
 
 	//Change sorty_by parameter to SQL command
+	/*
 	if(music_query->query_parameters->query_sql_clauses[ORDER_BY].value != NULL){
-		column_table_t* column;
-		if(find_column_from_query_by_friendly_name(music_query->db_query,music_query->query_parameters->query_sql_clauses[ORDER_BY].value,&column) == 0){
-			music_query->query_parameters->query_sql_clauses[ORDER_BY].value = apr_pstrcat(pool,column->table->name,".",column->name,NULL);
-		}else{
-			add_error_list(error_messages, ERROR, "Error with query", apr_pstrcat(pool, "Column ",music_query->query_parameters->query_sql_clauses[ORDER_BY].value,"doesn't exists in the database schema.", NULL ));
-			return -20;
-		}
+		
 
 	}
+	*/
+
 	return 0;
 }
 
@@ -255,7 +299,7 @@ int output_db_query_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t
 	int print_query_results = 0;
 
 	apr_table_add(query->output_headers,"Access-Control-Allow-Origin", "*");
-	apr_cpystrn(query->output_content_type, "application/json", 255);
+	apr_cpystrn((char*)query->output_content_type, "application/json", 255);
 
 	if(query->db_query == NULL || query->db_query->id == NULL || query->results == NULL || query->results->rows == NULL){
 		//Heavy debug
@@ -328,7 +372,7 @@ int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade
 			}
 			case TRANSCODE:{
 				apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
-				apr_cpystrn(output_content_type, "application/json", 255);
+				apr_cpystrn((char*)output_content_type, "application/json", 255);
 				 error_num = transcode_audio(pool, global_pool, dbd_config,music_query);
 				 if(error_num != 0){
 					 add_error_list(music_query->error_messages, ERROR, "Error transcoding audio", apr_itoa(pool, error_num));

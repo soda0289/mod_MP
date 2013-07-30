@@ -34,10 +34,11 @@
 #include "mod_mediaplayer.h"
 #include "error_handler.h"
 #include "dir_sync.h"
+#include "apps/music/mpg123.h"
 
 int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){
 	apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
-	apr_cpystrn(output_content_type, "application/json", 255);
+	apr_cpystrn((char*)output_content_type, "application/json", 255);
 
 	apr_brigade_puts(output_bb, NULL,NULL, "{\n");
 
@@ -86,6 +87,9 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		return 0;
 	}
 
+	//Init MP3 support
+	mpg123_init();
+
 	file_list = apr_pcalloc(pool, sizeof(List));
 	dir_sync->num_files = apr_pcalloc(pool, sizeof(int));
 
@@ -129,12 +133,10 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  		break;
 		  	  }
 		  	  case MP3:{
-		  		  //not supported yet
-		  		  //status = read_id3(pool,song);
-		  		  status = 5;
-			  		if (status == 0){
-			  			song->file->type_string = "mp3";
-			  		}
+		  		  status = read_id3(pool,song);
+			  	if (status == 0){
+			  		song->file->type_string = "mp3";
+			  	}
 			  	break;
 		  	  }
 		  	 default:{

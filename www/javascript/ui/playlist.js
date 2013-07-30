@@ -11,12 +11,14 @@ function playlist(domain, parameters){
 		"header" : "Disc#",
 		"friendly_name" : "disc_no",
 		"width" : "70px",
-		"search" : 0
+		"search" : 0,
+		"order" : "+"
 	},{
 		"header" : "Track#",
 		"friendly_name" : "track_no",
 		"width" : "70px",
-		"search" : 0
+		"search" : 0,
+		"order" : "+"
 	},{
 		"header" : "Title",
 		"friendly_name" : "song_title",
@@ -28,7 +30,20 @@ function playlist(domain, parameters){
 	},{
 		"header" : "Albums",
 		"friendly_name" : "album_name",
-		"search" : 1
+		"search" : 1,
+		"order" : "+"
+	}];
+
+	this.sort = 
+	[{
+		"friendly_name":"album_name", 
+		"order" : "+"
+	},{
+		"friendly_name":"disc_no",
+		"order" : "+"
+	},{
+		"friendly_name":"track_no",
+		"order" : "+"
 	}];
 	
 	//Callback when songs are added to playlist
@@ -127,11 +142,30 @@ function playlist(domain, parameters){
 	
 	//Sort playlist in order of arrows clicked
 	this.sort_playlist = function(plist){
-		return function (this_table, f_name){
+		return function (this_table, col_fname, col_order){
 			return function(event){
+				var found = false;
+				for(var s_col in plist.sort){
+					var sort_col = plist.sort[s_col];
+					if(sort_col.friendly_name == col_fname){
+						if(col_order === '+' || col_order === '-'){
+							sort_col.order = col_order;
+						}else{
+							plist.sort.splice(s_col,1);
+						}
+						found = true;
+						//Break out of function as we have made
+						//the nesecary changes. I can't spell
+					}
+
+				}
+				if(found === false){
+					plist.sort.push({"friendly_name" : col_fname, "order" : col_order});
+				}
+
 				//If we are searching do not change the playlist songs array
 				if(typeof (plist.search_results) === "undefined"){
-					plist.query.parameters.sort_by = f_name;
+					plist.query.parameters.sort_by = plist.sort;
 					this_table.clear();
 					plist.query.reset();
 					plist.query.onComplete = function(){
@@ -148,7 +182,7 @@ function playlist(domain, parameters){
 					};
 					plist.query.load();
 				}else{
-					plist.search_query.parameters.sort_by = f_name;
+					plist.search_query.parameters.sort_by = plist.sort;
 					this_table.clear();
 					plist.search_query.reset();
 					plist.search_query.load();

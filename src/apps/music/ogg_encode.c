@@ -37,11 +37,9 @@ int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){
 	apr_status_t rv;
 
 	const char* error_header = "Error Playing Song";
-	apr_bucket* b_header;
-	apr_bucket* b_body;
 	apr_finfo_t file_info;
 	apr_file_t* file_desc;
-	apr_size_t total_length = 0;
+	//apr_size_t total_length = 0;
 
 	column_table_t* file_path_col;
 	column_table_t* file_type_col;
@@ -85,7 +83,7 @@ int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){
 	 rv = apr_stat(&file_info,file_path,APR_FINFO_SIZE,pool);
 	 //TEMPORARY FILE EXSITS USE IT
 
-	apr_cpystrn(music->output_content_type ,apr_psprintf(pool,"audio/%s",file_type),255) ;
+	apr_cpystrn((char*)music->output_content_type ,apr_psprintf(pool,"audio/%s",file_type),255) ;
 
 	apr_table_add(music->output_headers, "Accept-Ranges", "bytes");
 
@@ -96,7 +94,7 @@ int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){
 
 int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path){
 	apr_status_t rv;
-	int status;
+	//int status;
 
 	long samples_total;
 	long packets_done;
@@ -142,7 +140,7 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
     vorbis_block_init(&vorbis_dsp,&vorbis_block);
 
     //Generate random serial number
-    srand ( time(NULL) );
+    srand (time(NULL));
     serial_no = rand();
 
     ogg_stream_init(&ogg_stream, serial_no);
@@ -160,9 +158,10 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
 
 
 	while(!eos){
+		unsigned int requested_samples = enc_opt->samples_to_request; 
     	//Create vorbis buffer of unencoded samples
-        float **buffer = vorbis_analysis_buffer(&vorbis_dsp, 1024);
-        long samples_read = input_file->process_input_file(input_file->file_struct, buffer, 1024);//Return samples read per channel
+        float** buffer = vorbis_analysis_buffer(&vorbis_dsp, requested_samples);
+        long samples_read = input_file->process_input_file(input_file->file_struct, buffer, requested_samples);//Return samples read per channel
 
         if (samples_read == 0){
         	//Input file is done
@@ -171,7 +170,7 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
         	samples_total += samples_read;
             if(packets_done>=40){
             	if(enc_opt->progress != NULL){
-                	*(enc_opt->progress) = ((double)samples_total / (double)enc_opt->total_samples_per_chanel)*100.0;
+                	*(enc_opt->progress) = ((double)samples_total / (double)enc_opt->total_samples_per_channel)*100.0;
             	}
             	packets_done = 0;
             }
@@ -192,25 +191,25 @@ int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* en
                 int result = ogg_stream_pageout(&ogg_stream,&ogg_page);
                 if(!result) break; //not enough data to create page continue, building ogg packets
 
-
-            length_written = apr_pcalloc(pool, sizeof(apr_size_t));
-             *length_written = ogg_page.header_len;
-            rv = apr_file_write_full(file_desc, (&ogg_page)->header,ogg_page.header_len,length_written);
+				length_written = apr_pcalloc(pool, sizeof(apr_size_t));
+            	*length_written = ogg_page.header_len;
+            	rv = apr_file_write_full(file_desc, (&ogg_page)->header,ogg_page.header_len,length_written);
                 if (*length_written != ogg_page.header_len || rv != APR_SUCCESS){
                 	//ap_rprintf(r, "Couldn't write all of head");
                 	return rv;
                 }
                 *length_written = ogg_page.body_len;
-               rv= apr_file_write_full(file_desc, (&ogg_page)->body,ogg_page.body_len,length_written);
+				rv= apr_file_write_full(file_desc, (&ogg_page)->body,ogg_page.body_len,length_written);
                 if (*length_written != ogg_page.body_len || rv != APR_SUCCESS){
                 	//ap_rprintf(r,"Couldn't write all of body");
                 	return rv;
                 }
 
-             total_length += ogg_page.header_len +  ogg_page.body_len;
+            	total_length += ogg_page.header_len +  ogg_page.body_len;
                 //Check if last page
-                if(ogg_page_eos(&ogg_page))
-                    eos = 1;//Kill loops
+               	if(ogg_page_eos(&ogg_page)){
+					eos = 1;//Kill loops
+				}
             }
         }
     }

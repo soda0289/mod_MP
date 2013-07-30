@@ -40,42 +40,40 @@ static int wav_permute_matrix[8][8] =
 };
 
 
-long process_flac_file(void *in, float **buffer, int samples){
-    flac_file *flac = (flac_file *)in;
+long process_flac_file(void* in, float** buffer, int samples){
+    flac_file_t *flac = (flac_file_t *)in;
     long realsamples = 0;
-    FLAC__bool ret;
-    int i,j;
-    while (realsamples < samples)
-    {
-        if (flac->buffer_sample_count > 0)
-        {
-            int copy = (flac->buffer_sample_count< (samples - realsamples)) ? flac->buffer_sample_count : (samples - realsamples);
+	FLAC__bool ret;
+	int i,j;
+	while (realsamples < samples){
+    	if (flac->buffer_sample_count > 0){
+			int copy = (flac->buffer_sample_count< (samples - realsamples)) ? flac->buffer_sample_count : (samples - realsamples);
 
-            for (i = 0; i < flac->channels; i++){
+			for (i = 0; i < flac->channels; i++){
 
-              int permute = wav_permute_matrix[flac->channels-1][i];
-                for (j = 0; j < copy; j++)
-                    buffer[i][j+realsamples] = flac->buf[permute][j+flac->buffer_sample_seek];
-            }
-            flac->buffer_sample_seek += copy;
-            flac->buffer_sample_count -= copy;
-            realsamples += copy;
-        }
-        else if (!flac->eos)
-        {
-            ret = FLAC__stream_decoder_process_single(flac->stream_decoder);
-            if (!ret || FLAC__stream_decoder_get_state(flac->stream_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
+				int permute = wav_permute_matrix[flac->channels-1][i];
+				for (j = 0; j < copy; j++){
+					buffer[i][j+realsamples] = flac->buf[permute][j+flac->buffer_sample_seek];
+				}
+			}
+			flac->buffer_sample_seek += copy;
+			flac->buffer_sample_count -= copy;
+			realsamples += copy;
+        }else if (!flac->eos){
+        	ret = FLAC__stream_decoder_process_single(flac->stream_decoder);
+        	if (!ret || FLAC__stream_decoder_get_state(flac->stream_decoder) == FLAC__STREAM_DECODER_END_OF_STREAM){
                 flac->eos = 1;  /* Bail out! */
-        } else
+			}
+        }else{
             break;
+		}
     }
 
-    return realsamples;
+	return realsamples;
 }
 
 
-void resize_buffer(flac_file *flac, int newchannels, int newsamples)
-{
+void resize_buffer(flac_file_t* flac, int newchannels, int newsamples){
     int i;
 
     if (newchannels == flac->channels && newsamples == flac->buffer_sample_len)
@@ -115,7 +113,7 @@ void flac_errors(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorSta
 }
 
 void flac_metadata(const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadata *metadata, void *client_data){
-	flac_file* flac = (flac_file*) client_data;
+	flac_file_t* flac = (flac_file_t*) client_data;
     switch (metadata->type)
     {
     case FLAC__METADATA_TYPE_STREAMINFO:
@@ -134,7 +132,7 @@ void flac_metadata(const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadat
 
 FLAC__StreamDecoderWriteStatus flac_write(const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data){
 
-	flac_file* flac = (flac_file*)client_data;
+	flac_file_t* flac = (flac_file_t*)client_data;
 
     int samples = frame->header.blocksize;
     int channels = frame->header.channels;
@@ -155,48 +153,50 @@ FLAC__StreamDecoderWriteStatus flac_write(const FLAC__StreamDecoder *decoder, co
 }
 
 
-int read_flac_file (apr_pool_t* pool, flac_file** flac, const char* file_path, encoding_options_t* enc_opt){
+int read_flac_file (apr_pool_t* pool,void** file_struct, const char* file_path, encoding_options_t* enc_opt){
 	FLAC__StreamDecoderInitStatus status;
 	FLAC__bool status2;
-	*flac = (flac_file*) apr_pcalloc(pool, sizeof(flac_file));
+	flac_file_t* flac_file = *file_struct = (flac_file_t*) apr_pcalloc(pool, sizeof(flac_file_t));
 
-	(*flac)->stream_decoder = FLAC__stream_decoder_new();
-	(*flac)->channels = 0;
-	(*flac)->samples = 0;
-	(*flac)->total_samples = 0;
-	(*flac)->rate = 0;
-	(*flac)->buf = NULL;
+	flac_file->stream_decoder = FLAC__stream_decoder_new();
+	flac_file->channels = 0;
+	flac_file->samples = 0;
+	flac_file->total_samples = 0;
+	flac_file->rate = 0;
+	flac_file->buf = NULL;
 
-	status = FLAC__stream_decoder_init_file((*flac)->stream_decoder, file_path, flac_write, flac_metadata, flac_errors, (*flac));
+	status = FLAC__stream_decoder_init_file(flac_file->stream_decoder, file_path, flac_write, flac_metadata, flac_errors, flac_file);
 	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK){
 		return -1;
 	}
 
-	status2 = FLAC__stream_decoder_process_until_end_of_metadata((*flac)->stream_decoder);
+	status2 = FLAC__stream_decoder_process_until_end_of_metadata(flac_file->stream_decoder);
 	if (status2 != true){
 		return -2;
 	}
-	FLAC__stream_decoder_process_single((*flac)->stream_decoder);
+	FLAC__stream_decoder_process_single(flac_file->stream_decoder);
 	if (status2 != true){
 			return -2;
 	}
-	enc_opt->channels = (*flac)->channels;
-	enc_opt->rate = (*flac)->rate;
-	enc_opt->total_samples_per_chanel = (*flac)->total_samples;
+	enc_opt->channels = flac_file->channels;
+	enc_opt->rate = flac_file->rate;
+	enc_opt->total_samples_per_channel = flac_file->total_samples;
+	enc_opt->samples_to_request = 1024;
 
 	return 0;
 }
 
-int close_flac(flac_file* flac){
+int close_flac(void* in){
+	flac_file_t* flac_file = (flac_file_t*)in;
 	int i;
 
-    for (i = 0; i < flac->channels; i++){
-        free(flac->buf[i]);
+    for (i = 0; i < flac_file->channels; i++){
+        free(flac_file->buf[i]);
     }
-    free(flac->buf);
+    free(flac_file->buf);
 
-    FLAC__stream_decoder_finish(flac->stream_decoder);
-    FLAC__stream_decoder_delete(flac->stream_decoder);
+    FLAC__stream_decoder_finish(flac_file->stream_decoder);
+    FLAC__stream_decoder_delete(flac_file->stream_decoder);
     //free(flac);
     return 0;
 }

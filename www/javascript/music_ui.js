@@ -7,34 +7,45 @@ function music_ui(domain) {
 
 
 	this.init = function (){	
-			var music_ui_ctx = this;
-			
-			var music_window =  document.getElementById("right");
-			
+		var music_ui_ctx = this;
+		
+		var music_window =  document.getElementById("right");
+		
 
-			//Defualt playlist
-			var obj = {"name" : "songs", "index" : "song_id"};
+		//Defualt playlist
+		var obj = {"name" : "songs", "index" : "song_id"};
 
-			var parameters = new query_parameters("songs",obj);
-			parameters.num_results = 1000;
-			parameters.sort_by = "song_title";
-			
-			var default_playlist = new playlist(domain, parameters);
-			
-			//player
-			this.player_if = new player(default_playlist, music_ui_ctx);
-			music_window.appendChild(this.player_if.div);
-			//Music Browser/Playlist Creator
-			this.browser_if = new browser(music_window, music_ui_ctx);
-			//Playlist tabs
-			this.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
-			//Resize playlist tabs
-			this.playlist_tabs_if.div.style.top = (parseInt(this.player_if.div.style.height,10) + parseInt(window.getComputedStyle(this.browser_if.div).height,10)) + "px";
-			//Default playlist
-			this.playlist_tabs_if.add_tab("all", default_playlist);
-			//Statusbar
-			this.status_bar = new status_bar(music_ui_ctx);
-			music_window.appendChild(this.status_bar.div);
+		var parameters = new query_parameters("songs",obj);
+		parameters.num_results = 1000;
+
+		parameters.sort_by = 
+		[{
+			"friendly_name":"album_name", 
+			"order" : "+"
+		},{
+			"friendly_name":"disc_no",
+			"order" : "+"
+		},{
+			"friendly_name":"track_no",
+			"order" : "+"
+		}];
+		
+		var default_playlist = new playlist(domain, parameters);
+		
+		//player
+		this.player_if = new player(default_playlist, music_ui_ctx);
+		music_window.appendChild(this.player_if.div);
+		//Music Browser/Playlist Creator
+		this.browser_if = new browser(music_window, music_ui_ctx);
+		//Playlist tabs
+		this.playlist_tabs_if = new playlist_tabs(music_window,music_ui_ctx);
+		//Resize playlist tabs
+		this.playlist_tabs_if.div.style.top = (parseInt(this.player_if.div.style.height,10) + parseInt(window.getComputedStyle(this.browser_if.div).height,10)) + "px";
+		//Default playlist
+		this.playlist_tabs_if.add_tab("all", default_playlist);
+		//Statusbar
+		this.status_bar = new status_bar(music_ui_ctx);
+		music_window.appendChild(this.status_bar.div);
 	};
 }
 

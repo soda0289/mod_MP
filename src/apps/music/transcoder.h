@@ -22,8 +22,9 @@ typedef struct encoding_options_t_{
 	float quality;
 	long channels;
 	long rate;
-	long total_samples_per_chanel;
+	long total_samples_per_channel;
 	float* progress;
+	unsigned int samples_to_request;
 }encoding_options_t;
 
 /* The input file struct holds the three decoding functions need to process a input file
@@ -39,7 +40,7 @@ typedef struct input_file_t_{
 	const char* file_path;
 	void* file_struct;
 	int (*open_input_file)(apr_pool_t* pool,void** file_struct, const char* file_path, encoding_options_t* enc_opt);
-	int (*process_input_file)(void *file_struct, float **buffer, int samples);
+	long (*process_input_file)(void* file_struct, float** buffer, int samples);
 	int (*close_input_file)(void* file_struct);
 }input_file_t;
 

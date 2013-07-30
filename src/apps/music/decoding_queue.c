@@ -33,6 +33,8 @@
 #include "apr_global_mutex.h"
 #include "apr_proc_mutex.h"
 
+#include <mpg123.h>
+
 int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue){
 	apr_status_t rv;
 	int status;
@@ -71,6 +73,11 @@ int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_
 
 int reattach_decoding_queue(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages){
 	apr_status_t rv;
+
+
+	//Initalize mpg123
+	mpg123_init();
+
 
 	if(queue_shm_file){
 		rv = apr_shm_attach(&(decoding_queue->queue_shm), queue_shm_file, pool);

@@ -79,7 +79,7 @@ int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parame
 		}else{
 			//Query word contains asterisk
 			//Replace them all with % sign for MySQL
-			char* asterisk = condition;
+			char* asterisk = (char*)condition;
 			while((asterisk = strchr(asterisk, '*')) != NULL){
 				asterisk[0] = '%';
 			}

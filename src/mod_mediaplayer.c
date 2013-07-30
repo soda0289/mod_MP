@@ -171,7 +171,7 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
 		if(srv_conf->enable && srv_conf->external_directory != NULL){
 			apr_status_t rv = 0;
-			int status;
+			//int status;
 
 			init_error_messages(pconf,&(srv_conf->error_messages), srv_conf->errors_shm_file);
 			srv_conf->pid = getpid();
@@ -265,7 +265,7 @@ char* json_escape_char(apr_pool_t* pool, const char* string){
 
 int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){
 	apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
-	apr_cpystrn(output_content_type, "application/json", 255);
+	apr_cpystrn((char*)output_content_type, "application/json", 255);
 
 	apr_brigade_puts(output_bb, NULL,NULL, "{\n");
 
@@ -307,9 +307,6 @@ int run_get_method(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brig
 	eos_bucket = apr_bucket_eos_create(output_bucket_allocator);
 	APR_BRIGADE_INSERT_TAIL(*output_bb, eos_bucket);
 
-
-
-	//output_status_json(r);
 	return OK;
 }
 

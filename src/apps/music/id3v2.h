@@ -1,9 +1,9 @@
 /*
- * ogg_encode.h
+ * id3v2.h 
  *
- *  Created on: Nov 07, 2012
+ *  Created on: July 26th, 2013 
  *      Author: Reyad Attiyat
- *      Copyright 2012 Reyad Attiyat
+ *      Copyright 2013 Reyad Attiyat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Code borrowed from oggenc part of the vorbis-tools package. ♡ OS
+ *  Code borrowed from oggenc part of the vorbis-tools package.
 */
 
-#ifndef OGG_ENCODE_H_
-#define OGG_ENCODE_H_
-#include "apps/music/transcoder.h"
-
-int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music);
-int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path);
+typedef struct id3v2_id_{
+	char id[4];
+	char** texts;
+} id3v2_id_t;
 
 
-#endif /* OGG_ENCODE_H_ */
+typedef struct id3v2_ids_{
+	id3v2_id_t* ids;
+	unsigned int num;
+} id3v2_ids_t;
+
