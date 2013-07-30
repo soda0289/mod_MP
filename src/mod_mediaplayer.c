@@ -257,6 +257,12 @@ char* json_escape_char(apr_pool_t* pool, const char* string){
 		if (escape_string[i] == '"'){
 			escape_string[i] = '\0';
 			escape_string = apr_pstrcat(pool, &escape_string[0], "\\\"", &escape_string[++i], NULL);
+			continue;
+		}
+		if (escape_string[i] == '\\'){
+			escape_string[i] = '\0';
+			escape_string = apr_pstrcat(pool, &escape_string[0], "\\\\", &escape_string[++i], NULL);
+			continue;
 		}
 	}
 

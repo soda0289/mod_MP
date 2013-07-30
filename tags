@@ -1,0 +1,1328 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+#body	www/style.css	/^#body{$/;"	i
+#browser_div	www/style.css	/^#browser_div{$/;"	i
+#browser_div	www/style_black.css	/^#browser_div{$/;"	i
+#browser_div	www/style_white.css	/^#browser_div{$/;"	i
+#browser_div .create_table	www/style.css	/^#browser_div .create_table{$/;"	i
+#browser_div .table_header .search_textbox	www/style.css	/^#browser_div .table_header .search_textbox{$/;"	i
+#left	www/style_black.css	/^#left{$/;"	i
+#login_password	www/style.css	/^#login_server_url, #login_password, #login_username{$/;"	i
+#login_password .textbox	www/style.css	/^#login_server_url .textbox, #login_password .textbox, #login_username .textbox{$/;"	i
+#login_server_url	www/style.css	/^#login_server_url, #login_password, #login_username{$/;"	i
+#login_server_url .textbox	www/style.css	/^#login_server_url .textbox, #login_password .textbox, #login_username .textbox{$/;"	i
+#login_username	www/style.css	/^#login_server_url, #login_password, #login_username{$/;"	i
+#login_username .textbox	www/style.css	/^#login_server_url .textbox, #login_password .textbox, #login_username .textbox{$/;"	i
+#music_statusbar .stats	www/style.css	/^#music_statusbar .stats{$/;"	i
+#player	www/style_black.css	/^#player{$/;"	i
+#player	www/style_white.css	/^#player{$/;"	i
+#right	www/style.css	/^#right{$/;"	i
+#tab_buttons	www/style_black.css	/^#tab_buttons{$/;"	i
+#tab_buttons	www/style_white.css	/^#tab_buttons{$/;"	i
+#tab_buttons .current_tab	www/style_black.css	/^#tab_buttons .current_tab{$/;"	i
+#tab_buttons .current_tab	www/style_white.css	/^#tab_buttons .current_tab{$/;"	i
+#theme_change	www/style.css	/^#theme_change{$/;"	i
+.playlist .scrolling_div	www/style.css	/^.playlist .scrolling_div{$/;"	c
+.selected	www/style_black.css	/^.selected{$/;"	c
+.selected	www/style_white.css	/^.selected{$/;"	c
+.sort_arrows .sort	www/style.css	/^.sort_arrows .sort{$/;"	c
+.table	www/style_black.css	/^.table{$/;"	c
+.table	www/style_white.css	/^.table{$/;"	c
+.table 	www/style.css	/^.table {$/;"	c
+.table .even	www/style_black.css	/^.table .even{$/;"	c
+.table .even	www/style_white.css	/^.table .even{$/;"	c
+.table .odd	www/style_black.css	/^.table .odd{$/;"	c
+.table .odd	www/style_white.css	/^.table .odd{$/;"	c
+.table td	www/style.css	/^.table td{$/;"	c
+.table td	www/style_white.css	/^.table td{$/;"	c
+.table_header	www/style_black.css	/^.table_header{$/;"	c
+.table_header	www/style_white.css	/^.table_header{$/;"	c
+.table_header .column_title	www/style.css	/^.table_header .column_title{$/;"	c
+.table_header .column_title	www/style_white.css	/^.table_header .column_title{$/;"	c
+.table_header .search_textbox	www/style.css	/^.table_header .search_textbox{$/;"	c
+.table_header .search_textbox 	www/style.css	/^.table_header .search_textbox {$/;"	c
+.table_header .search_textbox 	www/style_white.css	/^.table_header .search_textbox {$/;"	c
+.table_header .sort_arrows	www/style.css	/^.table_header .sort_arrows{$/;"	c
+.table_header th	www/style.css	/^.table_header th{$/;"	c
+ALBUMS	src/apps/music/music_query.h	/^	ALBUMS,$/;"	e	enum:query_types
+APP_CONFIG_H_	src/apps/app_config.h	22;"	d
+APP_TYPEDEFS_H_	src/apps/app_typedefs.h	9;"	d
+ARTISTS	src/apps/music/music_query.h	/^	ARTISTS,$/;"	e	enum:query_types
+BETWEEN	src/database/db_query_parameters.h	/^	BETWEEN,$/;"	e	enum:__anon4
+BIGINT	src/database/dbd.h	/^		BIGINT$/;"	e	enum:column_types
+CreateProcess	config/ltmain.sh	/^   CreateProcess().  We must quote the arguments since Win32 CreateProcess()$/;"	f
+DATETIME	src/database/dbd.h	/^		DATETIME,$/;"	e	enum:column_types
+DBD_H_	src/database/dbd.h	22;"	d
+DB_QUERY_CONFIG_H_	src/database/db_query_config.h	22;"	d
+DB_QUERY_PARAMETERS_H_	src/database/db_query_parameters.h	22;"	d
+DB_TYPEDEF_H_	src/database/db_typedef.h	9;"	d
+DEBUG	src/error_handler.h	/^	DEBUG,$/;"	e	enum:error_type
+DECODING_QUEUE_H_	src/apps/music/decoding_queue.h	9;"	d
+DIR_SYNC_H_	src/apps/music/dir_sync/dir_sync.h	24;"	d
+EQUAL	src/database/db_query_parameters.h	/^	EQUAL =0,$/;"	e	enum:__anon4
+ERROR	src/error_handler.h	/^	ERROR = 0,$/;"	e	enum:error_type
+ERROR_HANDLER_H_	src/error_handler.h	22;"	d
+FILE_TYPE	src/apps/music/tag_reader.h	/^enum FILE_TYPE{$/;"	g
+FLAC	src/apps/music/tag_reader.h	/^	FLAC = 1,$/;"	e	enum:FILE_TYPE
+GREATER	src/database/db_query_parameters.h	/^	GREATER,$/;"	e	enum:__anon4
+GROUP_BY	src/database/db_query_parameters.h	/^	GROUP_BY,$/;"	e	enum:__anon5
+IN	src/database/db_query_parameters.h	/^	IN$/;"	e	enum:__anon4
+INT	src/database/dbd.h	/^		INT = 0,$/;"	e	enum:column_types
+LESS	src/database/db_query_parameters.h	/^	LESS,$/;"	e	enum:__anon4
+LIKE	src/database/db_query_parameters.h	/^	LIKE,$/;"	e	enum:__anon4
+LIMIT	src/database/db_query_parameters.h	/^	LIMIT = 0,$/;"	e	enum:__anon5
+LOCK_CHECK_ERRORS	src/apps/music/decoding_queue.h	67;"	d
+List	src/apps/music/tag_reader.h	/^struct List{$/;"	s
+List	src/apps/music/tag_reader.h	/^typedef struct List List;$/;"	t	typeref:struct:List
+List::file	src/apps/music/tag_reader.h	/^	file_t file;$/;"	m	struct:List	access:public
+List::next	src/apps/music/tag_reader.h	/^	struct List* next;$/;"	m	struct:List	typeref:struct:List::List	access:public
+List_Head	src/apps/music/tag_reader.h	/^}List_Head;$/;"	t	typeref:struct:__anon10
+MAX_ERROR_SIZE	src/error_handler.h	23;"	d
+MAX_NUM_COLUMNS	src/database/dbd.h	23;"	d
+MAX_NUM_PARAMETERS	src/apps/music/dir_sync/musicbrainz.h	24;"	d
+MAX_NUM_WORKERS	src/apps/music/decoding_queue.h	16;"	d
+MOD_MEDIAPLAYER_H_	src/mod_mediaplayer.h	21;"	d
+MP3	src/apps/music/tag_reader.h	/^	MP3 = 0,$/;"	e	enum:FILE_TYPE
+MPG123_H_	src/apps/music/mpg123.h	27;"	d
+MUSICBRAINZ_H_	src/apps/music/dir_sync/musicbrainz.h	22;"	d
+MUSIC_QUERY_H_	src/apps/music/music_query.h	23;"	d
+MUSIC_TYPEDEFS_H_	src/apps/music/music_typedefs.h	9;"	d
+NUM_QUERY_PARAMETERS	src/apps/music/music_query.h	28;"	d
+NUM_QUERY_TYPES	src/apps/music/music_query.h	27;"	d
+NUM_SQL_CLAUSES	src/database/db_query_parameters.h	45;"	d
+NUM_TABLES	src/database/dbd.h	24;"	d
+NUM_TAGS	src/apps/music/tag_reader.c	/^	const int NUM_TAGS = 5;$/;"	l
+OFFSET	src/database/db_query_parameters.h	/^	OFFSET,$/;"	e	enum:__anon5
+OGG	src/apps/music/tag_reader.h	/^	OGG = 2$/;"	e	enum:FILE_TYPE
+OGG_ENCODE_H_	src/apps/music/ogg_encode.h	24;"	d
+ORDER_BY	src/database/db_query_parameters.h	/^	ORDER_BY$/;"	e	enum:__anon5
+PLAY	src/apps/music/music_query.h	/^	PLAY,$/;"	e	enum:query_types
+PLAY_FLAC_H_	src/apps/music/flac.h	22;"	d
+SONGS	src/apps/music/music_query.h	/^	SONGS = 0,$/;"	e	enum:query_types
+SOURCES	src/apps/music/music_query.h	/^	SOURCES,$/;"	e	enum:query_types
+STATUS	src/apps/music/music_query.h	/^	STATUS$/;"	e	enum:query_types
+SUCCESS	src/database/db_query_config.h	29;"	d
+TAG_READER_H_	src/apps/music/tag_reader.h	23;"	d
+TRANSCODE	src/apps/music/music_query.h	/^	TRANSCODE,$/;"	e	enum:query_types
+TRANSCODER_H_	src/apps/music/transcoder.h	9;"	d
+UNLOCK_CHECK_ERRORS	src/apps/music/decoding_queue.h	68;"	d
+UTF-8	www/style.css	/^@CHARSET "UTF-8";$/;"	s
+UTF-8	www/style_black.css	/^@CHARSET "UTF-8";$/;"	s
+UTF-8	www/style_white.css	/^@CHARSET "UTF-8";$/;"	s
+VARCHAR	src/database/dbd.h	/^		VARCHAR,$/;"	e	enum:column_types
+WARN	src/error_handler.h	/^	WARN$/;"	e	enum:error_type
+__anon10::name	src/apps/music/tag_reader.h	/^	char* name;$/;"	m	struct:__anon10	access:public
+__anon10::next	src/apps/music/tag_reader.h	/^	struct List* next;$/;"	m	struct:__anon10	typeref:struct:__anon10::List	access:public
+__anon1::apps	src/mod_mediaplayer.h	/^	app_list_t* apps;$/;"	m	struct:__anon1	access:public
+__anon1::db_schema_xml	src/mod_mediaplayer.h	/^	const char* db_schema_xml;$/;"	m	struct:__anon1	access:public
+__anon1::dbd_config	src/mod_mediaplayer.h	/^	db_config* dbd_config;$/;"	m	struct:__anon1	access:public
+__anon1::enable	src/mod_mediaplayer.h	/^	int enable;$/;"	m	struct:__anon1	access:public
+__anon1::error_messages	src/mod_mediaplayer.h	/^	error_messages_t* error_messages;$/;"	m	struct:__anon1	access:public
+__anon1::errors_shm	src/mod_mediaplayer.h	/^	apr_shm_t* errors_shm;$/;"	m	struct:__anon1	access:public
+__anon1::errors_shm_file	src/mod_mediaplayer.h	/^	const char* errors_shm_file;$/;"	m	struct:__anon1	access:public
+__anon1::external_directory	src/mod_mediaplayer.h	/^	const char* external_directory;$/;"	m	struct:__anon1	access:public
+__anon1::pid	src/mod_mediaplayer.h	/^	pid_t pid;$/;"	m	struct:__anon1	access:public
+__anon2::appquery	src/mod_mediaplayer.h	/^	app_query appquery;$/;"	m	struct:__anon2	access:public
+__anon2::error_messages	src/mod_mediaplayer.h	/^	error_messages_t* error_messages;$/;"	m	struct:__anon2	access:public
+__anon6::header	src/error_handler.h	/^	char header[MAX_ERROR_SIZE] ;$/;"	m	struct:__anon6	access:public
+__anon6::message	src/error_handler.h	/^	char message[MAX_ERROR_SIZE];$/;"	m	struct:__anon6	access:public
+__anon6::type	src/error_handler.h	/^	enum error_type type;$/;"	m	struct:__anon6	typeref:enum:__anon6::error_type	access:public
+__anon7::messages	src/error_handler.h	/^	error_message_t messages[1024];$/;"	m	struct:__anon7	access:public
+__anon7::num_errors	src/error_handler.h	/^	int num_errors;$/;"	m	struct:__anon7	access:public
+__anon8::buf	src/apps/music/flac.h	/^    float **buf;$/;"	m	struct:__anon8	access:public
+__anon8::buffer_sample_count	src/apps/music/flac.h	/^    int buffer_sample_count;$/;"	m	struct:__anon8	access:public
+__anon8::buffer_sample_len	src/apps/music/flac.h	/^    int buffer_sample_len;$/;"	m	struct:__anon8	access:public
+__anon8::buffer_sample_seek	src/apps/music/flac.h	/^    int buffer_sample_seek;$/;"	m	struct:__anon8	access:public
+__anon8::channels	src/apps/music/flac.h	/^    short channels;$/;"	m	struct:__anon8	access:public
+__anon8::eos	src/apps/music/flac.h	/^    int eos; \/\/End of stream$/;"	m	struct:__anon8	access:public
+__anon8::fd	src/apps/music/flac.h	/^	FILE* fd;$/;"	m	struct:__anon8	access:public
+__anon8::rate	src/apps/music/flac.h	/^    int rate;$/;"	m	struct:__anon8	access:public
+__anon8::samples	src/apps/music/flac.h	/^    int samples;$/;"	m	struct:__anon8	access:public
+__anon8::stream_decoder	src/apps/music/flac.h	/^	FLAC__StreamDecoder* stream_decoder;$/;"	m	struct:__anon8	access:public
+__anon8::total_samples	src/apps/music/flac.h	/^    long total_samples; \/\/ per channel$/;"	m	struct:__anon8	access:public
+__anon9::mtime	src/apps/music/tag_reader.h	/^	apr_time_t mtime;$/;"	m	struct:__anon9	access:public
+__anon9::path	src/apps/music/tag_reader.h	/^	char* path;$/;"	m	struct:__anon9	access:public
+__anon9::quality	src/apps/music/tag_reader.h	/^	int quality;$/;"	m	struct:__anon9	access:public
+__anon9::type	src/apps/music/tag_reader.h	/^	enum FILE_TYPE type;$/;"	m	struct:__anon9	typeref:enum:__anon9::FILE_TYPE	access:public
+__anon9::type_string	src/apps/music/tag_reader.h	/^	char* type_string;$/;"	m	struct:__anon9	access:public
+a_or_d	src/apps/music/music_query.c	/^						char a_or_d[6] = "";$/;"	l
+ac_fn_c_check_func	configure	/^ac_fn_c_check_func ()$/;"	f
+ac_fn_c_check_header_compile	configure	/^ac_fn_c_check_header_compile ()$/;"	f
+ac_fn_c_try_compile	configure	/^ac_fn_c_try_compile ()$/;"	f
+ac_fn_c_try_cpp	configure	/^ac_fn_c_try_cpp ()$/;"	f
+ac_fn_c_try_link	configure	/^ac_fn_c_try_link ()$/;"	f
+ac_fn_c_try_run	configure	/^ac_fn_c_try_run ()$/;"	f
+ac_fn_cxx_try_compile	configure	/^ac_fn_cxx_try_compile ()$/;"	f
+ac_fn_cxx_try_cpp	configure	/^ac_fn_cxx_try_cpp ()$/;"	f
+ac_fn_cxx_try_link	configure	/^ac_fn_cxx_try_link ()$/;"	f
+add_album	src/database/dbd.h	/^		apr_dbd_prepared_t *add_album;$/;"	m	struct:db_config_::__anon3	access:public
+add_artist	src/database/dbd.h	/^		apr_dbd_prepared_t *add_artist;$/;"	m	struct:db_config_::__anon3	access:public
+add_decoding_job_queue	src/apps/music/decoding_queue.c	/^int add_decoding_job_queue(decoding_job_t* job,decoding_queue_t* decoding_queue){$/;"	f	signature:(decoding_job_t* job,decoding_queue_t* decoding_queue)
+add_decoding_job_queue	src/apps/music/decoding_queue.h	/^int add_decoding_job_queue(decoding_job_t* job,decoding_queue_t* decoding_queue);$/;"	p	signature:(decoding_job_t* job,decoding_queue_t* decoding_queue)
+add_error_list	src/error_handler.c	/^int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message){$/;"	f	signature:(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message)
+add_error_list	src/error_handler.h	/^int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message);$/;"	p	signature:(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message)
+add_link	src/database/dbd.h	/^		apr_dbd_prepared_t *add_link;$/;"	m	struct:db_config_::__anon3	access:public
+add_new_source_db	src/apps/music/transcoder.c	/^static int add_new_source_db(apr_pool_t* pool, db_config* dbd_config,decoding_job_t* decoding_job,error_messages_t* error_messages){$/;"	f	file:	signature:(apr_pool_t* pool, db_config* dbd_config,decoding_job_t* decoding_job,error_messages_t* error_messages)
+add_rows_cb	www/javascript/ui/table.js	/^	this.add_rows_cb = function(table_p, table_c,column_list, row_click_cb){$/;"	f
+add_song	src/database/dbd.h	/^		apr_dbd_prepared_t *add_song;$/;"	m	struct:db_config_::__anon3	access:public
+add_source	src/database/dbd.h	/^		apr_dbd_prepared_t* add_source;$/;"	m	struct:db_config_::__anon3	access:public
+add_tab	www/javascript/ui/playlist_tabs.js	/^	this.add_tab = function (name, playlist_if){$/;"	c
+add_table	www/javascript/ui/browser.js	/^	this.add_table = function(columns, query_type){$/;"	c
+add_table.object.name	www/javascript/ui/browser.js	/^		var object = {"name" : query_type};$/;"	p
+add_where_query_parameter	src/database/db_query_parameters.c	/^int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition){$/;"	f	signature:(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition)
+add_where_query_parameter	src/database/db_query_parameters.h	/^int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition);$/;"	p	signature:(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition)
+album	src/apps/music/tag_reader.h	/^	char* album;$/;"	m	struct:music_file_	access:public
+album_id	src/apps/music/decoding_queue.h	/^	char album_id[256];$/;"	m	struct:decoding_job_	access:public
+album_id	src/apps/music/transcoder.c	/^	const char* album_id;$/;"	l
+album_id	src/database/dbd.c	/^	char* album_id = NULL;$/;"	l
+album_id_col	src/apps/music/transcoder.c	/^	column_table_t* album_id_col;$/;"	l
+allocate_app_prepared_statments	src/apps/app_config.h	/^int allocate_app_prepared_statments(apr_pool_t* pool, app_t* app);$/;"	p	signature:(apr_pool_t* pool, app_t* app)
+ap_unixd_config	src/mod_mediaplayer.c	/^unixd_config_rec ap_unixd_config;$/;"	v
+app	src/apps/app_config.c	/^	app_t** app;$/;"	l
+app	src/apps/app_config.h	/^	app_t* app;$/;"	m	struct:app_node_	access:public
+app	src/database/db_query_config.c	/^	app_t* app = NULL;$/;"	l
+app	src/mod_mediaplayer.c	/^	app_t* app;$/;"	l
+app_	src/apps/app_config.h	/^struct app_{$/;"	s
+app_::db_queries	src/apps/app_config.h	/^	apr_array_header_t* db_queries; \/\/Multi Column Queries for Database$/;"	m	struct:app_	access:public
+app_::friendly_name	src/apps/app_config.h	/^	const char* friendly_name;$/;"	m	struct:app_	access:public
+app_::global_context	src/apps/app_config.h	/^	const void* global_context;$/;"	m	struct:app_	access:public
+app_::id	src/apps/app_config.h	/^	const char* id;$/;"	m	struct:app_	access:public
+app_::init_app	src/apps/app_config.h	/^	init_app_fnt init_app;$/;"	m	struct:app_	access:public
+app_::query_words	src/apps/app_config.h	/^	query_words_t query_words;$/;"	m	struct:app_	access:public
+app_::reattach_app	src/apps/app_config.h	/^	reattach_app_fnt reattach_app;$/;"	m	struct:app_	access:public
+app_::run_query	src/apps/app_config.h	/^	run_query_fnt run_query;$/;"	m	struct:app_	access:public
+app_elem	src/database/db_query_config.c	/^	apr_xml_elem* app_elem;$/;"	l
+app_fname	src/apps/app_config.c	/^	const char* app_fname;$/;"	l
+app_id	src/database/db_query_config.c	/^	const char* app_id = NULL;$/;"	l
+app_list	src/apps/music/dir_sync/dir_sync.h	/^	app_list_t* app_list;$/;"	m	struct:dir_sync_	access:public
+app_list_	src/apps/app_config.h	/^struct app_list_{$/;"	s
+app_list_::count	src/apps/app_config.h	/^	int count;$/;"	m	struct:app_list_	access:public
+app_list_::first_node	src/apps/app_config.h	/^	app_node_t* first_node;$/;"	m	struct:app_list_	access:public
+app_list_::pool	src/apps/app_config.h	/^	apr_pool_t* pool;  \/\/Pool to allocate Linked List$/;"	m	struct:app_list_	access:public
+app_list_t	src/apps/app_typedefs.h	/^typedef struct app_list_ app_list_t;$/;"	t	typeref:struct:app_list_
+app_node	src/apps/app_config.c	/^	app_node_t* app_node = NULL;$/;"	l
+app_node	src/apps/app_config.c	/^	app_node_t* app_node;$/;"	l
+app_node	src/database/db_query_config.c	/^	app_node_t* app_node;$/;"	l
+app_node_	src/apps/app_config.h	/^struct app_node_{$/;"	s
+app_node_::app	src/apps/app_config.h	/^	app_t* app;$/;"	m	struct:app_node_	access:public
+app_node_::next	src/apps/app_config.h	/^	app_node_t* next;$/;"	m	struct:app_node_	access:public
+app_node_previous	src/apps/app_config.c	/^	app_node_t* app_node_previous = NULL;$/;"	l
+app_node_t	src/apps/app_typedefs.h	/^typedef struct app_node_ app_node_t;$/;"	t	typeref:struct:app_node_
+app_process_uri	src/apps/app_config.c	/^int app_process_uri(apr_pool_t* pool, const char* uri, app_list_t* app_list, app_t** app){$/;"	f	signature:(apr_pool_t* pool, const char* uri, app_list_t* app_list, app_t** app)
+app_process_uri	src/apps/app_config.h	/^int app_process_uri(apr_pool_t* pool, const char* uri, app_list_t* app_list, app_t** app);$/;"	p	signature:(apr_pool_t* pool, const char* uri, app_list_t* app_list, app_t** app)
+app_query	src/apps/app_typedefs.h	/^typedef void* app_query;$/;"	t
+app_t	src/apps/app_typedefs.h	/^typedef struct app_ app_t;$/;"	t	typeref:struct:app_
+appquery	src/mod_mediaplayer.h	/^	app_query appquery;$/;"	m	struct:__anon2	access:public
+apps	src/mod_mediaplayer.h	/^	app_list_t* apps;$/;"	m	struct:__anon1	access:public
+args	src/apps/music/transcoder.c	/^	const char* args[4];$/;"	l
+args	src/database/dbd.c	/^			const char* args[7];$/;"	l
+args	src/database/dbd.c	/^		const char* args[1];$/;"	l
+args	src/database/dbd.c	/^		const char* args[4];$/;"	l
+args	src/database/dbd.c	/^	const char* args[1];$/;"	l
+artist	src/apps/music/tag_reader.h	/^	char* artist;$/;"	m	struct:music_file_	access:public
+artist_id	src/apps/music/decoding_queue.h	/^	char artist_id[256];$/;"	m	struct:decoding_job_	access:public
+artist_id	src/apps/music/transcoder.c	/^	const char* artist_id;$/;"	l
+artist_id	src/database/dbd.c	/^	char* artist_id = NULL;$/;"	l
+artist_id_col	src/apps/music/transcoder.c	/^	column_table_t* artist_id_col;$/;"	l
+as_fn_append	configure	/^  as_fn_append ()$/;"	f
+as_fn_arith	configure	/^  as_fn_arith ()$/;"	f
+as_fn_error	configure	/^as_fn_error ()$/;"	f
+as_fn_executable_p	configure	/^as_fn_executable_p ()$/;"	f
+as_fn_exit	configure	/^as_fn_exit ()$/;"	f
+as_fn_failure	configure	/^as_fn_failure () { as_fn_return 1; }$/;"	f
+as_fn_mkdir_p	configure	/^as_fn_mkdir_p ()$/;"	f
+as_fn_ret_failure	configure	/^as_fn_ret_failure () { return 1; }$/;"	f
+as_fn_ret_success	configure	/^as_fn_ret_success () { return 0; }$/;"	f
+as_fn_set_status	configure	/^as_fn_set_status ()$/;"	f
+as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
+as_fn_unset	configure	/^as_fn_unset ()$/;"	f
+asterisk	src/database/db_query_parameters.c	/^			char* asterisk = (char*)condition;$/;"	l
+attr	src/database/db_query_config.c	/^	apr_xml_attr* attr;$/;"	l
+audio_obj	www/javascript/audio.js	/^function audio_obj(player, music_ui_ctx){$/;"	c
+audio_obj.play_song	www/javascript/audio.js	/^	this.play_song = function (song){$/;"	m
+bits_per_sample	src/apps/music/flac.c	/^    int bits_per_sample = frame->header.bits_per_sample;$/;"	l
+block	src/apps/music/tag_reader.c	/^		 FLAC__StreamMetadata *block = FLAC__metadata_simple_iterator_get_block(iter);$/;"	l
+browser	www/javascript/ui/browser.js	/^function browser(parent_div, music_ui_ctx){$/;"	c
+browser.add_ids	www/javascript/ui/browser.js	/^	this.add_ids = function(query_parameters){$/;"	m
+browser.browser.new_playlist_from_selection.obj.name	www/javascript/ui/browser.js	/^		var obj = {"name" : "songs"};$/;"	p
+browser.click_row	www/javascript/ui/browser.js	/^	this.click_row = function(){$/;"	m
+browser.new_playlist_from_selection	www/javascript/ui/browser.js	/^	this.new_playlist_from_selection = function(){$/;"	m
+browser.wipe_ids	www/javascript/ui/browser.js	/^	this.wipe_ids = function(query_parameters){$/;"	m
+browser_div	www/javascript/ui/browser.js	/^	var browser_div = document.createElement("div");$/;"	v
+buf	src/apps/music/flac.h	/^    float **buf;$/;"	m	struct:__anon8	access:public
+buf	src/mod_mediaplayer.c	/^    struct shmid_ds buf;$/;"	l
+buffer	src/apps/music/ogg_encode.c	/^        float** buffer = vorbis_analysis_buffer(&vorbis_dsp, requested_samples);$/;"	l
+buffer_sample_count	src/apps/music/flac.h	/^    int buffer_sample_count;$/;"	m	struct:__anon8	access:public
+buffer_sample_len	src/apps/music/flac.h	/^    int buffer_sample_len;$/;"	m	struct:__anon8	access:public
+buffer_sample_seek	src/apps/music/flac.h	/^    int buffer_sample_seek;$/;"	m	struct:__anon8	access:public
+buffer_size	src/apps/music/mpg123.c	/^	size_t buffer_size = samples * bytes_ch;$/;"	l
+bytes_ch	src/apps/music/mpg123.c	/^	size_t bytes_ch = mp3_file->channels * size_of_sample; $/;"	l
+change_playlist_songs	www/javascript/ui/playlist.js	/^	this.change_playlist_songs = function(new_songs_array){$/;"	c
+change_song	www/javascript/ui/player.js	/^	this.change_song = function (song){$/;"	f
+channels	src/apps/music/flac.c	/^    int channels = frame->header.channels;$/;"	l
+channels	src/apps/music/flac.h	/^    short channels;$/;"	m	struct:__anon8	access:public
+channels	src/apps/music/mpg123.h	/^	int channels;$/;"	m	struct:mpg3_file_	access:public
+channels	src/apps/music/transcoder.h	/^	long channels;$/;"	m	struct:encoding_options_t_	access:public
+check_db_for_decoding_job	src/apps/music/transcoder.c	/^static int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db_config* dbd_config,db_query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages){$/;"	f	file:	signature:(const char** output_source_id, apr_pool_t* pool,db_config* dbd_config,db_query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages)
+close_database	src/database/dbd.c	/^void close_database(db_config* dbd_config){$/;"	f	signature:(db_config* dbd_config)
+close_database	src/database/dbd.h	/^void close_database(db_config* dbd_config);$/;"	p	signature:(db_config* dbd_config)
+close_flac	src/apps/music/flac.c	/^int close_flac(void* in){$/;"	f	signature:(void* in)
+close_flac	src/apps/music/flac.h	/^int close_flac(void* flac);$/;"	p	signature:(void* flac)
+close_input_file	src/apps/music/transcoder.h	/^	int (*close_input_file)(void* file_struct);$/;"	m	struct:input_file_t_	access:public
+close_mp3_file	src/apps/music/mpg123.c	/^int close_mp3_file(void* in){$/;"	f	signature:(void* in)
+close_mp3_file	src/apps/music/mpg123.h	/^int close_mp3_file(void* in);$/;"	p	signature:(void* in)
+col_elem	src/database/db_query_config.c	/^	apr_xml_elem* col_elem;$/;"	l
+col_fname	src/apps/music/music_query.c	/^					char* col_fname;$/;"	l
+col_index	src/database/db_query_config.c	/^	int table_index, col_index;$/;"	l
+column	src/apps/music/music_query.c	/^						column_table_t* column;$/;"	l
+column	src/apps/music/music_query.c	/^	column_table_t* column;$/;"	l
+column	src/database/db_query_config.c	/^								column_table_t* column;$/;"	l
+column	src/database/db_query_config.c	/^	column_table_t* column;$/;"	l
+column	src/database/db_query_parameters.h	/^	column_table_t* column;$/;"	m	struct:query_where_condition_	access:public
+column	src/database/dbd.c	/^				column_table_t* column = query_where_condition->column;$/;"	l
+column_elem	src/database/db_query_config.c	/^	apr_xml_elem* column_elem;$/;"	l
+column_elem_child	src/database/db_query_config.c	/^	apr_xml_elem* column_elem_child;$/;"	l
+column_id	src/database/db_query_config.c	/^	const char* column_id = NULL;$/;"	l
+column_index	src/database/db_query_config.c	/^	int column_index;$/;"	l
+column_index	src/database/dbd.c	/^		int column_index;$/;"	l
+column_ptr	src/database/db_query_config.c	/^								column_table_t** column_ptr;$/;"	l
+column_table_	src/database/dbd.h	/^struct column_table_{$/;"	s
+column_table_::freindly_name	src/database/dbd.h	/^		const char* freindly_name;$/;"	m	struct:column_table_	access:public
+column_table_::id	src/database/dbd.h	/^		const char* id;$/;"	m	struct:column_table_	access:public
+column_table_::name	src/database/dbd.h	/^		const char* name;$/;"	m	struct:column_table_	access:public
+column_table_::table	src/database/dbd.h	/^		table_t* table;$/;"	m	struct:column_table_	access:public
+column_table_::type	src/database/dbd.h	/^		enum column_types type;$/;"	m	struct:column_table_	typeref:enum:column_table_::column_types	access:public
+column_table_t	src/database/db_typedef.h	/^typedef	struct column_table_ column_table_t;$/;"	t	typeref:struct:column_table_
+column_temp	src/database/db_query_config.c	/^	column_table_t* column_temp;$/;"	l
+column_types	src/database/dbd.h	/^enum column_types {$/;"	g
+columns	src/database/dbd.h	/^	apr_array_header_t* columns;$/;"	m	struct:table_	access:public
+comment	src/apps/music/tag_reader.c	/^	FLAC__StreamMetadata_VorbisComment       *comment;$/;"	l
+comment	src/apps/music/tag_reader.c	/^	char* comment;$/;"	l
+comment_entry	src/apps/music/tag_reader.c	/^	FLAC__StreamMetadata_VorbisComment_Entry *comment_entry;$/;"	l
+comment_length	src/apps/music/tag_reader.c	/^	int comment_length;$/;"	l
+comment_name	src/apps/music/tag_reader.c	/^	char* comment_name;$/;"	l
+comment_value	src/apps/music/tag_reader.c	/^	char* comment_value;$/;"	l
+condition	src/database/db_query_parameters.h	/^	const char* condition;$/;"	m	struct:query_where_condition_	access:public
+condition_operator	src/database/db_query_parameters.h	/^}condition_operator;$/;"	t	typeref:enum:__anon4
+config_app	src/apps/app_config.c	/^int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id,init_app_fnt init_app, reattach_app_fnt reattach_app, run_query_fnt run_query){$/;"	f	signature:(app_list_t* app_list,const char* freindly_name, const char* app_id,init_app_fnt init_app, reattach_app_fnt reattach_app, run_query_fnt run_query)
+config_app	src/apps/app_config.h	/^int config_app(app_list_t* app_list,const char* freindly_name, const char* app_id,init_app_fnt init_app, reattach_app_fnt reattach_app, run_query_fnt run_query);$/;"	p	signature:(app_list_t* app_list,const char* freindly_name, const char* app_id,init_app_fnt init_app, reattach_app_fnt reattach_app, run_query_fnt run_query)
+connect_database	src/database/dbd.c	/^apr_status_t connect_database(apr_pool_t* db_pool,error_messages_t* error_messages,db_config** dbd_config){$/;"	f	signature:(apr_pool_t* db_pool,error_messages_t* error_messages,db_config** dbd_config)
+connect_database	src/database/dbd.h	/^apr_status_t connect_database(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config);$/;"	p	signature:(apr_pool_t* pool, error_messages_t* error_messages,db_config** dbd_config)
+connected	src/database/dbd.h	/^	int connected;$/;"	m	struct:db_config_	access:public
+copy	src/apps/music/flac.c	/^			int copy = (flac->buffer_sample_count< (samples - realsamples)) ? flac->buffer_sample_count : (samples - realsamples);$/;"	l
+copy_error_messages	src/error_handler.c	/^int copy_error_messages(error_messages_t** new,error_messages_t* old, apr_pool_t* pool){$/;"	f	signature:(error_messages_t** new,error_messages_t* old, apr_pool_t* pool)
+copy_error_messages	src/error_handler.h	/^int copy_error_messages(error_messages_t** new,error_messages_t* old, apr_pool_t* pool);$/;"	p	signature:(error_messages_t** new,error_messages_t* old, apr_pool_t* pool)
+count	src/apps/app_config.h	/^	int count;$/;"	m	struct:app_list_	access:public
+count	src/apps/music/decoding_queue.c	/^    int count;$/;"	l
+count_child_elem	src/database/db_query_config.c	/^						apr_xml_elem* count_child_elem;$/;"	l
+count_table_rows	src/apps/music/dir_sync/dir_sync.c	/^int count_table_rows(){$/;"	f
+create_column_header	www/javascript/ui/table.js	/^	this.create_column_header = function (){$/;"	c
+create_decoding_queue	src/apps/music/decoding_queue.c	/^int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue){$/;"	f	signature:(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue)
+create_decoding_queue	src/apps/music/decoding_queue.h	/^int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue);$/;"	p	signature:(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue)
+create_table	www/javascript/ui/browser.js	/^	this.create_table = function(){$/;"	f
+create_table	www/javascript/ui/table.js	/^	this.create_table = function(){$/;"	c
+create_table_button	www/javascript/ui/browser.js	/^	var create_table_button = document.createElement("div");$/;"	v
+cus_par	src/database/db_query_parameters.c	/^		custom_parameter_t* cus_par = &(((custom_parameter_t*)parameter_array->elts)[i]);$/;"	l
+cus_par_set	src/apps/music/music_query.c	/^	char cus_par_set = 0;\/\/Flag custom parameters set in db query$/;"	l
+custom_parameter	src/apps/music/music_query.c	/^			custom_parameter_t* custom_parameter;$/;"	l
+custom_parameter	src/database/db_query_config.c	/^							custom_parameter_t* custom_parameter = apr_array_push(query->custom_parameters);$/;"	l
+custom_parameter_	src/database/db_query_parameters.h	/^struct custom_parameter_{$/;"	s
+custom_parameter_::freindly_name	src/database/db_query_parameters.h	/^	const char* freindly_name;$/;"	m	struct:custom_parameter_	access:public
+custom_parameter_::type	src/database/db_query_parameters.h	/^	const char* type;$/;"	m	struct:custom_parameter_	access:public
+custom_parameter_::value	src/database/db_query_parameters.h	/^	const char* value;$/;"	m	struct:custom_parameter_	access:public
+custom_parameter_t	src/database/db_typedef.h	/^typedef struct custom_parameter_ custom_parameter_t;$/;"	t	typeref:struct:custom_parameter_
+custom_parameters	src/database/dbd.h	/^	apr_array_header_t* custom_parameters;$/;"	m	struct:db_query_	access:public
+data	src/mod_mediaplayer.c	/^    void *data = NULL;$/;"	l
+database_errors	src/database/dbd.h	/^	error_messages_t* database_errors;$/;"	m	struct:db_config_	access:public
+date	src/apps/music/tag_reader.h	/^	char* date;$/;"	m	struct:music_file_	access:public
+db_config	src/database/db_typedef.h	/^typedef struct db_config_ db_config;$/;"	t	typeref:struct:db_config_
+db_config_	src/database/dbd.h	/^struct db_config_{$/;"	s
+db_config_::__anon3::add_album	src/database/dbd.h	/^		apr_dbd_prepared_t *add_album;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::add_artist	src/database/dbd.h	/^		apr_dbd_prepared_t *add_artist;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::add_link	src/database/dbd.h	/^		apr_dbd_prepared_t *add_link;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::add_song	src/database/dbd.h	/^		apr_dbd_prepared_t *add_song;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::add_source	src/database/dbd.h	/^		apr_dbd_prepared_t* add_source;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_album	src/database/dbd.h	/^		apr_dbd_prepared_t *select_album;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_artist	src/database/dbd.h	/^		apr_dbd_prepared_t *select_artist;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_file_path	src/database/dbd.h	/^		apr_dbd_prepared_t* select_file_path;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_last_id	src/database/dbd.h	/^		apr_dbd_prepared_t* select_last_id;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_mtime	src/database/dbd.h	/^		apr_dbd_prepared_t *select_mtime;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_song	src/database/dbd.h	/^		apr_dbd_prepared_t *select_song;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::select_sources	src/database/dbd.h	/^		apr_dbd_prepared_t *select_sources;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::__anon3::update_song	src/database/dbd.h	/^		apr_dbd_prepared_t* update_song;$/;"	m	struct:db_config_::__anon3	access:public
+db_config_::connected	src/database/dbd.h	/^	int connected;$/;"	m	struct:db_config_	access:public
+db_config_::database_errors	src/database/dbd.h	/^	error_messages_t* database_errors;$/;"	m	struct:db_config_	access:public
+db_config_::dbd_driver	src/database/dbd.h	/^	const apr_dbd_driver_t *dbd_driver;$/;"	m	struct:db_config_	access:public
+db_config_::dbd_handle	src/database/dbd.h	/^	apr_dbd_t *dbd_handle;$/;"	m	struct:db_config_	access:public
+db_config_::driver_name	src/database/dbd.h	/^	const char* driver_name;$/;"	m	struct:db_config_	access:public
+db_config_::mutex	src/database/dbd.h	/^	apr_thread_mutex_t* mutex;$/;"	m	struct:db_config_	access:public
+db_config_::mysql_parms	src/database/dbd.h	/^	const char* mysql_parms;$/;"	m	struct:db_config_	access:public
+db_config_::pool	src/database/dbd.h	/^	apr_pool_t* pool;$/;"	m	struct:db_config_	access:public
+db_config_::statements	src/database/dbd.h	/^	}statements;$/;"	m	struct:db_config_	typeref:struct:db_config_::__anon3	access:public
+db_config_::tables	src/database/dbd.h	/^	apr_array_header_t* tables;   \/\/Tables on database$/;"	m	struct:db_config_	access:public
+db_config_::transaction	src/database/dbd.h	/^	apr_dbd_transaction_t * transaction;$/;"	m	struct:db_config_	access:public
+db_mtime	src/database/dbd.c	/^	apr_time_t db_mtime = 0;$/;"	l
+db_mtime_string	src/database/dbd.c	/^	char* db_mtime_string = NULL;$/;"	l
+db_queries	src/apps/app_config.h	/^	apr_array_header_t* db_queries; \/\/Multi Column Queries for Database$/;"	m	struct:app_	access:public
+db_query	src/apps/music/music_query.h	/^	db_query_t* db_query;$/;"	m	struct:music_query_	access:public
+db_query_	src/database/dbd.h	/^struct db_query_{$/;"	s
+db_query_::custom_parameters	src/database/dbd.h	/^	apr_array_header_t* custom_parameters;$/;"	m	struct:db_query_	access:public
+db_query_::group_by_string	src/database/dbd.h	/^	const char* group_by_string;$/;"	m	struct:db_query_	access:public
+db_query_::id	src/database/dbd.h	/^	const char* id;$/;"	m	struct:db_query_	access:public
+db_query_::num_columns	src/database/dbd.h	/^	int num_columns;$/;"	m	struct:db_query_	access:public
+db_query_::select_columns	src/database/dbd.h	/^	apr_array_header_t* select_columns;$/;"	m	struct:db_query_	access:public
+db_query_::select_columns_string	src/database/dbd.h	/^	const char* select_columns_string;$/;"	m	struct:db_query_	access:public
+db_query_::table_join_string	src/database/dbd.h	/^	const char* table_join_string;$/;"	m	struct:db_query_	access:public
+db_query_::tables	src/database/dbd.h	/^	apr_array_header_t* tables;$/;"	m	struct:db_query_	access:public
+db_query_t	src/database/db_typedef.h	/^typedef struct db_query_ db_query_t;$/;"	t	typeref:struct:db_query_
+db_schema_xml	src/mod_mediaplayer.h	/^	const char* db_schema_xml;$/;"	m	struct:__anon1	access:public
+dbd_config	src/apps/music/dir_sync/dir_sync.h	/^	db_config* dbd_config;$/;"	m	struct:dir_sync_	access:public
+dbd_config	src/apps/music/transcoder.h	/^	db_config* dbd_config;$/;"	m	struct:transcode_thread_t_	access:public
+dbd_config	src/mod_mediaplayer.h	/^	db_config* dbd_config;$/;"	m	struct:__anon1	access:public
+dbd_driver	src/database/dbd.h	/^	const apr_dbd_driver_t *dbd_driver;$/;"	m	struct:db_config_	access:public
+dbd_error	src/apps/music/dir_sync/dir_sync.c	/^	const char* dbd_error;$/;"	l
+dbd_error	src/apps/music/music_query.c	/^	const char* dbd_error;$/;"	l
+dbd_error	src/mod_mediaplayer.c	/^	const char* dbd_error;$/;"	l
+dbd_error_message	src/apps/music/music_query.c	/^	char dbd_error_message[256];$/;"	l
+dbd_error_message	src/mod_mediaplayer.c	/^	char dbd_error_message[256];$/;"	l
+dbd_handle	src/database/dbd.h	/^	apr_dbd_t *dbd_handle;$/;"	m	struct:db_config_	access:public
+dec_job	src/apps/music/decoding_queue.c	/^	decoding_job_t* dec_job = NULL;$/;"	l
+dec_job_status	src/apps/music/decoding_queue.c	/^			const char* dec_job_status;$/;"	l
+dec_job_status	src/apps/music/transcoder.c	/^		const char* dec_job_status = apr_psprintf(req_pool,"Added to queue of size %d", popcount_4(music_query->music_globals->decoding_queue->queue->waiting));$/;"	l
+decode_next_songs	www/javascript/ui/player.js	/^	this.decode_next_songs = function(num_songs){$/;"	f
+decoding	src/apps/music/decoding_queue.h	/^	decoding_job_t decoding[64];$/;"	m	struct:queue_	access:public
+decoding_job	src/apps/music/transcoder.c	/^	decoding_job_t* decoding_job = NULL;$/;"	l
+decoding_job	src/apps/music/transcoder.c	/^	decoding_job_t* decoding_job = apr_pcalloc(proccess_pool,sizeof(decoding_job_t));$/;"	l
+decoding_job_	src/apps/music/decoding_queue.h	/^struct decoding_job_{$/;"	s
+decoding_job_::album_id	src/apps/music/decoding_queue.h	/^	char album_id[256];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::artist_id	src/apps/music/decoding_queue.h	/^	char artist_id[256];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::index	src/apps/music/decoding_queue.h	/^	int index;$/;"	m	struct:decoding_job_	access:public
+decoding_job_::input_file_path	src/apps/music/decoding_queue.h	/^	char input_file_path[1024];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::input_file_type	src/apps/music/decoding_queue.h	/^	char input_file_type[1024];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::new_source_id	src/apps/music/decoding_queue.h	/^	char new_source_id[256];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::next	src/apps/music/decoding_queue.h	/^	int next;$/;"	m	struct:decoding_job_	access:public
+decoding_job_::output_file_path	src/apps/music/decoding_queue.h	/^	char output_file_path[1024];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::output_file_type	src/apps/music/decoding_queue.h	/^	char output_file_type[256];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::progress	src/apps/music/decoding_queue.h	/^	float progress;$/;"	m	struct:decoding_job_	access:public
+decoding_job_::song_id	src/apps/music/decoding_queue.h	/^	char song_id[256];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::source_id	src/apps/music/decoding_queue.h	/^	char source_id[256];$/;"	m	struct:decoding_job_	access:public
+decoding_job_::status	src/apps/music/decoding_queue.h	/^	char status[512];$/;"	m	struct:decoding_job_	access:public
+decoding_job_pool	src/apps/music/transcoder.c	/^	apr_pool_t* decoding_job_pool;$/;"	l
+decoding_job_t	src/apps/music/music_typedefs.h	/^typedef struct decoding_job_ decoding_job_t;$/;"	t	typeref:struct:decoding_job_
+decoding_queue	src/apps/music/music_query.h	/^	decoding_queue_t* decoding_queue;$/;"	m	struct:music_globals_	access:public
+decoding_queue	src/apps/music/transcoder.h	/^	decoding_queue_t* decoding_queue;$/;"	m	struct:transcode_thread_t_	access:public
+decoding_queue_	src/apps/music/decoding_queue.h	/^struct decoding_queue_{$/;"	s
+decoding_queue_::error_messages	src/apps/music/decoding_queue.h	/^	error_messages_t* error_messages;$/;"	m	struct:decoding_queue_	access:public
+decoding_queue_::mutex	src/apps/music/decoding_queue.h	/^	apr_global_mutex_t* mutex;$/;"	m	struct:decoding_queue_	access:public
+decoding_queue_::queue	src/apps/music/decoding_queue.h	/^	queue_t* queue;$/;"	m	struct:decoding_queue_	access:public
+decoding_queue_::queue_shm	src/apps/music/decoding_queue.h	/^	apr_shm_t* queue_shm;$/;"	m	struct:decoding_queue_	access:public
+decoding_queue_shm	src/apps/music/music_query.h	/^	apr_shm_t* decoding_queue_shm;$/;"	m	struct:music_globals_	access:public
+decoding_queue_shm_file	src/apps/music/music_query.h	/^	const char* decoding_queue_shm_file;$/;"	m	struct:music_globals_	access:public
+decoding_queue_t	src/apps/music/music_typedefs.h	/^typedef struct decoding_queue_ decoding_queue_t;$/;"	t	typeref:struct:decoding_queue_
+dir	src/apps/music/tag_reader.c	/^	apr_dir_t *dir;$/;"	l
+dir_path	src/apps/music/dir_sync/dir_sync.h	/^	const char* dir_path;$/;"	m	struct:dir_sync_	access:public
+dir_sync	src/apps/music/dir_sync/dir_sync.c	/^	dir_sync_t* dir_sync = (dir_sync_t*) ptr;$/;"	l
+dir_sync	src/apps/music/music_query.c	/^		dir_sync_t* dir_sync;$/;"	l
+dir_sync	src/apps/music/music_query.c	/^	dir_sync_t* dir_sync;$/;"	l
+dir_sync	src/apps/music/music_query.h	/^	dir_sync_t* dir_sync;$/;"	m	struct:music_globals_	access:public
+dir_sync_	src/apps/music/dir_sync/dir_sync.h	/^typedef struct dir_sync_{$/;"	s
+dir_sync_::app_list	src/apps/music/dir_sync/dir_sync.h	/^	app_list_t* app_list;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::dbd_config	src/apps/music/dir_sync/dir_sync.h	/^	db_config* dbd_config;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::dir_path	src/apps/music/dir_sync/dir_sync.h	/^	const char* dir_path;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::error_messages	src/apps/music/dir_sync/dir_sync.h	/^	error_messages_t* error_messages;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::files_scanned	src/apps/music/dir_sync/dir_sync.h	/^	int files_scanned;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::num_files	src/apps/music/dir_sync/dir_sync.h	/^	int* num_files;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::pool	src/apps/music/dir_sync/dir_sync.h	/^	apr_pool_t * pool;$/;"	m	struct:dir_sync_	access:public
+dir_sync_::sync_progress	src/apps/music/dir_sync/dir_sync.h	/^	float sync_progress;$/;"	m	struct:dir_sync_	access:public
+dir_sync_shm	src/apps/music/music_query.h	/^	apr_shm_t* dir_sync_shm;$/;"	m	struct:music_globals_	access:public
+dir_sync_shm_file	src/apps/music/music_query.h	/^	const char* dir_sync_shm_file;$/;"	m	struct:music_globals_	access:public
+dir_sync_t	src/apps/music/dir_sync/dir_sync.h	/^}dir_sync_t;$/;"	t	typeref:struct:dir_sync_
+dir_sync_t	src/apps/music/music_query.h	/^typedef struct dir_sync_ dir_sync_t;$/;"	t	typeref:struct:dir_sync_
+disc_no	src/apps/music/tag_reader.h	/^	char* disc_no;$/;"	m	struct:music_file_	access:public
+discs_in_set	src/apps/music/tag_reader.h	/^	char* discs_in_set;$/;"	m	struct:music_file_	access:public
+does_decoding_job_exsits	src/apps/music/decoding_queue.c	/^int does_decoding_job_exsits(apr_pool_t* pool,decoding_queue_t* decoding_queue,decoding_job_t** dec_job){$/;"	f	signature:(apr_pool_t* pool,decoding_queue_t* decoding_queue,decoding_job_t** dec_job)
+does_decoding_job_exsits	src/apps/music/decoding_queue.h	/^int does_decoding_job_exsits(apr_pool_t* pool,decoding_queue_t* decoding_queue,decoding_job_t** dec_job);$/;"	p	signature:(apr_pool_t* pool,decoding_queue_t* decoding_queue,decoding_job_t** dec_job)
+done	src/apps/music/mpg123.c	/^	size_t done = 0;$/;"	l
+driver_name	src/database/dbd.h	/^	const char* driver_name;$/;"	m	struct:db_config_	access:public
+empty_index	src/apps/music/decoding_queue.c	/^	int empty_index;$/;"	l
+enable	src/mod_mediaplayer.h	/^	int enable;$/;"	m	struct:__anon1	access:public
+enc_opt	src/apps/music/transcoder.c	/^	encoding_options_t enc_opt = {0};$/;"	l
+encoder_thread	src/apps/music/transcoder.c	/^void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){$/;"	f	signature:(apr_thread_t* thread, void* ptr)
+encoding	src/apps/music/mpg123.h	/^	int encoding;$/;"	m	struct:mpg3_file_	access:public
+encoding_options_t	src/apps/music/transcoder.h	/^}encoding_options_t;$/;"	t	typeref:struct:encoding_options_t_
+encoding_options_t_	src/apps/music/transcoder.h	/^typedef struct encoding_options_t_{$/;"	s
+encoding_options_t_::channels	src/apps/music/transcoder.h	/^	long channels;$/;"	m	struct:encoding_options_t_	access:public
+encoding_options_t_::progress	src/apps/music/transcoder.h	/^	float* progress;$/;"	m	struct:encoding_options_t_	access:public
+encoding_options_t_::quality	src/apps/music/transcoder.h	/^	float quality;$/;"	m	struct:encoding_options_t_	access:public
+encoding_options_t_::rate	src/apps/music/transcoder.h	/^	long rate;$/;"	m	struct:encoding_options_t_	access:public
+encoding_options_t_::samples_to_request	src/apps/music/transcoder.h	/^	unsigned int samples_to_request;$/;"	m	struct:encoding_options_t_	access:public
+encoding_options_t_::total_samples_per_channel	src/apps/music/transcoder.h	/^	long total_samples_per_channel;$/;"	m	struct:encoding_options_t_	access:public
+eos	src/apps/music/flac.h	/^    int eos; \/\/End of stream$/;"	m	struct:__anon8	access:public
+eos	src/apps/music/ogg_encode.c	/^    int eos = 0;$/;"	l
+eos_bucket	src/mod_mediaplayer.c	/^	apr_bucket* eos_bucket;$/;"	l
+error_header	src/apps/music/music_query.c	/^	const char* error_header = "Error With Music Query";$/;"	l
+error_header	src/apps/music/ogg_encode.c	/^	const char* error_header = "Error Playing Song";$/;"	l
+error_header	src/apps/music/transcoder.c	/^	const char* error_header = "Error Setting Up Transcode Audio";$/;"	l
+error_header	src/mod_mediaplayer.c	/^	const char* error_header  = "Error With Query";$/;"	l
+error_message	src/apps/music/decoding_queue.c	/^	char error_message[512];$/;"	l
+error_message	src/apps/music/dir_sync/dir_sync.c	/^	char error_message[256];$/;"	l
+error_message	src/apps/music/dir_sync/musicbrainz.c	/^	char error_message[512];$/;"	l
+error_message	src/apps/music/transcoder.c	/^	char error_message[512];$/;"	l
+error_message	src/database/dbd.c	/^	const char* error_message = NULL;$/;"	l
+error_message_t	src/error_handler.h	/^}error_message_t;$/;"	t	typeref:struct:__anon6
+error_messages	src/apps/music/decoding_queue.h	/^	error_messages_t* error_messages;$/;"	m	struct:decoding_queue_	access:public
+error_messages	src/apps/music/dir_sync/dir_sync.h	/^	error_messages_t* error_messages;$/;"	m	struct:dir_sync_	access:public
+error_messages	src/apps/music/music_query.h	/^	error_messages_t* error_messages;$/;"	m	struct:music_query_	access:public
+error_messages	src/apps/music/transcoder.h	/^	error_messages_t* error_messages;$/;"	m	struct:transcode_thread_t_	access:public
+error_messages	src/mod_mediaplayer.h	/^	error_messages_t* error_messages;$/;"	m	struct:__anon1	access:public
+error_messages	src/mod_mediaplayer.h	/^	error_messages_t* error_messages;$/;"	m	struct:__anon2	access:public
+error_messages_t	src/error_handler.h	/^}error_messages_t;$/;"	t	typeref:struct:__anon7
+error_num	src/apps/music/music_query.c	/^	int error_num = 0;$/;"	l
+error_num	src/apps/music/transcoder.c	/^	int error_num = 0;$/;"	l
+error_num	src/apps/music/transcoder.c	/^	int status, error_num;$/;"	l
+error_num	src/database/db_query_config.c	/^	int error_num;$/;"	l
+error_num	src/database/dbd.c	/^	int error_num = 0;$/;"	l
+error_num	src/database/dbd.c	/^	int error_num;$/;"	l
+error_num	src/mod_mediaplayer.c	/^	int error_num;$/;"	l
+error_type	src/error_handler.h	/^enum error_type{$/;"	g
+errorbuf	src/apps/music/tag_reader.c	/^	char errorbuf [255];$/;"	l
+errors_shm	src/error_handler.c	/^	apr_shm_t* errors_shm = NULL;$/;"	l
+errors_shm	src/error_handler.c	/^	apr_shm_t* errors_shm;$/;"	l
+errors_shm	src/mod_mediaplayer.h	/^	apr_shm_t* errors_shm;$/;"	m	struct:__anon1	access:public
+errors_shm_file	src/mod_mediaplayer.h	/^	const char* errors_shm_file;$/;"	m	struct:__anon1	access:public
+escape_string	src/mod_mediaplayer.c	/^	char* escape_string;$/;"	l
+external_directory	src/mod_mediaplayer.h	/^	const char* external_directory;$/;"	m	struct:__anon1	access:public
+fd	src/apps/music/flac.h	/^	FILE* fd;$/;"	m	struct:__anon8	access:public
+file	src/apps/music/tag_reader.h	/^	file_t file;$/;"	m	struct:List	access:public
+file	src/apps/music/tag_reader.h	/^	file_t* file;$/;"	m	struct:music_file_	access:public
+file_desc	src/apps/music/ogg_encode.c	/^	apr_file_t* file_desc;$/;"	l
+file_info	src/apps/music/ogg_encode.c	/^	apr_finfo_t file_info;$/;"	l
+file_list	src/apps/music/dir_sync/dir_sync.c	/^	List* file_list;$/;"	l
+file_list_new	src/apps/music/tag_reader.c	/^			List* file_list_new;$/;"	l
+file_path	src/apps/music/ogg_encode.c	/^	const char* file_path;$/;"	l
+file_path	src/apps/music/tag_reader.c	/^	char* file_path;$/;"	l
+file_path	src/apps/music/tag_reader.c	/^	const char* file_path;$/;"	l
+file_path	src/apps/music/transcoder.c	/^	const char* file_path;$/;"	l
+file_path	src/apps/music/transcoder.h	/^	const char* file_path;$/;"	m	struct:input_file_t_	access:public
+file_path_col	src/apps/music/ogg_encode.c	/^	column_table_t* file_path_col;$/;"	l
+file_path_col	src/apps/music/transcoder.c	/^	column_table_t* file_path_col;$/;"	l
+file_struct	src/apps/music/transcoder.h	/^	void* file_struct;$/;"	m	struct:input_file_t_	access:public
+file_t	src/apps/music/tag_reader.h	/^}file_t;$/;"	t	typeref:struct:__anon9
+file_type	src/apps/music/ogg_encode.c	/^	const char* file_type;$/;"	l
+file_type	src/apps/music/transcoder.c	/^	const char* file_type;$/;"	l
+file_type_col	src/apps/music/ogg_encode.c	/^	column_table_t* file_type_col;$/;"	l
+file_type_col	src/apps/music/transcoder.c	/^	column_table_t* file_type_col;$/;"	l
+filef	src/apps/music/tag_reader.c	/^	apr_finfo_t filef;$/;"	l
+files_scanned	src/apps/music/dir_sync/dir_sync.h	/^	int files_scanned;$/;"	m	struct:dir_sync_	access:public
+files_synced	src/apps/music/dir_sync/dir_sync.c	/^	int files_synced = 0;$/;"	l
+find_app_by_id	src/database/db_query_config.c	/^static int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){$/;"	f	file:	signature:(app_list_t* app_list,const char* id,app_t** app)
+find_column_by_id	src/database/db_query_config.c	/^static int find_column_by_id(column_table_t** element, apr_array_header_t*array, const char* id){$/;"	f	file:	signature:(column_table_t** element, apr_array_header_t*array, const char* id)
+find_column_from_query_by_friendly_name	src/database/db_query_config.c	/^int find_column_from_query_by_friendly_name(db_query_t* query,const char* friendly_name, column_table_t** column){$/;"	f	signature:(db_query_t* query,const char* friendly_name, column_table_t** column)
+find_column_from_query_by_friendly_name	src/database/db_query_config.h	/^int find_column_from_query_by_friendly_name(db_query_t* query,const char* friendly_name, column_table_t** column);$/;"	p	signature:(db_query_t* query,const char* friendly_name, column_table_t** column)
+find_custom_parameter_by_friendly	src/database/db_query_parameters.c	/^int find_custom_parameter_by_friendly(apr_array_header_t* parameter_array,const char* friendly_name, custom_parameter_t** custom_parameter){$/;"	f	signature:(apr_array_header_t* parameter_array,const char* friendly_name, custom_parameter_t** custom_parameter)
+find_custom_parameter_by_friendly	src/database/db_query_parameters.h	/^int find_custom_parameter_by_friendly(apr_array_header_t*,const char* friendly_name, custom_parameter_t** custom_parameter);$/;"	p	signature:(apr_array_header_t*,const char* friendly_name, custom_parameter_t** custom_parameter)
+find_id3_tag_id	src/apps/music/mpg123.c	/^int find_id3_tag_id(apr_pool_t* pool, mpg123_id3v2* id3v2, id3v2_ids_t* id3v2_ids){$/;"	f	signature:(apr_pool_t* pool, mpg123_id3v2* id3v2, id3v2_ids_t* id3v2_ids)
+find_playable_source	www/javascript/ui/player.js	/^	this.find_playable_source = function(song, domain){$/;"	f
+find_playable_source.sources_query_loaded	www/javascript/ui/player.js	/^		var sources_query_loaded = function(player){$/;"	f
+find_query_by_id	src/database/db_query_config.c	/^int find_query_by_id(db_query_t** element, apr_array_header_t*array, const char* id){$/;"	f	signature:(db_query_t** element, apr_array_header_t*array, const char* id)
+find_query_by_id	src/database/db_query_config.h	/^int find_query_by_id(db_query_t** element, apr_array_header_t*array, const char* id);$/;"	p	signature:(db_query_t** element, apr_array_header_t*array, const char* id)
+find_select_column_from_query_by_table_id_and_query_id	src/database/db_query_config.c	/^int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id){$/;"	f	signature:(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id)
+find_select_column_from_query_by_table_id_and_query_id	src/database/db_query_config.h	/^int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id);$/;"	p	signature:(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id)
+find_table_by_id	src/database/db_query_config.c	/^static int find_table_by_id(table_t** element, apr_array_header_t*array, const char* id){$/;"	f	file:	signature:(table_t** element, apr_array_header_t*array, const char* id)
+find_vorbis_comment_entry	src/apps/music/tag_reader.c	/^void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, char* entry, char** feild){$/;"	f	signature:(apr_pool_t*pool, FLAC__StreamMetadata *block, char* entry, char** feild)
+first_node	src/apps/app_config.h	/^	app_node_t* first_node;$/;"	m	struct:app_list_	access:public
+flac	src/apps/music/flac.c	/^	flac_file_t* flac = (flac_file_t*) client_data;$/;"	l
+flac	src/apps/music/flac.c	/^	flac_file_t* flac = (flac_file_t*)client_data;$/;"	l
+flac	src/apps/music/flac.c	/^    flac_file_t *flac = (flac_file_t *)in;$/;"	l
+flac_errors	src/apps/music/flac.c	/^void flac_errors(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status, void *client_data){$/;"	f	signature:(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status, void *client_data)
+flac_file	src/apps/music/flac.c	/^	flac_file_t* flac_file = (flac_file_t*)in;$/;"	l
+flac_file	src/apps/music/flac.c	/^	flac_file_t* flac_file = *file_struct = (flac_file_t*) apr_pcalloc(pool, sizeof(flac_file_t));$/;"	l
+flac_file_t	src/apps/music/flac.h	/^}flac_file_t;$/;"	t	typeref:struct:__anon8
+flac_metadata	src/apps/music/flac.c	/^void flac_metadata(const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadata *metadata, void *client_data){$/;"	f	signature:(const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadata *metadata, void *client_data)
+flac_write	src/apps/music/flac.c	/^FLAC__StreamDecoderWriteStatus flac_write(const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data){$/;"	f	signature:(const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data)
+floating_box	www/javascript/ui/window.js	/^function floating_box(id,top,left,width,height){$/;"	c
+floating_box.appendChild	www/javascript/ui/window.js	/^	this.appendChild = function(ch){$/;"	m
+floating_box.center	www/javascript/ui/window.js	/^	this.center = function(){$/;"	m
+floating_box.innerHTML	www/javascript/ui/window.js	/^	this.innerHTML = function(html){$/;"	m
+floating_box.show	www/javascript/ui/window.js	/^	this.show = function(){$/;"	m
+foreign_key	src/database/dbd.h	/^	const char* foreign_key;$/;"	m	struct:table_	access:public
+found	src/apps/music/decoding_queue.c	/^	int i, found = 0;$/;"	l
+free	src/apps/music/decoding_queue.c	/^	uint64_t free;$/;"	l
+freindly_name	src/database/db_query_parameters.h	/^	const char* freindly_name;$/;"	m	struct:custom_parameter_	access:public
+freindly_name	src/database/db_query_parameters.h	/^	const char* freindly_name;$/;"	m	struct:query_sql_clasuses_	access:public
+freindly_name	src/database/dbd.h	/^		const char* freindly_name;$/;"	m	struct:column_table_	access:public
+friendly_name	src/apps/app_config.h	/^	const char* friendly_name;$/;"	m	struct:app_	access:public
+func_append	config/ltmain.sh	/^func_append ()$/;"	f
+func_append	configure	/^func_append ()\\$/;"	f
+func_append_quoted	config/ltmain.sh	/^func_append_quoted ()$/;"	f
+func_append_quoted	configure	/^func_append_quoted ()\\$/;"	f
+func_arith	config/ltmain.sh	/^func_arith ()$/;"	f
+func_arith	configure	/^func_arith ()\\$/;"	f
+func_basename	config/ltmain.sh	/^func_basename ()$/;"	f
+func_basename	configure	/^func_basename ()\\$/;"	f
+func_check_version_match	config/ltmain.sh	/^func_check_version_match ()$/;"	f
+func_config	config/ltmain.sh	/^func_config ()$/;"	f
+func_convert_core_file_wine_to_w32	config/ltmain.sh	/^func_convert_core_file_wine_to_w32 ()$/;"	f
+func_convert_core_msys_to_w32	config/ltmain.sh	/^func_convert_core_msys_to_w32 ()$/;"	f
+func_convert_core_path_wine_to_w32	config/ltmain.sh	/^func_convert_core_path_wine_to_w32 ()$/;"	f
+func_convert_file_check	config/ltmain.sh	/^func_convert_file_check ()$/;"	f
+func_convert_file_cygwin_to_w32	config/ltmain.sh	/^func_convert_file_cygwin_to_w32 ()$/;"	f
+func_convert_file_msys_to_cygwin	config/ltmain.sh	/^func_convert_file_msys_to_cygwin ()$/;"	f
+func_convert_file_msys_to_w32	config/ltmain.sh	/^func_convert_file_msys_to_w32 ()$/;"	f
+func_convert_file_nix_to_cygwin	config/ltmain.sh	/^func_convert_file_nix_to_cygwin ()$/;"	f
+func_convert_file_nix_to_w32	config/ltmain.sh	/^func_convert_file_nix_to_w32 ()$/;"	f
+func_convert_file_noop	config/ltmain.sh	/^func_convert_file_noop ()$/;"	f
+func_convert_path_check	config/ltmain.sh	/^func_convert_path_check ()$/;"	f
+func_convert_path_cygwin_to_w32	config/ltmain.sh	/^func_convert_path_cygwin_to_w32 ()$/;"	f
+func_convert_path_front_back_pathsep	config/ltmain.sh	/^func_convert_path_front_back_pathsep ()$/;"	f
+func_convert_path_msys_to_cygwin	config/ltmain.sh	/^func_convert_path_msys_to_cygwin ()$/;"	f
+func_convert_path_msys_to_w32	config/ltmain.sh	/^func_convert_path_msys_to_w32 ()$/;"	f
+func_convert_path_nix_to_cygwin	config/ltmain.sh	/^func_convert_path_nix_to_cygwin ()$/;"	f
+func_convert_path_nix_to_w32	config/ltmain.sh	/^func_convert_path_nix_to_w32 ()$/;"	f
+func_convert_path_noop	config/ltmain.sh	/^func_convert_path_noop ()$/;"	f
+func_cygming_dll_for_implib	config/ltmain.sh	/^func_cygming_dll_for_implib ()$/;"	f
+func_cygming_dll_for_implib_fallback	config/ltmain.sh	/^func_cygming_dll_for_implib_fallback ()$/;"	f
+func_cygming_dll_for_implib_fallback_core	config/ltmain.sh	/^func_cygming_dll_for_implib_fallback_core ()$/;"	f
+func_cygming_gnu_implib_p	config/ltmain.sh	/^func_cygming_gnu_implib_p ()$/;"	f
+func_cygming_ms_implib_p	config/ltmain.sh	/^func_cygming_ms_implib_p ()$/;"	f
+func_cygpath	config/ltmain.sh	/^func_cygpath ()$/;"	f
+func_dirname	config/ltmain.sh	/^func_dirname ()$/;"	f
+func_dirname	configure	/^func_dirname ()\\$/;"	f
+func_dirname_and_basename	config/ltmain.sh	/^func_dirname_and_basename ()$/;"	f
+func_dirname_and_basename	configure	/^func_dirname_and_basename ()\\$/;"	f
+func_echo	config/ltmain.sh	/^func_echo ()$/;"	f
+func_echo_all	config/ltmain.sh	/^func_echo_all ()$/;"	f
+func_echo_all	configure	/^func_echo_all ()$/;"	f
+func_emit_cwrapperexe_src	config/ltmain.sh	/^func_emit_cwrapperexe_src ()$/;"	f
+func_emit_wrapper	config/ltmain.sh	/^func_emit_wrapper ()$/;"	f
+func_enable_tag	config/ltmain.sh	/^func_enable_tag ()$/;"	f
+func_error	config/ltmain.sh	/^func_error ()$/;"	f
+func_exec_program	config/ltmain.sh	/^func_exec_program ()$/;"	f
+func_exec_program_core	config/ltmain.sh	/^func_exec_program_core ()$/;"	f
+func_execute_cmds	config/ltmain.sh	/^func_execute_cmds ()$/;"	f
+func_extract_an_archive	config/ltmain.sh	/^func_extract_an_archive ()$/;"	f
+func_extract_archives	config/ltmain.sh	/^func_extract_archives ()$/;"	f
+func_fallback_echo	config/ltmain.sh	/^func_fallback_echo ()$/;"	f
+func_fallback_echo	configure	/^  func_fallback_echo ()$/;"	f
+func_fallback_echo	configure	/^func_fallback_echo ()$/;"	f
+func_fatal_configuration	config/ltmain.sh	/^func_fatal_configuration ()$/;"	f
+func_fatal_error	config/ltmain.sh	/^func_fatal_error ()$/;"	f
+func_fatal_help	config/ltmain.sh	/^func_fatal_help ()$/;"	f
+func_features	config/ltmain.sh	/^func_features ()$/;"	f
+func_generate_dlsyms	config/ltmain.sh	/^func_generate_dlsyms ()$/;"	f
+func_grep	config/ltmain.sh	/^func_grep ()$/;"	f
+func_help	config/ltmain.sh	/^func_help ()$/;"	f
+func_infer_tag	config/ltmain.sh	/^func_infer_tag ()$/;"	f
+func_init_to_host_path_cmd	config/ltmain.sh	/^func_init_to_host_path_cmd ()$/;"	f
+func_lalib_p	config/ltmain.sh	/^func_lalib_p ()$/;"	f
+func_lalib_unsafe_p	config/ltmain.sh	/^func_lalib_unsafe_p ()$/;"	f
+func_len	config/ltmain.sh	/^func_len ()$/;"	f
+func_len	configure	/^func_len ()\\$/;"	f
+func_lo2o	config/ltmain.sh	/^func_lo2o ()$/;"	f
+func_lo2o	configure	/^func_lo2o ()\\$/;"	f
+func_lt_dump_args	config/ltmain.sh	/^func_lt_dump_args ()$/;"	f
+func_ltwrapper_executable_p	config/ltmain.sh	/^func_ltwrapper_executable_p ()$/;"	f
+func_ltwrapper_p	config/ltmain.sh	/^func_ltwrapper_p ()$/;"	f
+func_ltwrapper_script_p	config/ltmain.sh	/^func_ltwrapper_script_p ()$/;"	f
+func_ltwrapper_scriptname	config/ltmain.sh	/^func_ltwrapper_scriptname ()$/;"	f
+func_missing_arg	config/ltmain.sh	/^func_missing_arg ()$/;"	f
+func_mkdir_p	config/ltmain.sh	/^func_mkdir_p ()$/;"	f
+func_mktempdir	config/ltmain.sh	/^func_mktempdir ()$/;"	f
+func_mode_compile	config/ltmain.sh	/^func_mode_compile ()$/;"	f
+func_mode_execute	config/ltmain.sh	/^func_mode_execute ()$/;"	f
+func_mode_finish	config/ltmain.sh	/^func_mode_finish ()$/;"	f
+func_mode_help	config/ltmain.sh	/^func_mode_help ()$/;"	f
+func_mode_install	config/ltmain.sh	/^func_mode_install ()$/;"	f
+func_mode_link	config/ltmain.sh	/^func_mode_link ()$/;"	f
+func_mode_uninstall	config/ltmain.sh	/^func_mode_uninstall ()$/;"	f
+func_normal_abspath	config/ltmain.sh	/^func_normal_abspath ()$/;"	f
+func_parse_lt_options	config/ltmain.sh	/^func_parse_lt_options ()$/;"	f
+func_quote_for_eval	config/ltmain.sh	/^func_quote_for_eval ()$/;"	f
+func_quote_for_expand	config/ltmain.sh	/^func_quote_for_expand ()$/;"	f
+func_relative_path	config/ltmain.sh	/^func_relative_path ()$/;"	f
+func_replace_sysroot	config/ltmain.sh	/^func_replace_sysroot ()$/;"	f
+func_resolve_sysroot	config/ltmain.sh	/^func_resolve_sysroot ()$/;"	f
+func_show_eval	config/ltmain.sh	/^func_show_eval ()$/;"	f
+func_show_eval_locale	config/ltmain.sh	/^func_show_eval_locale ()$/;"	f
+func_source	config/ltmain.sh	/^func_source ()$/;"	f
+func_split_long_opt	config/ltmain.sh	/^func_split_long_opt ()$/;"	f
+func_split_long_opt	configure	/^func_split_long_opt ()\\$/;"	f
+func_split_short_opt	config/ltmain.sh	/^func_split_short_opt ()$/;"	f
+func_split_short_opt	configure	/^func_split_short_opt ()\\$/;"	f
+func_stripname	config/ltmain.sh	/^func_stripname ()$/;"	f
+func_stripname	configure	/^func_stripname ()\\$/;"	f
+func_stripname_cnf	configure	/^func_stripname_cnf ()$/;"	f
+func_to_host_file	config/ltmain.sh	/^func_to_host_file ()$/;"	f
+func_to_host_path	config/ltmain.sh	/^func_to_host_path ()$/;"	f
+func_to_tool_file	config/ltmain.sh	/^func_to_tool_file ()$/;"	f
+func_tr_sh	config/ltmain.sh	/^func_tr_sh ()$/;"	f
+func_usage	config/ltmain.sh	/^func_usage ()$/;"	f
+func_verbose	config/ltmain.sh	/^func_verbose ()$/;"	f
+func_version	config/ltmain.sh	/^func_version ()$/;"	f
+func_warning	config/ltmain.sh	/^func_warning ()$/;"	f
+func_win32_import_lib_p	config/ltmain.sh	/^func_win32_import_lib_p ()$/;"	f
+func_win32_libid	config/ltmain.sh	/^func_win32_libid ()$/;"	f
+func_write_libtool_object	config/ltmain.sh	/^func_write_libtool_object ()$/;"	f
+func_xform	config/ltmain.sh	/^func_xform ()$/;"	f
+func_xform	configure	/^func_xform ()\\$/;"	f
+generate_queries	src/database/db_query_config.c	/^static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_config){$/;"	f	file:	signature:(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_config)
+generate_sql_statement	src/database/dbd.c	/^static int generate_sql_statement(db_config* dbd_config, query_parameters_t* query_parameters,db_query_t* db_query,const char** select,error_messages_t* error_messages){$/;"	f	file:	signature:(db_config* dbd_config, query_parameters_t* query_parameters,db_query_t* db_query,const char** select,error_messages_t* error_messages)
+get_column_results_for_row	src/database/dbd.c	/^int get_column_results_for_row(db_query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result){$/;"	f	signature:(db_query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result)
+get_column_results_for_row	src/database/dbd.h	/^int get_column_results_for_row(db_query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result);$/;"	p	signature:(db_query_t* db_query, results_table_t* query_results,column_table_t* column,int row_index,const char** column_result)
+get_decoding_job_queue	src/apps/music/decoding_queue.c	/^decoding_job_t* get_decoding_job_queue(decoding_queue_t* decoding_queue, error_messages_t* error_messages){$/;"	f	signature:(decoding_queue_t* decoding_queue, error_messages_t* error_messages)
+get_decoding_job_queue	src/apps/music/decoding_queue.h	/^decoding_job_t* get_decoding_job_queue(decoding_queue_t* decoding_queue, error_messages_t* error_messages);$/;"	p	signature:(decoding_queue_t* decoding_queue, error_messages_t* error_messages)
+get_file_ext	src/apps/music/tag_reader.c	/^static int get_file_ext(apr_pool_t* pool, const char* file_path){$/;"	f	file:	signature:(apr_pool_t* pool, const char* file_path)
+get_file_path	src/database/dbd.c	/^int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select){$/;"	f	signature:(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select)
+get_file_path	src/database/dbd.h	/^int get_file_path(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select);$/;"	p	signature:(char** file_path, db_config* dbd_config, char* id, apr_dbd_prepared_t* select)
+get_id	src/database/dbd.c	/^static int get_id(char** id, db_config* dbd_config,apr_dbd_prepared_t* prep, const char** args){$/;"	f	file:	signature:(char** id, db_config* dbd_config,apr_dbd_prepared_t* prep, const char** args)
+get_insert_last_id	src/database/dbd.c	/^static int get_insert_last_id (char** id, db_config* dbd_config){$/;"	f	file:	signature:(char** id, db_config* dbd_config)
+get_music_query	src/apps/music/music_query.c	/^int get_music_query(apr_pool_t* pool,error_messages_t* error_messages,music_query_t* music_query,query_words_t* query_words, apr_array_header_t* db_queries){$/;"	f	signature:(apr_pool_t* pool,error_messages_t* error_messages,music_query_t* music_query,query_words_t* query_words, apr_array_header_t* db_queries)
+get_musicbrainz_release_id	src/apps/music/dir_sync/musicbrainz.c	/^int get_musicbrainz_release_id(apr_pool_t* pool, music_file* song, error_messages_t* error_messages){$/;"	f	signature:(apr_pool_t* pool, music_file* song, error_messages_t* error_messages)
+get_musicbrainz_release_id	src/apps/music/dir_sync/musicbrainz.h	/^int get_musicbrainz_release_id(apr_pool_t* pool, music_file* song, error_messages_t* error_messages);$/;"	p	signature:(apr_pool_t* pool, music_file* song, error_messages_t* error_messages)
+get_playlist_index	www/javascript/ui/playlist.js	/^	this.get_playlist_index = function(song_id){$/;"	f
+get_xml_attr	src/database/db_query_config.c	/^static int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_name,const char** attr_value){$/;"	f	file:	signature:(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_name,const char** attr_value)
+gid	src/mod_mediaplayer.c	/^    apr_gid_t gid;$/;"	l
+global_context	src/apps/app_config.h	/^	const void* global_context;$/;"	m	struct:app_	access:public
+group_by	src/database/dbd.c	/^	const char* group_by = db_query->group_by_string;$/;"	l
+group_by_string	src/database/dbd.h	/^	const char* group_by_string;$/;"	m	struct:db_query_	access:public
+has_job	src/apps/music/decoding_queue.c	/^	uint64_t has_job;$/;"	l
+head	src/apps/music/decoding_queue.h	/^	int head;$/;"	m	struct:queue_	access:public
+header	src/error_handler.h	/^	char header[MAX_ERROR_SIZE] ;$/;"	m	struct:__anon6	access:public
+header_codebooks	src/apps/music/ogg_encode.c	/^    ogg_packet header_codebooks;$/;"	l
+header_comments	src/apps/music/ogg_encode.c	/^    ogg_packet header_comments;$/;"	l
+header_main	src/apps/music/ogg_encode.c	/^    ogg_packet header_main;$/;"	l
+i	src/apps/app_config.c	/^	int i =0;$/;"	l
+i	src/apps/music/decoding_queue.c	/^	int i, found = 0;$/;"	l
+i	src/apps/music/dir_sync/musicbrainz.c	/^	int i;$/;"	l
+i	src/apps/music/flac.c	/^	int i,j;$/;"	l
+i	src/apps/music/flac.c	/^	int i;$/;"	l
+i	src/apps/music/flac.c	/^    int i, j;$/;"	l
+i	src/apps/music/flac.c	/^    int i;$/;"	l
+i	src/apps/music/mpg123.c	/^	int i = 0;$/;"	l
+i	src/apps/music/tag_reader.c	/^	int i, tag, status;$/;"	l
+i	src/database/db_query_config.c	/^	int i;$/;"	l
+i	src/database/db_query_parameters.c	/^		int i = 0;$/;"	l
+i	src/database/db_query_parameters.c	/^		int i;$/;"	l
+i	src/database/db_query_parameters.c	/^	int i;$/;"	l
+i	src/database/dbd.c	/^				int i;$/;"	l
+i	src/database/dbd.c	/^	int i;$/;"	l
+i	src/error_handler.c	/^	int i = 0;$/;"	l
+i	src/error_handler.c	/^	int i;$/;"	l
+i	src/mod_mediaplayer.c	/^	int i;$/;"	l
+id	src/apps/app_config.h	/^	const char* id;$/;"	m	struct:app_	access:public
+id	src/apps/music/id3v2.h	/^	char id[4];$/;"	m	struct:id3v2_id_	access:public
+id	src/database/dbd.h	/^		const char* id;$/;"	m	struct:column_table_	access:public
+id	src/database/dbd.h	/^	const char* id;$/;"	m	struct:db_query_	access:public
+id	src/database/dbd.h	/^	const char* id;$/;"	m	struct:table_	access:public
+id3v2	src/apps/music/mpg123.c	/^	mpg123_id3v2* id3v2;$/;"	l
+id3v2_id_	src/apps/music/id3v2.h	/^typedef struct id3v2_id_{$/;"	s
+id3v2_id_::id	src/apps/music/id3v2.h	/^	char id[4];$/;"	m	struct:id3v2_id_	access:public
+id3v2_id_::texts	src/apps/music/id3v2.h	/^	char** texts;$/;"	m	struct:id3v2_id_	access:public
+id3v2_id_t	src/apps/music/id3v2.h	/^} id3v2_id_t;$/;"	t	typeref:struct:id3v2_id_
+id3v2_ids_	src/apps/music/id3v2.h	/^typedef struct id3v2_ids_{$/;"	s
+id3v2_ids_::ids	src/apps/music/id3v2.h	/^	id3v2_id_t* ids;$/;"	m	struct:id3v2_ids_	access:public
+id3v2_ids_::num	src/apps/music/id3v2.h	/^	unsigned int num;$/;"	m	struct:id3v2_ids_	access:public
+id3v2_ids_t	src/apps/music/id3v2.h	/^} id3v2_ids_t;$/;"	t	typeref:struct:id3v2_ids_
+id_tag_id	src/apps/music/mpg123.c	/^	int* id_tag_id = NULL;$/;"	l
+ids	src/apps/music/id3v2.h	/^	id3v2_id_t* ids;$/;"	m	struct:id3v2_ids_	access:public
+ids	src/apps/music/mpg123.c	/^		id3v2_id_t ids[8];$/;"	l
+ids_key	src/apps/music/mpg123.c	/^	int* ids_key = NULL;$/;"	l
+index	src/apps/music/decoding_queue.c	/^	int index;$/;"	l
+index	src/apps/music/decoding_queue.h	/^	int index;$/;"	m	struct:decoding_job_	access:public
+index_flag	src/apps/music/decoding_queue.c	/^	uint64_t index_flag;$/;"	l
+index_flag	src/apps/music/transcoder.c	/^		uint64_t index_flag = (1ull << (63 - decoding_job->index));$/;"	l
+init_app	src/apps/app_config.h	/^	init_app_fnt init_app;$/;"	m	struct:app_	access:public
+init_app_fnt	src/apps/app_config.h	/^typedef int (*init_app_fnt)(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context);$/;"	t
+init_apps	src/apps/app_config.c	/^int init_apps(app_list_t* app_list,apr_pool_t* global_pool, error_messages_t* error_messages, const char* media_directory){$/;"	f	signature:(app_list_t* app_list,apr_pool_t* global_pool, error_messages_t* error_messages, const char* media_directory)
+init_apps	src/apps/app_config.h	/^int init_apps(app_list_t* app_list,apr_pool_t* global_pool, error_messages_t* error_messages, const char* media_directory);$/;"	p	signature:(app_list_t* app_list,apr_pool_t* global_pool, error_messages_t* error_messages, const char* media_directory)
+init_db_schema	src/database/db_query_config.c	/^int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config){$/;"	f	signature:(app_list_t* app_list,const char* file_path, db_config* dbd_config)
+init_db_schema	src/database/db_query_config.h	/^int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config);$/;"	p	signature:(app_list_t* app_list,const char* file_path, db_config* dbd_config)
+init_error_messages	src/error_handler.c	/^int init_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file){$/;"	f	signature:(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file)
+init_error_messages	src/error_handler.h	/^int init_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file);$/;"	p	signature:(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file)
+init_music_query	src/apps/music/music_query.c	/^int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context){$/;"	f	signature:(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context)
+init_music_query	src/apps/music/music_query.h	/^int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context);$/;"	p	signature:(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context)
+init_query_parameters	src/database/db_query_parameters.c	/^int init_query_parameters(apr_pool_t* pool, query_parameters_t** query_parameters){$/;"	f	signature:(apr_pool_t* pool, query_parameters_t** query_parameters)
+init_query_parameters	src/database/db_query_parameters.h	/^int init_query_parameters(apr_pool_t* pool, query_parameters_t** query_parameters);$/;"	p	signature:(apr_pool_t* pool, query_parameters_t** query_parameters)
+input_file	src/apps/music/transcoder.c	/^		input_file_t input_file;$/;"	l
+input_file_path	src/apps/music/decoding_queue.h	/^	char input_file_path[1024];$/;"	m	struct:decoding_job_	access:public
+input_file_path	src/apps/music/transcoder.c	/^	const char* input_file_path;$/;"	l
+input_file_t	src/apps/music/transcoder.h	/^}input_file_t;$/;"	t	typeref:struct:input_file_t_
+input_file_t_	src/apps/music/transcoder.h	/^typedef struct input_file_t_{$/;"	s
+input_file_t_::close_input_file	src/apps/music/transcoder.h	/^	int (*close_input_file)(void* file_struct);$/;"	m	struct:input_file_t_	access:public
+input_file_t_::file_path	src/apps/music/transcoder.h	/^	const char* file_path;$/;"	m	struct:input_file_t_	access:public
+input_file_t_::file_struct	src/apps/music/transcoder.h	/^	void* file_struct;$/;"	m	struct:input_file_t_	access:public
+input_file_t_::open_input_file	src/apps/music/transcoder.h	/^	int (*open_input_file)(apr_pool_t* pool,void** file_struct, const char* file_path, encoding_options_t* enc_opt);$/;"	m	struct:input_file_t_	access:public
+input_file_t_::process_input_file	src/apps/music/transcoder.h	/^	long (*process_input_file)(void* file_struct, float** buffer, int samples);$/;"	m	struct:input_file_t_	access:public
+input_file_type	src/apps/music/decoding_queue.h	/^	char input_file_type[1024];$/;"	m	struct:decoding_job_	access:public
+insert_db	src/database/dbd.c	/^int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args){$/;"	f	signature:(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args)
+insert_db	src/database/dbd.h	/^int insert_db(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args);$/;"	p	signature:(char** id, db_config* dbd_config, apr_dbd_prepared_t* query, const char** args)
+insert_into_div	www/javascript/ui/playlist.js	/^	this.insert_into_div = function(div){$/;"	c
+iter	src/apps/music/tag_reader.c	/^	FLAC__Metadata_SimpleIterator *iter;$/;"	l
+j	src/apps/music/flac.c	/^	int i,j;$/;"	l
+j	src/apps/music/flac.c	/^    int i, j;$/;"	l
+j	src/apps/music/mpg123.c	/^	int j = 0, k = 0;$/;"	l
+json_escape_char	src/mod_mediaplayer.c	/^char* json_escape_char(apr_pool_t* pool, const char* string){$/;"	f	signature:(apr_pool_t* pool, const char* string)
+json_escape_char	src/mod_mediaplayer.h	/^char* json_escape_char(apr_pool_t* pool, const char* string);$/;"	p	signature:(apr_pool_t* pool, const char* string)
+k	src/apps/music/mpg123.c	/^	int j = 0, k = 0;$/;"	l
+k	src/apps/music/mpg123.c	/^	int k = 0;$/;"	l
+last	src/apps/music/music_query.c	/^					char* last; \/\/Last state of strtol$/;"	l
+length	src/apps/music/mpg123.c	/^	int length = 9;$/;"	l
+length	src/apps/music/tag_reader.c	/^	int length = strlen(file_path);$/;"	l
+length	src/apps/music/tag_reader.h	/^	int   length;$/;"	m	struct:music_file_	access:public
+length_written	src/apps/music/ogg_encode.c	/^            	apr_size_t* length_written;$/;"	l
+limit	src/database/dbd.c	/^	const char* limit = NULL;$/;"	l
+links_args	src/apps/music/transcoder.c	/^	const char* links_args[7];$/;"	l
+loadUI	www/javascript/music_ui.js	/^function loadUI(){$/;"	f
+m	src/apps/music/mpg123.c	/^	mpg123_handle* m;$/;"	l
+main	config/config.guess	/^		main()$/;"	f
+main	config/config.guess	/^	main ()$/;"	f
+main	config/config.guess	/^main ()$/;"	f
+main	tools/skeltool.c	/^int main(int argc, char **argv)$/;"	f	signature:(int argc, char **argv)
+max_element_size	src/database/db_query_config.c	/^	apr_size_t max_element_size = 255;$/;"	l
+max_element_size	src/database/db_query_config.c	/^	apr_size_t max_element_size = 512;$/;"	l
+max_size	src/apps/music/music_query.c	/^				apr_size_t max_size = 255; $/;"	l
+mb_album_id	src/apps/music/tag_reader.h	/^		char* mb_album_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+mb_albumartist_id	src/apps/music/tag_reader.h	/^		char* mb_albumartist_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+mb_artist_id	src/apps/music/tag_reader.h	/^		char* mb_artist_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+mb_httpcode	src/apps/music/dir_sync/musicbrainz.c	/^	int mb_httpcode = 0;$/;"	l
+mb_id	src/apps/music/tag_reader.h	/^	} mb_id;$/;"	m	struct:music_file_	typeref:struct:music_file_::musicbrainz_	access:public
+mb_metadata	src/apps/music/dir_sync/musicbrainz.c	/^	Mb5Metadata mb_metadata;$/;"	l
+mb_parameters	src/apps/music/dir_sync/musicbrainz.c	/^	mb_parameters_t* mb_parameters;$/;"	l
+mb_parameters_t	src/apps/music/dir_sync/musicbrainz.h	/^}mb_parameters_t;$/;"	t	typeref:struct:mb_parameters_t_
+mb_parameters_t_	src/apps/music/dir_sync/musicbrainz.h	/^typedef struct mb_parameters_t_{$/;"	s
+mb_parameters_t_::num_parameters	src/apps/music/dir_sync/musicbrainz.h	/^	int num_parameters;$/;"	m	struct:mb_parameters_t_	access:public
+mb_parameters_t_::parameters_name	src/apps/music/dir_sync/musicbrainz.h	/^	char* parameters_name[MAX_NUM_PARAMETERS];$/;"	m	struct:mb_parameters_t_	access:public
+mb_parameters_t_::parameters_value	src/apps/music/dir_sync/musicbrainz.h	/^	char* parameters_value[MAX_NUM_PARAMETERS];$/;"	m	struct:mb_parameters_t_	access:public
+mb_query	src/apps/music/dir_sync/musicbrainz.c	/^	Mb5Query mb_query;$/;"	l
+mb_recoriding_id	src/apps/music/tag_reader.h	/^		char* mb_recoriding_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+mb_release	src/apps/music/dir_sync/musicbrainz.c	/^	Mb5Release mb_release;$/;"	l
+mb_release_id	src/apps/music/tag_reader.h	/^		char* mb_release_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+mb_release_list	src/apps/music/dir_sync/musicbrainz.c	/^	Mb5ReleaseList mb_release_list;$/;"	l
+mb_result	src/apps/music/dir_sync/musicbrainz.c	/^	tQueryResult mb_result;$/;"	l
+mediaplayer_child_init	src/mod_mediaplayer.c	/^static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){$/;"	f	file:	signature:(apr_pool_t *child_pool, server_rec *s)
+mediaplayer_cmds	src/mod_mediaplayer.c	/^static const command_rec mediaplayer_cmds[] = {$/;"	v	file:
+mediaplayer_config_srv	src/mod_mediaplayer.c	/^static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){$/;"	f	file:	signature:(apr_pool_t* pool, server_rec* s)
+mediaplayer_handler	src/mod_mediaplayer.c	/^static int mediaplayer_handler(request_rec* r) {$/;"	f	file:	signature:(request_rec* r)
+mediaplayer_hooks	src/mod_mediaplayer.c	/^static void mediaplayer_hooks(apr_pool_t* pool) {$/;"	f	file:	signature:(apr_pool_t* pool)
+mediaplayer_module	src/mod_mediaplayer.c	/^module AP_MODULE_DECLARE_DATA mediaplayer_module = {$/;"	v
+mediaplayer_module	src/mod_mediaplayer.h	/^module AP_MODULE_DECLARE_DATA mediaplayer_module;$/;"	v
+mediaplayer_post_config	src/mod_mediaplayer.c	/^static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){$/;"	f	file:	signature:(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s)
+mediaplayer_rec_cfg	src/mod_mediaplayer.h	/^}mediaplayer_rec_cfg;$/;"	t	typeref:struct:__anon2
+mediaplayer_set_db_schema	src/mod_mediaplayer.c	/^static const char* mediaplayer_set_db_schema (cmd_parms* cmd, void* cfg, const char* arg){$/;"	f	file:	signature:(cmd_parms* cmd, void* cfg, const char* arg)
+mediaplayer_set_enable	src/mod_mediaplayer.c	/^static const char* mediaplayer_set_enable (cmd_parms* cmd, void* cfg, int arg){$/;"	f	file:	signature:(cmd_parms* cmd, void* cfg, int arg)
+mediaplayer_set_external_dir	src/mod_mediaplayer.c	/^static const char* mediaplayer_set_external_dir (cmd_parms* cmd, void* cfg, const char* arg){$/;"	f	file:	signature:(cmd_parms* cmd, void* cfg, const char* arg)
+mediaplayer_srv_cfg	src/mod_mediaplayer.h	/^} mediaplayer_srv_cfg ;$/;"	t	typeref:struct:__anon1
+message	src/error_handler.h	/^	char message[MAX_ERROR_SIZE];$/;"	m	struct:__anon6	access:public
+messages	src/error_handler.h	/^	error_message_t messages[1024];$/;"	m	struct:__anon7	access:public
+meta	src/apps/music/mpg123.c	/^	int meta = 0;$/;"	l
+mh	src/apps/music/mpg123.h	/^	mpg123_handle* mh;$/;"	m	struct:mpg3_file_	access:public
+mp3_file	src/apps/music/mpg123.c	/^	mp3_file_t* mp3_file = (mp3_file_t*)in;$/;"	l
+mp3_file	src/apps/music/mpg123.c	/^	mp3_file_t* mp3_file = *mp3_file_ptr = (mp3_file_t*)apr_pcalloc(pool, sizeof(mp3_file_t));$/;"	l
+mp3_file_t	src/apps/music/mpg123.h	/^}mp3_file_t;$/;"	t	typeref:struct:mpg3_file_
+mp3_out_buff	src/apps/music/mpg123.c	/^	unsigned char* mp3_out_buff = malloc(buffer_size);$/;"	l
+mpg3_file_	src/apps/music/mpg123.h	/^typedef struct mpg3_file_ {$/;"	s
+mpg3_file_::channels	src/apps/music/mpg123.h	/^	int channels;$/;"	m	struct:mpg3_file_	access:public
+mpg3_file_::encoding	src/apps/music/mpg123.h	/^	int encoding;$/;"	m	struct:mpg3_file_	access:public
+mpg3_file_::mh	src/apps/music/mpg123.h	/^	mpg123_handle* mh;$/;"	m	struct:mpg3_file_	access:public
+mpg3_file_::rate	src/apps/music/mpg123.h	/^	long rate;$/;"	m	struct:mpg3_file_	access:public
+mpg3_file_::samples	src/apps/music/mpg123.h	/^	long samples;$/;"	m	struct:mpg3_file_	access:public
+mpg3_file_::total_samples	src/apps/music/mpg123.h	/^	long total_samples; \/\/Per channel$/;"	m	struct:mpg3_file_	access:public
+mtime	src/apps/music/tag_reader.h	/^	apr_time_t mtime;$/;"	m	struct:__anon9	access:public
+music_file	src/apps/music/music_typedefs.h	/^typedef struct music_file_ music_file;$/;"	t	typeref:struct:music_file_
+music_file_	src/apps/music/tag_reader.h	/^struct music_file_{$/;"	s
+music_file_::album	src/apps/music/tag_reader.h	/^	char* album;$/;"	m	struct:music_file_	access:public
+music_file_::artist	src/apps/music/tag_reader.h	/^	char* artist;$/;"	m	struct:music_file_	access:public
+music_file_::date	src/apps/music/tag_reader.h	/^	char* date;$/;"	m	struct:music_file_	access:public
+music_file_::disc_no	src/apps/music/tag_reader.h	/^	char* disc_no;$/;"	m	struct:music_file_	access:public
+music_file_::discs_in_set	src/apps/music/tag_reader.h	/^	char* discs_in_set;$/;"	m	struct:music_file_	access:public
+music_file_::file	src/apps/music/tag_reader.h	/^	file_t* file;$/;"	m	struct:music_file_	access:public
+music_file_::length	src/apps/music/tag_reader.h	/^	int   length;$/;"	m	struct:music_file_	access:public
+music_file_::mb_id	src/apps/music/tag_reader.h	/^	} mb_id;$/;"	m	struct:music_file_	typeref:struct:music_file_::musicbrainz_	access:public
+music_file_::musicbrainz_	src/apps/music/tag_reader.h	/^	struct musicbrainz_{$/;"	s	struct:music_file_	access:public
+music_file_::musicbrainz_::mb_album_id	src/apps/music/tag_reader.h	/^		char* mb_album_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+music_file_::musicbrainz_::mb_albumartist_id	src/apps/music/tag_reader.h	/^		char* mb_albumartist_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+music_file_::musicbrainz_::mb_artist_id	src/apps/music/tag_reader.h	/^		char* mb_artist_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+music_file_::musicbrainz_::mb_recoriding_id	src/apps/music/tag_reader.h	/^		char* mb_recoriding_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+music_file_::musicbrainz_::mb_release_id	src/apps/music/tag_reader.h	/^		char* mb_release_id;$/;"	m	struct:music_file_::musicbrainz_	access:public
+music_file_::title	src/apps/music/tag_reader.h	/^	char* title;$/;"	m	struct:music_file_	access:public
+music_file_::total_tracks	src/apps/music/tag_reader.h	/^	char* total_tracks;$/;"	m	struct:music_file_	access:public
+music_file_::track_no	src/apps/music/tag_reader.h	/^	char* track_no;$/;"	m	struct:music_file_	access:public
+music_file_::year	src/apps/music/tag_reader.h	/^	char* year;$/;"	m	struct:music_file_	access:public
+music_globals	src/apps/music/music_query.c	/^	music_globals_t* music_globals = (music_globals_t*) global_context;$/;"	l
+music_globals	src/apps/music/music_query.c	/^	music_globals_t* music_globals;$/;"	l
+music_globals	src/apps/music/music_query.h	/^	music_globals_t* music_globals;$/;"	m	struct:music_query_	access:public
+music_globals_	src/apps/music/music_query.h	/^struct music_globals_{$/;"	s
+music_globals_::decoding_queue	src/apps/music/music_query.h	/^	decoding_queue_t* decoding_queue;$/;"	m	struct:music_globals_	access:public
+music_globals_::decoding_queue_shm	src/apps/music/music_query.h	/^	apr_shm_t* decoding_queue_shm;$/;"	m	struct:music_globals_	access:public
+music_globals_::decoding_queue_shm_file	src/apps/music/music_query.h	/^	const char* decoding_queue_shm_file;$/;"	m	struct:music_globals_	access:public
+music_globals_::dir_sync	src/apps/music/music_query.h	/^	dir_sync_t* dir_sync;$/;"	m	struct:music_globals_	access:public
+music_globals_::dir_sync_shm	src/apps/music/music_query.h	/^	apr_shm_t* dir_sync_shm;$/;"	m	struct:music_globals_	access:public
+music_globals_::dir_sync_shm_file	src/apps/music/music_query.h	/^	const char* dir_sync_shm_file;$/;"	m	struct:music_globals_	access:public
+music_globals_::musicbrainz_progress	src/apps/music/music_query.h	/^	float* musicbrainz_progress;$/;"	m	struct:music_globals_	access:public
+music_globals_::num_albums	src/apps/music/music_query.h	/^	int num_albums;$/;"	m	struct:music_globals_	access:public
+music_globals_::num_artits	src/apps/music/music_query.h	/^	int num_artits;$/;"	m	struct:music_globals_	access:public
+music_globals_::num_decoding_threads	src/apps/music/music_query.h	/^	int num_decoding_threads;$/;"	m	struct:music_globals_	access:public
+music_globals_::num_songs	src/apps/music/music_query.h	/^	int num_songs;$/;"	m	struct:music_globals_	access:public
+music_globals_::num_sources	src/apps/music/music_query.h	/^	int num_sources;$/;"	m	struct:music_globals_	access:public
+music_globals_t	src/apps/music/music_typedefs.h	/^typedef struct music_globals_ music_globals_t;$/;"	t	typeref:struct:music_globals_
+music_query	src/apps/music/music_query.c	/^	music_query_t* music_query = apr_pcalloc(pool, sizeof(music_query_t));$/;"	l
+music_query	www/javascript/music_query.js	/^function music_query(hostname, parameters,print_results_function){$/;"	c
+music_query.load	www/javascript/music_query.js	/^	this.load = function (){$/;"	m
+music_query.load.xmlhttp	www/javascript/music_query.js	/^		this.xmlhttp.onreadystatechange=function(music_query){$/;"	m
+music_query.reset	www/javascript/music_query.js	/^	this.reset = function () {$/;"	m
+music_query.set_url	www/javascript/music_query.js	/^	this.set_url = function (){$/;"	m
+music_query_	src/apps/music/music_query.h	/^struct music_query_{$/;"	s
+music_query_::db_query	src/apps/music/music_query.h	/^	db_query_t* db_query;$/;"	m	struct:music_query_	access:public
+music_query_::error_messages	src/apps/music/music_query.h	/^	error_messages_t* error_messages;$/;"	m	struct:music_query_	access:public
+music_query_::music_globals	src/apps/music/music_query.h	/^	music_globals_t* music_globals;$/;"	m	struct:music_query_	access:public
+music_query_::output_bb	src/apps/music/music_query.h	/^	apr_bucket_brigade* output_bb;$/;"	m	struct:music_query_	access:public
+music_query_::output_content_type	src/apps/music/music_query.h	/^	const char* output_content_type;$/;"	m	struct:music_query_	access:public
+music_query_::output_headers	src/apps/music/music_query.h	/^	apr_table_t* output_headers;$/;"	m	struct:music_query_	access:public
+music_query_::query_parameters	src/apps/music/music_query.h	/^	query_parameters_t* query_parameters;$/;"	m	struct:music_query_	access:public
+music_query_::results	src/apps/music/music_query.h	/^	results_table_t* results;$/;"	m	struct:music_query_	access:public
+music_query_::type	src/apps/music/music_query.h	/^	enum query_types type;$/;"	m	struct:music_query_	typeref:enum:music_query_::query_types	access:public
+music_query_t	src/apps/music/music_typedefs.h	/^typedef struct music_query_ music_query_t;$/;"	t	typeref:struct:music_query_
+music_ui	www/javascript/music_ui.js	/^function music_ui(domain) {$/;"	c
+music_ui.init	www/javascript/music_ui.js	/^	this.init = function (){	$/;"	m
+music_ui.music_ui.init.obj.index	www/javascript/music_ui.js	/^		var obj = {"name" : "songs", "index" : "song_id"};$/;"	p
+music_ui.music_ui.init.obj.name	www/javascript/music_ui.js	/^		var obj = {"name" : "songs", "index" : "song_id"};$/;"	p
+musicbrainz_	src/apps/music/tag_reader.h	/^	struct musicbrainz_{$/;"	s	struct:music_file_	access:public
+musicbrainz_progress	src/apps/music/music_query.h	/^	float* musicbrainz_progress;$/;"	m	struct:music_globals_	access:public
+mutex	src/apps/music/decoding_queue.h	/^	apr_global_mutex_t* mutex;$/;"	m	struct:decoding_queue_	access:public
+mutex	src/database/dbd.h	/^	apr_thread_mutex_t* mutex;$/;"	m	struct:db_config_	access:public
+mysql_parms	src/database/dbd.h	/^	const char* mysql_parms;$/;"	m	struct:db_config_	access:public
+name	src/apps/music/tag_reader.h	/^	char* name;$/;"	m	struct:__anon10	access:public
+name	src/database/dbd.h	/^		const char* name;$/;"	m	struct:column_table_	access:public
+name	src/database/dbd.h	/^	const char* name;$/;"	m	struct:table_	access:public
+new_source_id	src/apps/music/decoding_queue.h	/^	char new_source_id[256];$/;"	m	struct:decoding_job_	access:public
+next	src/apps/app_config.h	/^	app_node_t* next;$/;"	m	struct:app_node_	access:public
+next	src/apps/music/decoding_queue.h	/^	int next;$/;"	m	struct:decoding_job_	access:public
+next	src/apps/music/tag_reader.h	/^	struct List* next;$/;"	m	struct:List	typeref:struct:List::List	access:public
+next	src/apps/music/tag_reader.h	/^	struct List* next;$/;"	m	struct:__anon10	typeref:struct:__anon10::List	access:public
+next_button.onclick	www/javascript/ui/player.js	/^	this.next_button.onclick = function (player){$/;"	f
+noun_num	src/apps/music/music_query.c	/^	int noun_num;$/;"	l
+nrows	src/database/dbd.c	/^	int nrows = 0;$/;"	l
+nrows	src/database/dbd.c	/^	int nrows = 1;$/;"	l
+num	src/apps/music/id3v2.h	/^	unsigned int num;$/;"	m	struct:id3v2_ids_	access:public
+num_albums	src/apps/music/music_query.h	/^	int num_albums;$/;"	m	struct:music_globals_	access:public
+num_artits	src/apps/music/music_query.h	/^	int num_artits;$/;"	m	struct:music_globals_	access:public
+num_columns	src/database/db_query_parameters.h	/^	char num_columns;$/;"	m	struct:query_parameters_	access:public
+num_columns	src/database/dbd.c	/^				int num_columns = apr_dbd_num_cols(dbd_config->dbd_driver, results);$/;"	l
+num_columns	src/database/dbd.h	/^	int num_columns;$/;"	m	struct:db_query_	access:public
+num_custom_parameters	src/database/db_query_parameters.h	/^	char num_custom_parameters;$/;"	m	struct:query_parameters_	access:public
+num_decoding_threads	src/apps/music/music_query.h	/^	int num_decoding_threads;$/;"	m	struct:music_globals_	access:public
+num_errors	src/error_handler.h	/^	int num_errors;$/;"	m	struct:__anon7	access:public
+num_files	src/apps/music/dir_sync/dir_sync.h	/^	int* num_files;$/;"	m	struct:dir_sync_	access:public
+num_parameters	src/apps/music/dir_sync/musicbrainz.h	/^	int num_parameters;$/;"	m	struct:mb_parameters_t_	access:public
+num_songs	src/apps/music/music_query.h	/^	int num_songs;$/;"	m	struct:music_globals_	access:public
+num_sources	src/apps/music/music_query.h	/^	int num_sources;$/;"	m	struct:music_globals_	access:public
+num_words	src/apps/app_config.h	/^	int num_words;$/;"	m	struct:query_words_	access:public
+num_words	src/apps/music/music_query.c	/^	int num_words;$/;"	l
+num_working_threads	src/apps/music/decoding_queue.h	/^	int num_working_threads;$/;"	m	struct:queue_	access:public
+num_working_threads	src/apps/music/transcoder.h	/^	int num_working_threads;$/;"	m	struct:transcode_thread_t_	access:public
+offset	src/apps/music/tag_reader.c	/^	int offset;$/;"	l
+offset	src/database/dbd.c	/^	const char* offset = NULL;$/;"	l
+ogg_encode	src/apps/music/ogg_encode.c	/^int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path){$/;"	f	signature:(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path)
+ogg_encode	src/apps/music/ogg_encode.h	/^int ogg_encode(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path);$/;"	p	signature:(apr_pool_t* pool, input_file_t* input_file,encoding_options_t* enc_opt,const char* output_file_path)
+ogg_pack	src/apps/music/ogg_encode.c	/^    ogg_packet ogg_pack;$/;"	l
+ogg_page	src/apps/music/ogg_encode.c	/^    ogg_page ogg_page;$/;"	l
+ogg_stream	src/apps/music/ogg_encode.c	/^    ogg_stream_state ogg_stream;$/;"	l
+ok_button.onclick	www/javascript/music_ui.js	/^	ok_button.class = "ok_button";$/;"	f
+ok_button.onclick	www/javascript/ui/browser.js	/^		ok_button.value = "OK";$/;"	f
+open_input_file	src/apps/music/transcoder.h	/^	int (*open_input_file)(apr_pool_t* pool,void** file_struct, const char* file_path, encoding_options_t* enc_opt);$/;"	m	struct:input_file_t_	access:public
+operator	src/database/db_query_parameters.c	/^	condition_operator operator = EQUAL;$/;"	l
+operator	src/database/db_query_parameters.h	/^	condition_operator operator;$/;"	m	struct:query_where_condition_	access:public
+operator_to_string	src/database/dbd.c	/^static const char* operator_to_string(condition_operator operator){$/;"	f	file:	signature:(condition_operator operator)
+order_by	src/database/dbd.c	/^	const char* order_by = NULL;$/;"	l
+output_bb	src/apps/music/music_query.h	/^	apr_bucket_brigade* output_bb;$/;"	m	struct:music_query_	access:public
+output_bb	src/mod_mediaplayer.c	/^	apr_bucket_brigade* output_bb;$/;"	l
+output_bucket_allocator	src/mod_mediaplayer.c	/^	apr_bucket_alloc_t* output_bucket_allocator;$/;"	l
+output_content_type	src/apps/music/music_query.h	/^	const char* output_content_type;$/;"	m	struct:music_query_	access:public
+output_content_type	src/mod_mediaplayer.c	/^	const char* output_content_type;$/;"	l
+output_db_query_json	src/apps/music/music_query.c	/^int output_db_query_json(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query){$/;"	f	signature:(apr_pool_t* pool, apr_bucket_brigade* bb, music_query_t* query)
+output_db_result_json	src/database/dbd.c	/^int output_db_result_json(results_table_t* results, db_query_t* db_query,apr_pool_t* pool,apr_bucket_brigade* bb){$/;"	f	signature:(results_table_t* results, db_query_t* db_query,apr_pool_t* pool,apr_bucket_brigade* bb)
+output_db_result_json	src/database/dbd.h	/^int output_db_result_json(results_table_t* results, db_query_t* db_query,apr_pool_t* pool,apr_bucket_brigade* bb);$/;"	p	signature:(results_table_t* results, db_query_t* db_query,apr_pool_t* pool,apr_bucket_brigade* bb)
+output_dirsync_status	src/apps/music/dir_sync/dir_sync.c	/^int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){$/;"	f	signature:(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages)
+output_dirsync_status	src/apps/music/dir_sync/dir_sync.h	/^int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages);$/;"	p	signature:(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages)
+output_file_path	src/apps/music/decoding_queue.h	/^	char output_file_path[1024];$/;"	m	struct:decoding_job_	access:public
+output_file_path	src/apps/music/transcoder.c	/^	const char* output_file_path;$/;"	l
+output_file_type	src/apps/music/decoding_queue.h	/^	char output_file_type[256];$/;"	m	struct:decoding_job_	access:public
+output_headers	src/apps/music/music_query.h	/^	apr_table_t* output_headers;$/;"	m	struct:music_query_	access:public
+output_headers	src/mod_mediaplayer.c	/^	apr_table_t* output_headers;$/;"	l
+output_length	src/mod_mediaplayer.c	/^	apr_off_t output_length;$/;"	l
+output_source_id	src/apps/music/transcoder.c	/^	const char* output_source_id;$/;"	l
+output_status_json	src/mod_mediaplayer.c	/^int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){$/;"	f	signature:(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages)
+output_status_json	src/mod_mediaplayer.h	/^int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages);$/;"	p	signature:(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages)
+output_type_parameter	src/apps/music/transcoder.c	/^	custom_parameter_t* output_type_parameter;$/;"	l
+packets_done	src/apps/music/ogg_encode.c	/^	long packets_done;$/;"	l
+parameter_child_elem	src/database/db_query_config.c	/^	apr_xml_elem* parameter_child_elem;$/;"	l
+parameter_elem	src/database/db_query_config.c	/^	apr_xml_elem* parameter_elem;$/;"	l
+parameters_name	src/apps/music/dir_sync/musicbrainz.h	/^	char* parameters_name[MAX_NUM_PARAMETERS];$/;"	m	struct:mb_parameters_t_	access:public
+parameters_set	src/database/db_query_parameters.h	/^	uint64_t parameters_set;$/;"	m	struct:query_parameters_	access:public
+parameters_value	src/apps/music/dir_sync/musicbrainz.h	/^	char* parameters_value[MAX_NUM_PARAMETERS];$/;"	m	struct:mb_parameters_t_	access:public
+path	src/apps/music/tag_reader.h	/^	char* path;$/;"	m	struct:__anon9	access:public
+permute	src/apps/music/flac.c	/^				int permute = wav_permute_matrix[flac->channels-1][i];$/;"	l
+pid	src/mod_mediaplayer.h	/^	pid_t pid;$/;"	m	struct:__anon1	access:public
+play_button.onclick	www/javascript/ui/player.js	/^	this.play_button.onclick = function (player){$/;"	f
+play_song	src/apps/music/ogg_encode.c	/^int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){$/;"	f	signature:(apr_pool_t* pool, db_config* dbd_config, music_query_t* music)
+play_song	src/apps/music/ogg_encode.h	/^int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music);$/;"	p	signature:(apr_pool_t* pool, db_config* dbd_config, music_query_t* music)
+player	www/javascript/ui/player.js	/^function player(playlist, music_ui_ctx){$/;"	c
+player.decoding_job	www/javascript/ui/player.js	/^	this.decoding_job = function (song, player){$/;"	m
+player.obj.name	www/javascript/ui/player.js	/^		var obj = {"name" : "decoding_job"};$/;"	p
+player.play_button.onclick	www/javascript/audio.js	/^				player.play_button.src = "svg\/pause.svg";$/;"	f
+player.player.decoding_job.update_decoding_status	www/javascript/ui/player.js	/^		this.update_decoding_status = function (player, dec_job){$/;"	m
+player.player.player	www/javascript/audio.js	/^		player.play_button.src = "svg\/pause.svg";$/;"	m
+playlist	www/javascript/ui/playlist.js	/^function playlist(domain, parameters){$/;"	c
+playlist.query.onComplete	www/javascript/ui/playlist.js	/^						playlist.query.reset();$/;"	f
+playlist_tabs	www/javascript/ui/playlist_tabs.js	/^function playlist_tabs(parent_div, music_ui_ctx){$/;"	c
+playlist_tabs.new_tab_button	www/javascript/ui/playlist_tabs.js	/^	this.new_tab_button.onclick = function (event){$/;"	m
+playlist_tabs.tab	www/javascript/ui/playlist_tabs.js	/^	function tab(playlist_if, li){$/;"	c
+playlist_tabs.tab.show	www/javascript/ui/playlist_tabs.js	/^		this.show = function(){$/;"	m
+playlist_tabs.tab_click	www/javascript/ui/playlist_tabs.js	/^	this.tab_click = function (p_tabs, tab){$/;"	m
+plist.query.onComplete	www/javascript/ui/playlist.js	/^					plist.query.reset();$/;"	f
+pool	src/apps/app_config.h	/^	apr_pool_t* pool;  \/\/Pool to allocate Linked List$/;"	m	struct:app_list_	access:public
+pool	src/apps/music/dir_sync/dir_sync.c	/^	apr_pool_t* pool;$/;"	l
+pool	src/apps/music/dir_sync/dir_sync.h	/^	apr_pool_t * pool;$/;"	m	struct:dir_sync_	access:public
+pool	src/apps/music/transcoder.c	/^	apr_pool_t* pool = transcode_thread->pool;$/;"	l
+pool	src/apps/music/transcoder.h	/^	apr_pool_t* pool;$/;"	m	struct:transcode_thread_t_	access:public
+pool	src/database/dbd.c	/^	apr_pool_t* pool = dbd_config->pool;$/;"	l
+pool	src/database/dbd.h	/^	apr_pool_t* pool;$/;"	m	struct:db_config_	access:public
+pool	src/mod_mediaplayer.c	/^	apr_pool_t* pool;$/;"	l
+popcount_4	src/apps/music/decoding_queue.c	/^int popcount_4(uint64_t x) {$/;"	f	signature:(uint64_t x)
+popcount_4	src/apps/music/decoding_queue.h	/^int popcount_4(uint64_t x);$/;"	p	signature:(uint64_t x)
+prepare_database	src/database/dbd.c	/^int prepare_database(app_list_t* app_list,db_config* dbd_config, const char* db_schema_file){$/;"	f	signature:(app_list_t* app_list,db_config* dbd_config, const char* db_schema_file)
+prepare_database	src/database/dbd.h	/^int prepare_database(app_list_t* app_list,db_config* dbd_config, const char* db_schema_file);$/;"	p	signature:(app_list_t* app_list,db_config* dbd_config, const char* db_schema_file)
+previous_button.onclick	www/javascript/ui/player.js	/^	this.previous_button.onclick = function (player){$/;"	f
+print_error_messages	src/error_handler.c	/^int print_error_messages(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages){$/;"	f	signature:(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages)
+print_error_messages	src/error_handler.h	/^int print_error_messages(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages);$/;"	p	signature:(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages)
+print_query_results	src/apps/music/music_query.c	/^	int print_query_results = 0;$/;"	l
+process	www/javascript/music_query.js	/^	this.process = function (){$/;"	f
+process_flac_file	src/apps/music/flac.c	/^long process_flac_file(void* in, float** buffer, int samples){$/;"	f	signature:(void* in, float** buffer, int samples)
+process_flac_file	src/apps/music/flac.h	/^long process_flac_file(void* flac, float** buffer, int samples);$/;"	p	signature:(void* flac, float** buffer, int samples)
+process_input_file	src/apps/music/transcoder.h	/^	long (*process_input_file)(void* file_struct, float** buffer, int samples);$/;"	m	struct:input_file_t_	access:public
+process_mp3_file	src/apps/music/mpg123.c	/^long process_mp3_file(void *in, float **buffer, int samples){$/;"	f	signature:(void *in, float **buffer, int samples)
+process_mp3_file	src/apps/music/mpg123.h	/^long process_mp3_file(void *in, float **buffer, int samples);$/;"	p	signature:(void *in, float **buffer, int samples)
+progress	src/apps/music/decoding_queue.h	/^	float progress;$/;"	m	struct:decoding_job_	access:public
+progress	src/apps/music/transcoder.h	/^	float* progress;$/;"	m	struct:encoding_options_t_	access:public
+prototypes	configure	/^   function prototypes and stuff, but not '\\xHH' hex character constants.$/;"	f
+quality	src/apps/music/tag_reader.h	/^	int quality;$/;"	m	struct:__anon9	access:public
+quality	src/apps/music/transcoder.h	/^	float quality;$/;"	m	struct:encoding_options_t_	access:public
+query	src/database/db_query_config.c	/^	db_query_t* query;$/;"	l
+query.onComplete	www/javascript/ui/playlist.js	/^	this.query.onComplete = function(playlist){$/;"	f
+query_child_elem	src/database/db_query_config.c	/^	apr_xml_elem* query_child_elem;$/;"	l
+query_clause	src/apps/music/music_query.c	/^			query_sql_clauses_t* query_clause = &(music_query->query_parameters->query_sql_clauses[sql_clauses]);$/;"	l
+query_custom_parameters	src/database/db_query_parameters.h	/^	apr_array_header_t* query_custom_parameters;$/;"	m	struct:query_parameters_	access:public
+query_elem	src/database/db_query_config.c	/^	apr_xml_elem* query_elem;$/;"	l
+query_nouns	src/apps/app_config.c	/^	const char** query_nouns = apr_pcalloc(pool,sizeof(char) * 15 * 255);$/;"	l
+query_nouns	src/apps/music/music_query.c	/^	const char** query_nouns = query_words->words;$/;"	l
+query_parameters	src/apps/music/music_query.h	/^	query_parameters_t* query_parameters;$/;"	m	struct:music_query_	access:public
+query_parameters	src/apps/music/transcoder.c	/^	query_parameters_t* query_parameters;$/;"	l
+query_parameters	www/javascript/music_query.js	/^function query_parameters(type, objects){$/;"	c
+query_parameters.clone	www/javascript/music_query.js	/^	this.clone = function(){$/;"	m
+query_parameters_	src/database/db_query_parameters.h	/^struct query_parameters_{$/;"	s
+query_parameters_::num_columns	src/database/db_query_parameters.h	/^	char num_columns;$/;"	m	struct:query_parameters_	access:public
+query_parameters_::num_custom_parameters	src/database/db_query_parameters.h	/^	char num_custom_parameters;$/;"	m	struct:query_parameters_	access:public
+query_parameters_::parameters_set	src/database/db_query_parameters.h	/^	uint64_t parameters_set;$/;"	m	struct:query_parameters_	access:public
+query_parameters_::query_custom_parameters	src/database/db_query_parameters.h	/^	apr_array_header_t* query_custom_parameters;$/;"	m	struct:query_parameters_	access:public
+query_parameters_::query_sql_clauses	src/database/db_query_parameters.h	/^	query_sql_clauses_t* query_sql_clauses;$/;"	m	struct:query_parameters_	access:public
+query_parameters_::query_where_conditions	src/database/db_query_parameters.h	/^	apr_array_header_t* query_where_conditions;$/;"	m	struct:query_parameters_	access:public
+query_parameters_t	src/database/db_typedef.h	/^typedef struct query_parameters_ query_parameters_t;$/;"	t	typeref:struct:query_parameters_
+query_sql_clasuses_	src/database/db_query_parameters.h	/^struct query_sql_clasuses_{$/;"	s
+query_sql_clasuses_::freindly_name	src/database/db_query_parameters.h	/^	const char* freindly_name;$/;"	m	struct:query_sql_clasuses_	access:public
+query_sql_clasuses_::value	src/database/db_query_parameters.h	/^	const char* value;$/;"	m	struct:query_sql_clasuses_	access:public
+query_sql_clauses	src/database/db_query_parameters.h	/^	query_sql_clauses_t* query_sql_clauses;$/;"	m	struct:query_parameters_	access:public
+query_sql_clauses_t	src/database/db_typedef.h	/^typedef struct query_sql_clasuses_ query_sql_clauses_t;$/;"	t	typeref:struct:query_sql_clasuses_
+query_types	src/apps/music/music_query.h	/^enum query_types{$/;"	g
+query_where_condition	src/database/db_query_parameters.c	/^	query_where_condition_t* query_where_condition;$/;"	l
+query_where_condition	src/database/dbd.c	/^				query_where_condition_t* query_where_condition = &(((query_where_condition_t*)query_parameters->query_where_conditions->elts)[i]);$/;"	l
+query_where_condition_	src/database/db_query_parameters.h	/^struct query_where_condition_{$/;"	s
+query_where_condition_::column	src/database/db_query_parameters.h	/^	column_table_t* column;$/;"	m	struct:query_where_condition_	access:public
+query_where_condition_::condition	src/database/db_query_parameters.h	/^	const char* condition;$/;"	m	struct:query_where_condition_	access:public
+query_where_condition_::operator	src/database/db_query_parameters.h	/^	condition_operator operator;$/;"	m	struct:query_where_condition_	access:public
+query_where_condition_t	src/database/db_typedef.h	/^typedef struct query_where_condition_ query_where_condition_t;$/;"	t	typeref:struct:query_where_condition_
+query_where_conditions	src/database/db_query_parameters.h	/^	apr_array_header_t* query_where_conditions;$/;"	m	struct:query_parameters_	access:public
+query_words	src/apps/app_config.h	/^	query_words_t query_words;$/;"	m	struct:app_	access:public
+query_words_	src/apps/app_config.h	/^struct query_words_{$/;"	s
+query_words_::num_words	src/apps/app_config.h	/^	int num_words;$/;"	m	struct:query_words_	access:public
+query_words_::words	src/apps/app_config.h	/^	const char** words;$/;"	m	struct:query_words_	access:public
+query_words_t	src/apps/app_typedefs.h	/^typedef struct query_words_ query_words_t;$/;"	t	typeref:struct:query_words_
+queue	src/apps/music/decoding_queue.h	/^	queue_t* queue;$/;"	m	struct:decoding_queue_	access:public
+queue_	src/apps/music/decoding_queue.h	/^struct queue_{$/;"	s
+queue_::decoding	src/apps/music/decoding_queue.h	/^	decoding_job_t decoding[64];$/;"	m	struct:queue_	access:public
+queue_::head	src/apps/music/decoding_queue.h	/^	int head;$/;"	m	struct:queue_	access:public
+queue_::num_working_threads	src/apps/music/decoding_queue.h	/^	int num_working_threads;$/;"	m	struct:queue_	access:public
+queue_::tail	src/apps/music/decoding_queue.h	/^	int tail;$/;"	m	struct:queue_	access:public
+queue_::waiting	src/apps/music/decoding_queue.h	/^	uint64_t waiting;$/;"	m	struct:queue_	access:public
+queue_::working	src/apps/music/decoding_queue.h	/^	uint64_t working;$/;"	m	struct:queue_	access:public
+queue_shm	src/apps/music/decoding_queue.h	/^	apr_shm_t* queue_shm;$/;"	m	struct:decoding_queue_	access:public
+queue_t	src/apps/music/music_typedefs.h	/^typedef struct queue_ queue_t;$/;"	t	typeref:struct:queue_
+rate	src/apps/music/flac.h	/^    int rate;$/;"	m	struct:__anon8	access:public
+rate	src/apps/music/mpg123.h	/^	long rate;$/;"	m	struct:mpg3_file_	access:public
+rate	src/apps/music/transcoder.h	/^	long rate;$/;"	m	struct:encoding_options_t_	access:public
+read_columns	src/database/db_query_config.c	/^static int read_columns(table_t* table,apr_xml_elem* table_elem, db_config* dbd_config){$/;"	f	file:	signature:(table_t* table,apr_xml_elem* table_elem, db_config* dbd_config)
+read_dir	src/apps/music/tag_reader.c	/^List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* count, error_messages_t* error_messages){$/;"	f	signature:(apr_pool_t* pool, List* file_list, const char* dir_path, int* count, error_messages_t* error_messages)
+read_dir	src/apps/music/tag_reader.h	/^List* read_dir(apr_pool_t* pool, List* file_list, const char* dir_path, int* count, error_messages_t* error_messages);$/;"	p	signature:(apr_pool_t* pool, List* file_list, const char* dir_path, int* count, error_messages_t* error_messages)
+read_flac_file	src/apps/music/flac.c	/^int read_flac_file (apr_pool_t* pool,void** file_struct, const char* file_path, encoding_options_t* enc_opt){$/;"	f	signature:(apr_pool_t* pool,void** file_struct, const char* file_path, encoding_options_t* enc_opt)
+read_flac_file	src/apps/music/flac.h	/^int read_flac_file (apr_pool_t* pool, void** flac, const char* file_path, encoding_options_t* enc_opt);$/;"	p	signature:(apr_pool_t* pool, void** flac, const char* file_path, encoding_options_t* enc_opt)
+read_flac_level1	src/apps/music/tag_reader.c	/^int read_flac_level1(apr_pool_t* pool, music_file* song){$/;"	f	signature:(apr_pool_t* pool, music_file* song)
+read_flac_level1	src/apps/music/tag_reader.h	/^int read_flac_level1(apr_pool_t* pool, music_file* song);$/;"	p	signature:(apr_pool_t* pool, music_file* song)
+read_id3	src/apps/music/mpg123.c	/^int read_id3(apr_pool_t* pool, music_file* song){$/;"	f	signature:(apr_pool_t* pool, music_file* song)
+read_id3	src/apps/music/mpg123.h	/^int read_id3(apr_pool_t* pool, music_file* song);$/;"	p	signature:(apr_pool_t* pool, music_file* song)
+read_mp3_file	src/apps/music/mpg123.c	/^int read_mp3_file (apr_pool_t* pool, void** mp3_file_ptr, const char* file_path, encoding_options_t* enc_opt){$/;"	f	signature:(apr_pool_t* pool, void** mp3_file_ptr, const char* file_path, encoding_options_t* enc_opt)
+read_mp3_file	src/apps/music/mpg123.h	/^int read_mp3_file (apr_pool_t* pool, void** mp3_file_ptr, const char* file_path, encoding_options_t* enc_opt);$/;"	p	signature:(apr_pool_t* pool, void** mp3_file_ptr, const char* file_path, encoding_options_t* enc_opt)
+read_ogg	src/apps/music/tag_reader.c	/^int read_ogg(apr_pool_t* pool, music_file* song){$/;"	f	signature:(apr_pool_t* pool, music_file* song)
+read_ogg	src/apps/music/tag_reader.h	/^int read_ogg(apr_pool_t* pool, music_file* song);$/;"	p	signature:(apr_pool_t* pool, music_file* song)
+read_tables	src/database/db_query_config.c	/^static int read_tables(apr_xml_elem* tables,db_config* dbd_config){$/;"	f	file:	signature:(apr_xml_elem* tables,db_config* dbd_config)
+realsamples	src/apps/music/flac.c	/^    long realsamples = 0;$/;"	l
+reattach_app	src/apps/app_config.h	/^	reattach_app_fnt reattach_app;$/;"	m	struct:app_	access:public
+reattach_app_fnt	src/apps/app_config.h	/^typedef int (*reattach_app_fnt)(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context);$/;"	t
+reattach_apps	src/apps/app_config.c	/^int reattach_apps(app_list_t* app_list,apr_pool_t* child_pool, error_messages_t* error_messages){$/;"	f	signature:(app_list_t* app_list,apr_pool_t* child_pool, error_messages_t* error_messages)
+reattach_apps	src/apps/app_config.h	/^int reattach_apps(app_list_t* app_list,apr_pool_t* child_pool, error_messages_t* error_messages);$/;"	p	signature:(app_list_t* app_list,apr_pool_t* child_pool, error_messages_t* error_messages)
+reattach_decoding_queue	src/apps/music/decoding_queue.c	/^int reattach_decoding_queue(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages){$/;"	f	signature:(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages)
+reattach_decoding_queue	src/apps/music/decoding_queue.h	/^int reattach_decoding_queue(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages);$/;"	p	signature:(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages)
+reattach_error_messages	src/error_handler.c	/^int reattach_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file){$/;"	f	signature:(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file)
+reattach_error_messages	src/error_handler.h	/^int reattach_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file);$/;"	p	signature:(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file)
+reattach_music_query	src/apps/music/music_query.c	/^int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context){$/;"	f	signature:(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context)
+reattach_music_query	src/apps/music/music_query.h	/^int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context);$/;"	p	signature:(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context)
+rec_cfg	src/mod_mediaplayer.c	/^	mediaplayer_rec_cfg* rec_cfg;$/;"	l
+requested_samples	src/apps/music/ogg_encode.c	/^		unsigned int requested_samples = enc_opt->samples_to_request; $/;"	l
+res_row	src/database/dbd.c	/^				row_t* res_row = (row_t*)apr_array_push((*query_results)->rows);$/;"	l
+resize_buffer	src/apps/music/flac.c	/^void resize_buffer(flac_file_t* flac, int newchannels, int newsamples){$/;"	f	signature:(flac_file_t* flac, int newchannels, int newsamples)
+result	src/apps/music/ogg_encode.c	/^                int result = ogg_stream_pageout(&ogg_stream,&ogg_page);$/;"	l
+results	src/apps/music/music_query.h	/^	results_table_t* results;$/;"	m	struct:music_query_	access:public
+results	src/database/dbd.c	/^	apr_dbd_results_t* results = NULL;$/;"	l
+results	src/database/dbd.h	/^	const char** results;$/;"	m	struct:row_	access:public
+results_table	src/apps/music/transcoder.c	/^	results_table_t* results_table;$/;"	l
+results_table_	src/database/dbd.h	/^struct results_table_ {$/;"	s
+results_table_::rows	src/database/dbd.h	/^	apr_array_header_t* rows;$/;"	m	struct:results_table_	access:public
+results_table_t	src/database/db_typedef.h	/^typedef struct results_table_ results_table_t;$/;"	t	typeref:struct:results_table_
+ret	src/apps/music/flac.c	/^	FLAC__bool ret;$/;"	l
+row	src/database/dbd.c	/^		row_t row;$/;"	l
+row	src/database/dbd.c	/^	apr_dbd_row_t *row = NULL;$/;"	l
+row	src/database/dbd.c	/^	apr_dbd_row_t* row = NULL;$/;"	l
+row_	src/database/dbd.h	/^struct row_ {$/;"	s
+row_::results	src/database/dbd.h	/^	const char** results;$/;"	m	struct:row_	access:public
+row_count	src/database/dbd.c	/^	int row_count;$/;"	l
+row_t	src/database/db_typedef.h	/^typedef struct row_ row_t;$/;"	t	typeref:struct:row_
+rows	src/database/dbd.h	/^	apr_array_header_t* rows;$/;"	m	struct:results_table_	access:public
+run_get_method	src/mod_mediaplayer.c	/^int run_get_method(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri){$/;"	f	signature:(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri)
+run_get_method	src/mod_mediaplayer.h	/^int run_get_method(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri);$/;"	p	signature:(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri)
+run_music_query	src/apps/music/music_query.c	/^int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries,const void* global_context){$/;"	f	signature:(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries,const void* global_context)
+run_music_query	src/apps/music/music_query.h	/^int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries, const void* global_context);$/;"	p	signature:(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries, const void* global_context)
+run_post_method	src/mod_mediaplayer.c	/^static int run_post_method(request_rec* r){$/;"	f	file:	signature:(request_rec* r)
+run_query	src/apps/app_config.h	/^	run_query_fnt run_query;$/;"	m	struct:app_	access:public
+run_query_fnt	src/apps/app_config.h	/^typedef int (*run_query_fnt)(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries,const void* global_context);$/;"	t
+rv	src/apps/music/decoding_queue.c	/^	apr_status_t rv;$/;"	l
+rv	src/apps/music/dir_sync/dir_sync.c	/^	apr_status_t rv;$/;"	l
+rv	src/apps/music/music_query.c	/^	apr_status_t rv;$/;"	l
+rv	src/apps/music/ogg_encode.c	/^	apr_status_t rv;$/;"	l
+rv	src/apps/music/tag_reader.c	/^	apr_status_t rv;$/;"	l
+rv	src/apps/music/transcoder.c	/^	apr_status_t rv;$/;"	l
+rv	src/database/dbd.c	/^	apr_status_t rv;$/;"	l
+rv	src/error_handler.c	/^	apr_status_t rv;$/;"	l
+rv	src/mod_mediaplayer.c	/^			apr_status_t rv = 0;$/;"	l
+rv	src/mod_mediaplayer.c	/^	apr_status_t rv = 0;$/;"	l
+rv	src/mod_mediaplayer.c	/^	apr_status_t rv;$/;"	l
+sample_count	src/apps/music/mpg123.c	/^	int sample_count = 0;$/;"	l
+sample_rate	src/apps/music/mpg123.c	/^	long sample_rate = 0;$/;"	l
+samples	src/apps/music/flac.c	/^    int samples = frame->header.blocksize;$/;"	l
+samples	src/apps/music/flac.h	/^    int samples;$/;"	m	struct:__anon8	access:public
+samples	src/apps/music/mpg123.h	/^	long samples;$/;"	m	struct:mpg3_file_	access:public
+samples_read	src/apps/music/ogg_encode.c	/^        long samples_read = input_file->process_input_file(input_file->file_struct, buffer, requested_samples);\/\/Return samples read per channel$/;"	l
+samples_to_request	src/apps/music/transcoder.h	/^	unsigned int samples_to_request;$/;"	m	struct:encoding_options_t_	access:public
+samples_total	src/apps/music/ogg_encode.c	/^	long samples_total;$/;"	l
+saved_tags	src/apps/music/tag_reader.c	/^	song_tags saved_tags[NUM_TAGS];$/;"	l
+search_box_change	www/javascript/ui/browser.js	/^	this.search_box_change = function(table, column_fname, search_string){$/;"	f
+search_box_change	www/javascript/ui/playlist.js	/^	this.search_box_change = function(playlist){$/;"	f
+search_query.onComplete	www/javascript/ui/playlist.js	/^	this.search_query.onComplete = function(playlist){$/;"	f
+select	src/database/dbd.c	/^	const char* select = NULL;$/;"	l
+select_album	src/database/dbd.h	/^		apr_dbd_prepared_t *select_album;$/;"	m	struct:db_config_::__anon3	access:public
+select_artist	src/database/dbd.h	/^		apr_dbd_prepared_t *select_artist;$/;"	m	struct:db_config_::__anon3	access:public
+select_column	src/database/dbd.c	/^	column_table_t* select_column;$/;"	l
+select_columns	src/database/dbd.c	/^	const char* select_columns = (db_query->select_columns_string) ? db_query->select_columns_string : "*";$/;"	l
+select_columns	src/database/dbd.h	/^	apr_array_header_t* select_columns;$/;"	m	struct:db_query_	access:public
+select_columns_string	src/database/dbd.h	/^	const char* select_columns_string;$/;"	m	struct:db_query_	access:public
+select_count	src/database/db_query_config.c	/^						const char* select_count;$/;"	l
+select_db_range	src/database/dbd.c	/^int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, db_query_t* db_query,results_table_t** query_results,error_messages_t* error_messages){$/;"	f	signature:(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, db_query_t* db_query,results_table_t** query_results,error_messages_t* error_messages)
+select_db_range	src/database/dbd.h	/^int select_db_range(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, db_query_t* db_query,results_table_t** query_results,error_messages_t* error_messages);$/;"	p	signature:(apr_pool_t* pool, db_config* dbd_config,query_parameters_t* query_parameters, db_query_t* db_query,results_table_t** query_results,error_messages_t* error_messages)
+select_file_path	src/database/dbd.h	/^		apr_dbd_prepared_t* select_file_path;$/;"	m	struct:db_config_::__anon3	access:public
+select_last_id	src/database/dbd.h	/^		apr_dbd_prepared_t* select_last_id;$/;"	m	struct:db_config_::__anon3	access:public
+select_mtime	src/database/dbd.h	/^		apr_dbd_prepared_t *select_mtime;$/;"	m	struct:db_config_::__anon3	access:public
+select_song	src/database/dbd.h	/^		apr_dbd_prepared_t *select_song;$/;"	m	struct:db_config_::__anon3	access:public
+select_sources	src/database/dbd.h	/^		apr_dbd_prepared_t *select_sources;$/;"	m	struct:db_config_::__anon3	access:public
+select_statement	src/database/dbd.c	/^	char* select_statement = NULL;$/;"	l
+serial_no	src/apps/music/ogg_encode.c	/^    int serial_no;$/;"	l
+set_parameter	src/apps/music/dir_sync/musicbrainz.c	/^static inline void set_parameter(mb_parameters_t* mb_parameters, char* parameter_name, char* parameter_value){$/;"	f	file:	signature:(mb_parameters_t* mb_parameters, char* parameter_name, char* parameter_value)
+setup_shared_memory	src/mod_mediaplayer.c	/^int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool){$/;"	f	signature:(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool)
+setup_shared_memory	src/mod_mediaplayer.h	/^int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool);$/;"	p	signature:(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool)
+setup_sql_clause	src/database/db_query_parameters.c	/^void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname){$/;"	f	signature:(query_sql_clauses_t** clauses,sql_clauses type,const char* fname)
+setup_sql_clause	src/database/db_query_parameters.h	/^void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname);$/;"	p	signature:(query_sql_clauses_t** clauses,sql_clauses type,const char* fname)
+shared_directory	src/apps/music/music_query.c	/^	const char* shared_directory;$/;"	l
+shm_id	src/mod_mediaplayer.c	/^    int shm_id;$/;"	l
+shm_key	src/mod_mediaplayer.c	/^    key_t shm_key;$/;"	l
+shuffle	www/javascript/ui/playlist.js	/^	this.shuffle = function (){$/;"	c
+shuffle.onclick	www/javascript/ui/player.js	/^	this.shuffle.onclick = function (player){$/;"	f
+size_of_sample	src/apps/music/mpg123.c	/^	size_t size_of_sample = mpg123_encsize(MPG123_ENC_FLOAT_32);$/;"	l
+song	src/apps/music/dir_sync/dir_sync.c	/^	music_file* song;$/;"	l
+song_added	www/javascript/ui/playlist.js	/^	this.song_added = function(playlist, search){$/;"	f
+song_click	www/javascript/ui/playlist.js	/^	this.song_click = function(plist){$/;"	f
+song_id	src/apps/music/decoding_queue.h	/^	char song_id[256];$/;"	m	struct:decoding_job_	access:public
+song_id	src/apps/music/transcoder.c	/^	const char* song_id;$/;"	l
+song_id	src/database/dbd.c	/^	char* song_id = NULL;$/;"	l
+song_id_col	src/apps/music/transcoder.c	/^	column_table_t* song_id_col;$/;"	l
+song_tags	src/apps/music/tag_reader.h	/^typedef struct song_tags{$/;"	s
+song_tags	src/apps/music/tag_reader.h	/^}song_tags;$/;"	t	typeref:struct:song_tags
+song_tags::tag_dest	src/apps/music/tag_reader.h	/^	char** tag_dest;$/;"	m	struct:song_tags	access:public
+song_tags::tag_name	src/apps/music/tag_reader.h	/^	const char* tag_name;$/;"	m	struct:song_tags	access:public
+sort	www/javascript/ui/browser.js	/^	this.sort = function(){$/;"	f
+sort_col_list	src/apps/music/music_query.c	/^				char* sort_col_list = apr_pstrndup(pool, query_nouns[noun_num+1], max_size);$/;"	l
+sort_playlist	www/javascript/ui/playlist.js	/^	this.sort_playlist = function(plist){$/;"	f
+source_id	src/apps/music/decoding_queue.h	/^	char source_id[256];$/;"	m	struct:decoding_job_	access:public
+source_id	src/apps/music/transcoder.c	/^	char* source_id = NULL;$/;"	l
+source_id	src/apps/music/transcoder.c	/^	const char* source_id;$/;"	l
+source_id	src/database/dbd.c	/^	char* source_id = NULL;$/;"	l
+source_id_col	src/apps/music/transcoder.c	/^	column_table_t* source_id_col;$/;"	l
+sql_clause_found	src/apps/music/music_query.c	/^		int sql_clause_found = 0;$/;"	l
+sql_clauses	src/apps/music/music_query.c	/^		int sql_clauses;$/;"	l
+sql_clauses	src/database/db_query_parameters.h	/^}sql_clauses;$/;"	t	typeref:enum:__anon5
+srv_conf	src/mod_mediaplayer.c	/^	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(cmd->server->module_config, &mediaplayer_module);$/;"	l
+srv_conf	src/mod_mediaplayer.c	/^	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));$/;"	l
+srv_conf	src/mod_mediaplayer.c	/^	mediaplayer_srv_cfg* srv_conf;$/;"	l
+statement_pool	src/database/dbd.c	/^	apr_pool_t* statement_pool;$/;"	l
+statements	src/database/dbd.h	/^	}statements;$/;"	m	struct:db_config_	typeref:struct:db_config_::__anon3	access:public
+status	src/apps/music/decoding_queue.c	/^	int status;$/;"	l
+status	src/apps/music/decoding_queue.h	/^	char status[512];$/;"	m	struct:decoding_job_	access:public
+status	src/apps/music/dir_sync/dir_sync.c	/^	int status;$/;"	l
+status	src/apps/music/flac.c	/^	FLAC__StreamDecoderInitStatus status;$/;"	l
+status	src/apps/music/mpg123.c	/^	int status = 0;$/;"	l
+status	src/apps/music/music_query.c	/^	int status;$/;"	l
+status	src/apps/music/ogg_encode.c	/^	int status;$/;"	l
+status	src/apps/music/tag_reader.c	/^	int i, tag, status;$/;"	l
+status	src/apps/music/transcoder.c	/^	int status = 0;$/;"	l
+status	src/apps/music/transcoder.c	/^	int status, error_num;$/;"	l
+status	src/apps/music/transcoder.c	/^	int status;$/;"	l
+status	src/database/db_query_config.c	/^	apr_status_t status;$/;"	l
+status	src/database/db_query_config.c	/^	int status;$/;"	l
+status	src/database/dbd.c	/^	apr_status_t status;$/;"	l
+status	src/error_handler.c	/^	int status = 0;$/;"	l
+status	src/mod_mediaplayer.c	/^	int status;$/;"	l
+status	src/mod_mediaplayer.c	/^    int status;$/;"	l
+status2	src/apps/music/flac.c	/^	FLAC__bool status2;$/;"	l
+status_bar	www/javascript/ui/status_bar.js	/^function status_bar(music_ui_ctx){$/;"	c
+status_bar.update_status	www/javascript/ui/status_bar.js	/^	this.update_status = function (sbar){$/;"	m
+stop_song	www/javascript/audio.js	/^	this.stop_song = function (){$/;"	c
+stop_song.player	www/javascript/audio.js	/^		this.player.play_button.onclick = function (player){$/;"	m
+stream_decoder	src/apps/music/flac.h	/^	FLAC__StreamDecoder* stream_decoder;$/;"	m	struct:__anon8	access:public
+stream_info	src/apps/music/tag_reader.c	/^				 FLAC__StreamMetadata_StreamInfo* stream_info;$/;"	l
+strtok_state	src/apps/music/tag_reader.c	/^	char* strtok_state;$/;"	l
+style.css	www/style_black.css	/^@IMPORT url("style.css");$/;"	s
+style.css	www/style_white.css	/^@IMPORT url("style.css");$/;"	s
+sync_dir	src/apps/music/dir_sync/dir_sync.c	/^void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){$/;"	f	signature:(apr_thread_t* thread, void* ptr)
+sync_dir	src/apps/music/dir_sync/dir_sync.h	/^void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr);$/;"	p	signature:(apr_thread_t* thread, void* ptr)
+sync_progress	src/apps/music/dir_sync/dir_sync.h	/^	float sync_progress;$/;"	m	struct:dir_sync_	access:public
+sync_song	src/database/dbd.c	/^int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song){$/;"	f	signature:(apr_pool_t* pool, db_config* dbd_config, music_file *song)
+sync_song	src/database/dbd.h	/^int sync_song(apr_pool_t* pool, db_config* dbd_config, music_file *song);$/;"	p	signature:(apr_pool_t* pool, db_config* dbd_config, music_file *song)
+t	src/mod_mediaplayer.c	/^    time_t t;$/;"	l
+tab.hide	www/javascript/ui/playlist_tabs.js	/^		this.hide = function(){$/;"	m
+table	src/database/db_query_config.c	/^								table_t* table;$/;"	l
+table	src/database/db_query_config.c	/^						table_t* table;$/;"	l
+table	src/database/db_query_config.c	/^	table_t* table;$/;"	l
+table	src/database/dbd.h	/^		table_t* table;$/;"	m	struct:column_table_	access:public
+table	www/javascript/ui/table.js	/^function table(columns, row_click_cb, sort_click_cb, search_change_cb){$/;"	c
+table.clear	www/javascript/ui/table.js	/^	this.clear = function() {$/;"	m
+table.deselect_row	www/javascript/ui/table.js	/^	this.deselect_row = function(index){$/;"	m
+table.invert_table	www/javascript/ui/table.js	/^	this.invert_table = function (){$/;"	m
+table.select_row	www/javascript/ui/table.js	/^	this.select_row = function(index){$/;"	m
+table.sort_click	www/javascript/ui/table.js	/^	this.sort_click = function(table, column, order){$/;"	m
+table_	src/database/dbd.h	/^struct table_{$/;"	s
+table_::columns	src/database/dbd.h	/^	apr_array_header_t* columns;$/;"	m	struct:table_	access:public
+table_::foreign_key	src/database/dbd.h	/^	const char* foreign_key;$/;"	m	struct:table_	access:public
+table_::id	src/database/dbd.h	/^	const char* id;$/;"	m	struct:table_	access:public
+table_::name	src/database/dbd.h	/^	const char* name;$/;"	m	struct:table_	access:public
+table_column_name	src/database/db_query_config.c	/^								const char* table_column_name;$/;"	l
+table_elem	src/database/db_query_config.c	/^	apr_xml_elem* table_elem;$/;"	l
+table_elem_child	src/database/db_query_config.c	/^	apr_xml_elem* table_elem_child;$/;"	l
+table_id	src/database/db_query_config.c	/^	const char* table_id = NULL;$/;"	l
+table_index	src/database/db_query_config.c	/^	int table_index, col_index;$/;"	l
+table_join_string	src/database/dbd.h	/^	const char* table_join_string;$/;"	m	struct:db_query_	access:public
+table_ptr	src/database/db_query_config.c	/^								table_t** table_ptr;$/;"	l
+table_ptr	src/database/db_query_config.c	/^						table_t** table_ptr;$/;"	l
+table_t	src/database/db_typedef.h	/^typedef struct table_ table_t;$/;"	t	typeref:struct:table_
+tables	src/database/dbd.c	/^	const char* tables = db_query->table_join_string;$/;"	l
+tables	src/database/dbd.h	/^	apr_array_header_t* tables;   \/\/Tables on database$/;"	m	struct:db_config_	access:public
+tables	src/database/dbd.h	/^	apr_array_header_t* tables;$/;"	m	struct:db_query_	access:public
+tag	src/apps/music/tag_reader.c	/^	int i, tag, status;$/;"	l
+tag_dest	src/apps/music/tag_reader.h	/^	char** tag_dest;$/;"	m	struct:song_tags	access:public
+tag_name	src/apps/music/tag_reader.h	/^	const char* tag_name;$/;"	m	struct:song_tags	access:public
+tags_request	src/apps/music/mpg123.c	/^		id3v2_ids_t tags_request;$/;"	l
+tail	src/apps/music/decoding_queue.h	/^	int tail;$/;"	m	struct:queue_	access:public
+temp_dir	src/apps/music/transcoder.c	/^	const char* temp_dir;$/;"	l
+texts	src/apps/music/id3v2.h	/^	char** texts;$/;"	m	struct:id3v2_id_	access:public
+theme_change_div.onclick	www/javascript/ui/player.js	/^	this.theme_change_div.onclick = function(){$/;"	f
+thread_sync_dir	src/apps/music/music_query.c	/^	apr_thread_t* thread_sync_dir;$/;"	l
+time	src/apps/music/ogg_encode.c	/^    srand (time(NULL));$/;"	p	file:
+title	src/apps/music/tag_reader.h	/^	char* title;$/;"	m	struct:music_file_	access:public
+total_length	src/apps/music/ogg_encode.c	/^	apr_size_t total_length = 0;$/;"	l
+total_samples	src/apps/music/flac.h	/^    long total_samples; \/\/ per channel$/;"	m	struct:__anon8	access:public
+total_samples	src/apps/music/mpg123.h	/^	long total_samples; \/\/Per channel$/;"	m	struct:mpg3_file_	access:public
+total_samples_per_channel	src/apps/music/transcoder.h	/^	long total_samples_per_channel;$/;"	m	struct:encoding_options_t_	access:public
+total_tracks	src/apps/music/tag_reader.h	/^	char* total_tracks;$/;"	m	struct:music_file_	access:public
+track_no	src/apps/music/tag_reader.h	/^	char* track_no;$/;"	m	struct:music_file_	access:public
+trans_thread	src/apps/music/transcoder.c	/^	apr_thread_t* trans_thread;$/;"	l
+transaction	src/database/dbd.h	/^	apr_dbd_transaction_t * transaction;$/;"	m	struct:db_config_	access:public
+transcode_audio	src/apps/music/transcoder.c	/^int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query){$/;"	f	signature:(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query)
+transcode_audio	src/apps/music/transcoder.h	/^int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query);$/;"	p	signature:(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query)
+transcode_thread	src/apps/music/transcoder.c	/^				transcode_thread_t* transcode_thread = apr_pcalloc(proccess_pool,sizeof(transcode_thread_t));$/;"	l
+transcode_thread	src/apps/music/transcoder.c	/^	transcode_thread_t* transcode_thread = (transcode_thread_t*)ptr;$/;"	l
+transcode_thread_t	src/apps/music/transcoder.h	/^}transcode_thread_t;$/;"	t	typeref:struct:transcode_thread_t_
+transcode_thread_t_	src/apps/music/transcoder.h	/^typedef struct transcode_thread_t_{$/;"	s
+transcode_thread_t_::dbd_config	src/apps/music/transcoder.h	/^	db_config* dbd_config;$/;"	m	struct:transcode_thread_t_	access:public
+transcode_thread_t_::decoding_queue	src/apps/music/transcoder.h	/^	decoding_queue_t* decoding_queue;$/;"	m	struct:transcode_thread_t_	access:public
+transcode_thread_t_::error_messages	src/apps/music/transcoder.h	/^	error_messages_t* error_messages;$/;"	m	struct:transcode_thread_t_	access:public
+transcode_thread_t_::num_working_threads	src/apps/music/transcoder.h	/^	int num_working_threads;$/;"	m	struct:transcode_thread_t_	access:public
+transcode_thread_t_::pool	src/apps/music/transcoder.h	/^	apr_pool_t* pool;$/;"	m	struct:transcode_thread_t_	access:public
+tries	src/database/dbd.c	/^	static int tries = 0;$/;"	l	file:
+type	src/apps/music/music_query.h	/^	enum query_types type;$/;"	m	struct:music_query_	typeref:enum:music_query_::query_types	access:public
+type	src/apps/music/tag_reader.h	/^	enum FILE_TYPE type;$/;"	m	struct:__anon9	typeref:enum:__anon9::FILE_TYPE	access:public
+type	src/database/db_query_parameters.h	/^	const char* type;$/;"	m	struct:custom_parameter_	access:public
+type	src/database/dbd.h	/^		enum column_types type;$/;"	m	struct:column_table_	typeref:enum:column_table_::column_types	access:public
+type	src/error_handler.h	/^	enum error_type type;$/;"	m	struct:__anon6	typeref:enum:__anon6::error_type	access:public
+type_string	src/apps/music/tag_reader.h	/^	char* type_string;$/;"	m	struct:__anon9	access:public
+type_string	src/database/db_query_config.c	/^					const char* type_string;$/;"	l
+uid	src/mod_mediaplayer.c	/^    apr_uid_t uid;$/;"	l
+update_song	src/database/dbd.c	/^static int update_song(db_config* dbd_config, music_file* song, apr_time_t mtime){$/;"	f	file:	signature:(db_config* dbd_config, music_file* song, apr_time_t mtime)
+update_song	src/database/dbd.h	/^		apr_dbd_prepared_t* update_song;$/;"	m	struct:db_config_::__anon3	access:public
+update_table_indexs	www/javascript/ui/playlist.js	/^	this.update_table_indexs = function(new_tindexs){$/;"	c
+update_time	www/javascript/ui/player.js	/^	this.update_time = function (){$/;"	c
+uri_cpy	src/apps/app_config.c	/^	char* uri_cpy = apr_pstrdup(pool, uri);$/;"	l
+uri_slash	src/apps/app_config.c	/^	char* uri_slash;$/;"	l
+url	www/style_black.css	/^@IMPORT url("style.css");$/;"	s
+url	www/style_white.css	/^@IMPORT url("style.css");$/;"	s
+userdata_key	src/mod_mediaplayer.c	/^    const char *userdata_key = "mediaplayer_post_config";$/;"	l
+v_comment	src/apps/music/ogg_encode.c	/^    vorbis_comment v_comment;$/;"	l
+v_info	src/apps/music/ogg_encode.c	/^    vorbis_info      v_info;$/;"	l
+value	src/database/db_query_parameters.h	/^	const char* value;$/;"	m	struct:custom_parameter_	access:public
+value	src/database/db_query_parameters.h	/^	const char* value;$/;"	m	struct:query_sql_clasuses_	access:public
+var.obj.index	www/javascript/ui/player.js	/^			var obj = {"name" : "sources", "index" : "source_id"};$/;"	p
+var.obj.name	www/javascript/ui/player.js	/^			var obj = {"name" : "sources", "index" : "source_id"};$/;"	p
+var.source.source_id	www/javascript/ui/player.js	/^						var source = {$/;"	p
+vc	src/apps/music/tag_reader.c	/^	vorbis_comment *vc = NULL;$/;"	l
+vorbis_block	src/apps/music/ogg_encode.c	/^    vorbis_block     vorbis_block;$/;"	l
+vorbis_dsp	src/apps/music/ogg_encode.c	/^    vorbis_dsp_state vorbis_dsp;$/;"	l
+vorbis_file	src/apps/music/tag_reader.c	/^	OggVorbis_File vorbis_file;$/;"	l
+waiting	src/apps/music/decoding_queue.h	/^	uint64_t waiting;$/;"	m	struct:queue_	access:public
+wav_permute_matrix	src/apps/music/flac.c	/^static int wav_permute_matrix[8][8] =$/;"	v	file:
+where	src/database/dbd.c	/^	char* where = NULL;$/;"	l
+where_condition	src/database/dbd.c	/^				char* where_condition = apr_pstrcat(statement_pool,column->table->name,".",column->name," ",operator_to_string(query_where_condition->operator)," ",query_where_condition->condition,NULL);$/;"	l
+win_resize	www/javascript/ui/table.js	/^	this.win_resize = function (table_obj){$/;"	f
+words	src/apps/app_config.h	/^	const char** words;$/;"	m	struct:query_words_	access:public
+working	src/apps/music/decoding_queue.h	/^	uint64_t working;$/;"	m	struct:queue_	access:public
+xml_doc	src/database/db_query_config.c	/^	apr_xml_doc* xml_doc;$/;"	l
+xml_elem	src/database/db_query_config.c	/^	apr_xml_elem* xml_elem;$/;"	l
+xml_file	src/database/db_query_config.c	/^	apr_file_t* xml_file;$/;"	l
+xml_parser	src/database/db_query_config.c	/^	apr_xml_parser* xml_parser;$/;"	l
+year	src/apps/music/tag_reader.h	/^	char* year;$/;"	m	struct:music_file_	access:public
