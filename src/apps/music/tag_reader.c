@@ -50,7 +50,6 @@ void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, cha
 	comment = &block->data.vorbis_comment;
 
 
-	//TITLE
 	offset = 0;
 	while ( (offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, offset, entry)) >= 0 ){
 		comment_entry = &comment->comments[offset++];
@@ -65,7 +64,6 @@ void find_vorbis_comment_entry(apr_pool_t*pool, FLAC__StreamMetadata *block, cha
 			}else{
 				//make a comma separated list
 			}
-			//free(comment_value);
 		}
 	}
 }
@@ -88,7 +86,8 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 		 FLAC__metadata_simple_iterator_delete(iter);
 		 return 1;
 	 }
-	 while (FLAC__metadata_simple_iterator_next(iter)){
+	 //Process the current metadata block
+	 do{
 		 // Get block of metadata
 		 FLAC__StreamMetadata *block = FLAC__metadata_simple_iterator_get_block(iter);
 
@@ -104,27 +103,29 @@ int read_flac_level1(apr_pool_t* pool, music_file* song){
 				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_ALBUMARTISTID", &song->mb_id.mb_albumartist_id);
 				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_ARTISTID", &song->mb_id.mb_artist_id);
 				 find_vorbis_comment_entry(pool, block, "MUSICBRAINZ_TRACKID", &song->mb_id.mb_recoriding_id);
-				 break;
-			 }
-			 case
-			 FLAC__METADATA_TYPE_STREAMINFO :{
+			 } break;
+			 case FLAC__METADATA_TYPE_STREAMINFO :{
 				 FLAC__StreamMetadata_StreamInfo* stream_info;
-				 stream_info = (FLAC__StreamMetadata_StreamInfo*)block;
+				 stream_info = (FLAC__StreamMetadata_StreamInfo*)&(block->data);
 				 song->length = stream_info->total_samples / stream_info->sample_rate;
-				 break;
-			 }
+			 } break;
 			 case FLAC__METADATA_TYPE_UNDEFINED :{
-			 	break;
-			 }
+			 } break;
 			 case FLAC__METADATA_TYPE_PICTURE :{
-			 	break;
-			 }
+			 } break;
 			 case FLAC__METADATA_TYPE_PADDING :{
-			 	break;
-			 }
+			 } break;
+			 case FLAC__METADATA_TYPE_CUESHEET :{
+			 } break;
+			 case FLAC__METADATA_TYPE_SEEKTABLE :{
+			 } break;
+			 case FLAC__METADATA_TYPE_APPLICATION :{
+			 } break;
 	     }
-		 FLAC__metadata_object_delete(block) ;
-	 }
+
+		 FLAC__metadata_object_delete(block);
+
+	 }while (FLAC__metadata_simple_iterator_next(iter)); //Get next block if not null
 	 FLAC__metadata_simple_iterator_delete(iter);
 
 	 if (song->title == NULL){
@@ -223,7 +224,7 @@ int read_ogg(apr_pool_t* pool, music_file* song){
 	if (vc == NULL){
 		return 1;
 	}
-
+	//Read Comments
 	for(i =0; i < vc->comments; i++){
 		for(tag = 0; tag < NUM_TAGS; tag++){
 			comment = apr_pstrmemdup(pool,vc->user_comments[i], vc->comment_lengths[i]);
@@ -234,6 +235,10 @@ int read_ogg(apr_pool_t* pool, music_file* song){
 			}
 		}
 	}
+
+	//get song length
+	//Must be -1 for i to return entire bitstream length in seconds
+	song->length = (int)ov_time_total(&vorbis_file, -1);
 
 	ov_clear(&vorbis_file);
 
