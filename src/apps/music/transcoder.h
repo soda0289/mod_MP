@@ -47,12 +47,12 @@ typedef struct input_file_t_{
 
 typedef struct transcode_thread_t_{
 	apr_pool_t* pool;
-	db_config* dbd_config;
+	db_config_t* dbd_config;
 	error_messages_t* error_messages;
 	decoding_queue_t* decoding_queue;
 	int num_working_threads;
 }transcode_thread_t;
 
-int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query);
+int transcode_audio(music_query_t* music_query);
 
 #endif /* TRANSCODER_H_ */

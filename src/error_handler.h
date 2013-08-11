@@ -46,7 +46,7 @@ typedef struct {
 int init_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file);
 int reattach_error_messages(apr_pool_t* pool,error_messages_t** error_messages, const char* errors_shm_file);
 int add_error_list(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message);
-int copy_error_messages(error_messages_t** new,error_messages_t* old, apr_pool_t* pool);
+int copy_error_messages(error_messages_t* new,error_messages_t* old, apr_pool_t* pool);
 int print_error_messages(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages);
 
 #endif /* ERROR_HANDLER_H_ */

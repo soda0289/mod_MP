@@ -35,7 +35,7 @@
 #include "decoding_queue.h"
 #include "music_typedefs.h"
 
-static int add_new_source_db(apr_pool_t* pool, db_config* dbd_config,decoding_job_t* decoding_job,error_messages_t* error_messages){
+static int add_new_source_db(apr_pool_t* pool, db_config_t* dbd_config,decoding_job_t* decoding_job,error_messages_t* error_messages){
 	apr_status_t rv;
 	int error_num = 0;
 	const char* args[4];
@@ -88,7 +88,7 @@ static int add_new_source_db(apr_pool_t* pool, db_config* dbd_config,decoding_jo
 
 
 void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
-	int status, error_num;
+	int status;
 	transcode_thread_t* transcode_thread = (transcode_thread_t*)ptr;
 	apr_pool_t* pool = transcode_thread->pool;
 
@@ -191,7 +191,7 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 	return 0;
 }
 
-static int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db_config* dbd_config,db_query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages){
+static int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* pool,db_config_t* dbd_config,db_query_t* db_query,const char* song_id, column_table_t* song_id_col,const char* output_type,column_table_t* type,error_messages_t* error_messages){
 	//Check database
 	results_table_t* results_table;
 	query_parameters_t* query_parameters;
@@ -202,7 +202,7 @@ static int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* 
 
 	add_where_query_parameter(pool, query_parameters,song_id_col,song_id);
 	add_where_query_parameter(pool, query_parameters,type,output_type);
-	status = select_db_range(pool, dbd_config,query_parameters,db_query,&results_table,error_messages);
+	status = run_query(db_query,query_parameters,&results_table);
 	if(status != 0){
 		 return -11;
 	}
@@ -225,7 +225,11 @@ static int check_db_for_decoding_job(const char** output_source_id, apr_pool_t* 
 
 }
 
-int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* dbd_config,music_query_t* music_query){
+int transcode_audio(music_query_t* music_query){
+	apr_pool_t* pool = music_query->pool;
+	apr_pool_t* proccess_pool = music_query->globals->pool;
+	db_config_t* db_config = music_query->db_query->db_params->db_config;
+	
 	int status;
 	apr_status_t rv;
 	const char* error_header = "Error Setting Up Transcode Audio";
@@ -239,7 +243,7 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 	const char* source_id;
 
 	const char* output_file_path;
-	const char* input_file_path;
+//	const char* input_file_path;
 
 	const char* temp_dir;
 
@@ -261,7 +265,7 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 	//Create thranscode memory pool
 	apr_pool_create_ex(&decoding_job_pool,proccess_pool,NULL,NULL);
 
-	rv = apr_temp_dir_get(&temp_dir,req_pool);
+	rv = apr_temp_dir_get(&temp_dir,pool);
 	if(rv != APR_SUCCESS){
 
 		return -1;
@@ -334,7 +338,7 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 	}
 
 	source_id = ((query_where_condition_t*)music_query->query_parameters->query_where_conditions->elts)[0].condition;
-	output_file_path = apr_pstrcat(req_pool, temp_dir,"/", ((query_where_condition_t*)music_query->query_parameters->query_where_conditions->elts)[0].condition,".ogg", NULL);
+	output_file_path = apr_pstrcat(pool, temp_dir,"/", ((query_where_condition_t*)music_query->query_parameters->query_where_conditions->elts)[0].condition,".ogg", NULL);
 
 	apr_cpystrn(decoding_job->song_id, song_id, 255);
 	apr_cpystrn(decoding_job->artist_id, artist_id, 255);
@@ -354,33 +358,35 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 	//Check if decoding job already exists
 	//Check Database
 	//Look for matching source_id and output_type
-	status = check_db_for_decoding_job(&output_source_id,req_pool,dbd_config,music_query->db_query,song_id,song_id_col,decoding_job->output_file_type,file_type_col,music_query->error_messages);
+	status = check_db_for_decoding_job(&output_source_id,pool,db_config,music_query->db_query,song_id,song_id_col,decoding_job->output_file_type,file_type_col,music_query->error_messages);
 	if(status > 0){
 		apr_cpystrn(decoding_job->new_source_id,output_source_id,256);
 		apr_cpystrn(decoding_job->status,"Decoding job already exists in database",256);
 		decoding_job->progress = 100.0;
 	//Check the working decoding job and the queue
-	}else if((status = does_decoding_job_exsits(req_pool,music_query->music_globals->decoding_queue, &decoding_job)) == 0){
+	}else if((status = does_decoding_job_exsits(pool,music_query->globals->decoding_queue, &decoding_job)) == 0){
 
-		const char* dec_job_status = apr_psprintf(req_pool,"Added to queue of size %d", popcount_4(music_query->music_globals->decoding_queue->queue->waiting));
+		const char* dec_job_status = apr_psprintf(pool,"Added to queue of size %d", popcount_4(music_query->globals->decoding_queue->queue->waiting));
 		//decoding job does not exsits
 		//add it to queue
-		status = add_decoding_job_queue(decoding_job,music_query->music_globals->decoding_queue);
+		status = add_decoding_job_queue(decoding_job,music_query->globals->decoding_queue);
+
 		if(status != 0){
 			add_error_list(music_query->error_messages,ERROR,"Error adding to queue","It could be full or fucked up");
 		}else{
 			apr_cpystrn(decoding_job->status,dec_job_status,512);
-			if(music_query->music_globals->num_decoding_threads < 4){
+			if(music_query->globals->decoding_queue->num_decoding_threads < 4){
 				//Get server config for global queue used for decoding jobs
 				transcode_thread_t* transcode_thread = apr_pcalloc(proccess_pool,sizeof(transcode_thread_t));
 				transcode_thread->pool = proccess_pool;
 
 				//
-				transcode_thread->num_working_threads = music_query->music_globals->num_decoding_threads;
+				transcode_thread->num_working_threads = music_query->globals->decoding_queue->num_decoding_threads;
+
 				//Global Queue
-				transcode_thread->decoding_queue = music_query->music_globals->decoding_queue;
+				transcode_thread->decoding_queue = music_query->globals->decoding_queue;
 				//Database
-				transcode_thread->dbd_config = dbd_config;
+				transcode_thread->dbd_config = db_config;
 				//Error Messages
 				transcode_thread->error_messages = music_query->error_messages;
 				rv = apr_thread_create(&trans_thread,NULL,encoder_thread,transcode_thread,proccess_pool);
@@ -390,10 +396,10 @@ int transcode_audio(apr_pool_t* req_pool, apr_pool_t* proccess_pool, db_config* 
 
 
 
-	apr_brigade_puts(music_query->output_bb, NULL, NULL,"{\n");
-	print_error_messages(req_pool,music_query->output_bb, music_query->error_messages);
-	apr_brigade_printf(music_query->output_bb, NULL, NULL,",\n\t\"decoding_job\" :  {\n\t\t \"status\" :  \"%s\",\n\t\t\"input_source_id\" : \"%s\",\n\t\t\"output_type\" : \"%s\",\n\t\t\"progress\" : \"%.2f\",\n\t\t\"output_source_id\" : \"%s\",\n\t\t\"output_file_path\" : \"%s\"\n\t}\n",json_escape_char(req_pool, decoding_job->status),decoding_job->source_id,decoding_job->output_file_type,decoding_job->progress,decoding_job->new_source_id,json_escape_char(req_pool, decoding_job->output_file_path));
-	apr_brigade_puts(music_query->output_bb, NULL, NULL,"}\n");
+	apr_brigade_puts(music_query->output->bucket_brigade, NULL, NULL,"{\n");
+	print_error_messages(pool,music_query->output->bucket_brigade, music_query->error_messages);
+	apr_brigade_printf(music_query->output->bucket_brigade, NULL, NULL,",\n\t\"decoding_job\" :  {\n\t\t \"status\" :  \"%s\",\n\t\t\"input_source_id\" : \"%s\",\n\t\t\"output_type\" : \"%s\",\n\t\t\"progress\" : \"%.2f\",\n\t\t\"output_source_id\" : \"%s\",\n\t\t\"output_file_path\" : \"%s\"\n\t}\n",json_escape_char(pool, decoding_job->status),decoding_job->source_id,decoding_job->output_file_type,decoding_job->progress,decoding_job->new_source_id,json_escape_char(pool, decoding_job->output_file_path));
+	apr_brigade_puts(music_query->output->bucket_brigade, NULL, NULL,"}\n");
 
 	return 0;
 }

@@ -1,0 +1,14 @@
+#Handle signals
+handle SIGABRT nostop
+handle SIGTERM nostop
+handle SIGHUP nostop
+
+file /usr/local/apache2/bin/httpd
+
+set breakpoint pending on
+set follow-fork-mode child
+
+
+break insert_db
+
+run

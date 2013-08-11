@@ -10,8 +10,10 @@
 
 typedef struct table_ table_t;
 typedef	struct column_table_ column_table_t;
+typedef struct db_params_ db_params_t;
 typedef struct db_query_ db_query_t;
-typedef struct db_config_ db_config;
+typedef struct db_queries_ db_queries_t;
+typedef struct db_config_ db_config_t;
 typedef struct row_ row_t;
 typedef struct results_table_ results_table_t;
 

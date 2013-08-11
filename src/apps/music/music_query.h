@@ -36,6 +36,8 @@
 #include "music_typedefs.h"
 #include "decoding_queue.h"
 #include "dir_sync/dir_sync.h"
+#include "mod_mediaplayer.h"
+#include "output.h"
 
 typedef struct dir_sync_ dir_sync_t;
 
@@ -50,40 +52,46 @@ enum query_types{
 };
 
 struct music_query_{
-	music_globals_t* music_globals;
+	music_globals_t* globals;
+
 	enum query_types type;
+
 	db_query_t* db_query;
 	query_parameters_t* query_parameters;
-	apr_bucket_brigade* output_bb;
-	apr_table_t* output_headers;
-	const char* output_content_type;
+
+	input_t* input;
+	output_t* output;
+
 	results_table_t* results;
+
+	apr_pool_t* pool;
 	error_messages_t* error_messages;
 };
 
 struct music_globals_{
+	//This is changed when entering a new proccess
+	apr_pool_t* pool;
+	error_messages_t* error_messages;
+	const char* tmp_dir;
 
-	apr_shm_t* dir_sync_shm;
-	apr_shm_t* decoding_queue_shm;
+	//Used to queue the songs for decoding
+	decoding_queue_t* decoding_queue;
+	
+	//Directories to search for music files in
+	apr_array_header_t* music_dirs;
 
-	const char* dir_sync_shm_file;
-	const char* decoding_queue_shm_file;
-
-
+	//DB Stats
 	int num_songs;
 	int num_artits;
 	int num_albums;
 	int num_sources;
 
-	int num_decoding_threads;
-	decoding_queue_t* decoding_queue;
-
-	dir_sync_t* dir_sync;
-	float* musicbrainz_progress;
+	//DB Queries
+	apr_array_header_t* db_queries;
 };
 
-int run_music_query(apr_pool_t* pool,apr_pool_t* global_pool, apr_bucket_brigade* output_bb, apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages, db_config* dbd_config, query_words_t* query_words, apr_array_header_t* db_queries, const void* global_context);
-int init_music_query(apr_pool_t* global_pool, error_messages_t* error_messages, const char* external_directory, const void** global_context);
+int run_music_query(input_t* input, output_t* output, const void* global_context);
+int init_music_query(apr_pool_t* global_pool, apr_array_header_t* db_queries, apr_xml_elem* xml_params, const void** global_context, error_messages_t* error_messages);
 int reattach_music_query(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context);
 
 #endif /* MUSIC_QUERY_H_ */

@@ -36,25 +36,131 @@
 #include "dir_sync.h"
 #include "apps/music/mpg123.h"
 
-int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){
-	apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
-	apr_cpystrn((char*)output_content_type, "application/json", 255);
 
-	apr_brigade_puts(output_bb, NULL,NULL, "{\n");
+int init_dir_sync(music_globals_t* music_globals){
+	int status = 0;
+	apr_status_t rv = 0;
+	int i = 0;
+	db_query_t* db_query;
+	db_params_t* db_params;
+	char dbd_error_message[255];
+	const char* dbd_error;
+
+	apr_thread_t* thread_sync_dir;
+
+	//Find db_params by finding a query we need and connecting to the database that query depends on
+	status = find_query_by_id(&db_query, music_globals->db_queries, "song_id");
+	if(status != 0){
+		return -9;
+	}
+
+	//We must connect to the database in the main thread as we have to wait for dynamic module loading
+	// to unlock before forking.
+	rv = connect_database(music_globals->pool,db_query->db_params);
+	if(rv != APR_SUCCESS){
+		add_error_list(music_globals->error_messages, ERROR ,"Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
+		return -5;
+	}
+
+	status = prepare_database(db_query->db_params->db_config);
+	if(status != 0){
+		dbd_error = apr_dbd_error(db_query->db_params->db_config->dbd_driver,db_query->db_params->db_config->dbd_handle, status);
+		add_error_list(music_globals->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
+		return -6;
+	}
+
+	db_params = db_query->db_params;
+
+	//For every music directory create a shared struct
+	for(i = 0; i < music_globals->music_dirs->nelts; i++){
+		dir_sh_stats_t* stats;
+		dir_t* dir = &(((dir_t*)music_globals->music_dirs->elts)[i]);
+		dir_sync_thread_t* dir_sync_thread = apr_pcalloc(music_globals->pool, sizeof(dir_sync_thread_t));
+
+		//Setup dir_sync_thread
+		dir_sync_thread->db_params = db_params;
+		dir_sync_thread->pool = music_globals->pool;
+		dir_sync_thread->error_messages = music_globals->error_messages;
+		dir_sync_thread->dir = dir;
+
+		//Setup Dir
+		dir->shm_file = apr_pstrcat(music_globals->pool,music_globals->tmp_dir,"/mp_dir_sync[",apr_itoa(music_globals->pool, i),"]",NULL);
+		status = setup_shared_memory(&(dir->shm),sizeof(dir_sh_stats_t),dir->shm_file, music_globals->pool);
+		if(status != 0){
+			return status;
+		}
+
+		
+		//Create thread to connect to database and synchronize
+		stats = (dir_sh_stats_t*)apr_shm_baseaddr_get(dir->shm);
+
+		dir->stats = stats;
+
+		stats->num_files = NULL;
+		stats->sync_progress = 0.0;
+		stats->files_scanned = 0;
+
+		rv = apr_thread_create(&thread_sync_dir,NULL, sync_dir, (void*) dir_sync_thread, music_globals->pool);
+		if(rv != APR_SUCCESS){
+			return rv;
+		}
+
+		apr_pool_cleanup_register(music_globals->pool, dir->shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
+	}
+	
+	return status;
+}
+
+int reattach_dir_sync(music_globals_t* music_globals){
+	int i = 0;
+	int status = 0;	
+	for(i = 0; i < music_globals->music_dirs->nelts; i++){
+		dir_t* dir = &(((dir_t*)music_globals->music_dirs->elts)[i]);
+		if(dir->shm_file){
+			status = apr_shm_attach(&(dir->shm), dir->shm_file, music_globals->pool);
+			if(status != APR_SUCCESS){
+				return status;
+			}
+			dir->stats = apr_shm_baseaddr_get(dir->shm);
+		}
+	}
+
+	return status;
+}
+
+int output_dirsync_status(music_query_t* music_query){
+	//int i = 0;
+
+
+	apr_bucket_brigade* output_bb = music_query->output->bucket_brigade;
+
+	apr_table_add(music_query->output->headers,"Access-Control-Allow-Origin", "*");
+	apr_cpystrn((char*)music_query->output->content_type, "application/json", 255);
+
+
+
+	apr_brigade_puts(music_query->output->bucket_brigade, NULL,NULL, "{\n");
 
 	//Print Status
+/*
+	if(music_query->globals->dir_sync){
+		apr_brigade_puts(output_bb, NULL,NULL,"\t\"dir_sync_status\" : [\n");
 
-	if(music_query->music_globals->dir_sync){
-		apr_brigade_puts(output_bb, NULL,NULL,"\t\"dirsync_status\" : {\n");
-		apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Progress\" :  \"%.2f\",\n",music_query->music_globals->dir_sync->sync_progress);
-		apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Files Scanned\" :  \"%d\"\n", music_query->music_globals->dir_sync->files_scanned);
-		apr_brigade_puts(output_bb, NULL,NULL,"\t},\n");
+		for(i = 0; i < music_query->music_globals->music_dirs->nelts; i++){
+			dir_t* dir = &(((dir_t*)music_query->music_globals->music_dirs->elts)[i]);
+
+			apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Progress\" :  \"%.2f\",\n",dir->stats->sync_progress);
+			apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Files Scanned\" :  \"%d\"\n", dir->stats->files_scanned);
+		}
+
+		apr_brigade_puts(output_bb, NULL,NULL,"\t],\n");
 	}
+*/
 	apr_brigade_puts(output_bb, NULL,NULL,"\t\"db_status\" : ");
-	output_db_result_json(music_query->results,music_query->db_query,pool,output_bb);
+	output_db_result_json(music_query->results,music_query->db_query,music_query->output);
 	apr_brigade_puts(output_bb, NULL,NULL,"\n,");
 
-	print_error_messages(pool,output_bb, error_messages);
+	print_error_messages(music_query->pool,output_bb, music_query->error_messages);
 
 	apr_brigade_puts(output_bb, NULL,NULL,"\n}\n");
 	return 0;
@@ -75,9 +181,10 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 
 	music_file* song;
 
-	dir_sync_t* dir_sync = (dir_sync_t*) ptr;
+	dir_sync_thread_t* dir_sync = (dir_sync_thread_t*) ptr;
 	apr_pool_t* pool;
-
+	
+	db_config_t* db_config = dir_sync->db_params->db_config;
 	char error_message[256];
 
 	//Create sub pool used for sync
@@ -91,9 +198,9 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	mpg123_init();
 
 	file_list = apr_pcalloc(pool, sizeof(List));
-	dir_sync->num_files = apr_pcalloc(pool, sizeof(int));
+	dir_sync->dir->stats->num_files = apr_pcalloc(pool, sizeof(int));
 
-	if(dir_sync->dbd_config->connected != 1){
+	if(db_config->connected != 1){
 		add_error_list(dir_sync->error_messages, ERROR, "Database not connected","ERROR ERROR");
 		return 0;
 	}
@@ -101,16 +208,16 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 	count_table_rows();
 
 
-	read_dir(pool, file_list, dir_sync->dir_path, dir_sync->num_files,  dir_sync->error_messages);
+	read_dir(pool, file_list, dir_sync->dir->path, dir_sync->dir->stats->num_files,  dir_sync->error_messages);
 
-	if ((file_list == NULL || dir_sync->num_files == NULL )&& (*dir_sync->num_files ) > 0 ){
+	if ((file_list == NULL || dir_sync->dir->stats->num_files == NULL )&& (*dir_sync->dir->stats->num_files ) > 0 ){
 		add_error_list(dir_sync->error_messages, ERROR, "Killing Sync Thread", "");
 		return 0;
 	}
 
-	status = apr_dbd_transaction_start(dir_sync->dbd_config->dbd_driver, pool, dir_sync->dbd_config->dbd_handle,&(dir_sync->dbd_config->transaction));
+	status = apr_dbd_transaction_start(db_config->dbd_driver, pool, db_config->dbd_handle,&(db_config->transaction));
 	if(status != 0){
-		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver, dir_sync->dbd_config->dbd_handle, status);
+		dbd_error = apr_dbd_error(db_config->dbd_driver, db_config->dbd_handle, status);
 		add_error_list(dir_sync->error_messages,ERROR, "Database error start transaction", dbd_error);
 		return 0;
 	}
@@ -151,8 +258,8 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 			  //We have song get musicbrainz ids
 			  //status = get_musicbrainz_release_id(pool, song, dir_sync->error_messages);
 			  //Update or Insert song
-			  if (dir_sync->dbd_config->connected == 1){
-				  status = sync_song(pool, dir_sync->dbd_config, song);
+			  if (db_config->connected == 1){
+				  status = sync_song(pool, db_config, song);
 				  if (status != 0){
 					add_error_list(dir_sync->error_messages, ERROR, apr_psprintf(pool,"Failed to sync song:"),  apr_psprintf(pool, "(%d) Song title: %s Song artist: %s song album:%s song file path: %s",status, song->title, song->artist, song->album, song->file->path));
 				  }
@@ -163,20 +270,19 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 			  }
 		  }
 		  //Calculate the percent of files synchronized
-		  dir_sync->sync_progress =(float) files_synced*100 / (*(dir_sync->num_files) - 1);
-		  dir_sync->files_scanned = files_synced;
+		  dir_sync->dir->stats->sync_progress =(float) files_synced*100 / (*(dir_sync->dir->stats->num_files) - 1);
+		  dir_sync->dir->stats->files_scanned = files_synced;
 		  files_synced++;
 		  file_list = file_list->next;
 	}
-	status = apr_dbd_transaction_end(dir_sync->dbd_config->dbd_driver, pool, dir_sync->dbd_config->transaction);
+	status = apr_dbd_transaction_end(db_config->dbd_driver, pool, db_config->transaction);
 	if(status != 0){
-		dbd_error = apr_dbd_error(dir_sync->dbd_config->dbd_driver, dir_sync->dbd_config->dbd_handle, status);
+		dbd_error = apr_dbd_error(db_config->dbd_driver, db_config->dbd_handle, status);
 		add_error_list(dir_sync->error_messages, ERROR, "Database error couldn't end transaction",dbd_error);
 		return 0;
 	}
 
-
-	apr_dbd_close(dir_sync->dbd_config->dbd_driver,dir_sync->dbd_config->dbd_handle);
+	close_database(db_config);
 	apr_pool_clear(pool);
 	return 0;
 }

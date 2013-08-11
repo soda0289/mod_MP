@@ -35,64 +35,66 @@
 
 #include <mpg123.h>
 
-int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue){
+int create_decoding_queue(music_globals_t* music_globals){
+	apr_pool_t* pool = music_globals->pool;
 	apr_status_t rv;
 	int status;
+	decoding_queue_t* decoding_queue = music_globals->decoding_queue = apr_pcalloc(pool, sizeof(decoding_queue_t));
 
-	(*decoding_queue) = apr_pcalloc(pool, sizeof(decoding_queue_t));
 
-	status = setup_shared_memory(&((*decoding_queue)->queue_shm),sizeof(queue_t),queue_shm_file, pool);
+	decoding_queue->shm_file = apr_pstrcat(pool,music_globals->tmp_dir,"/mp_decoding_queue",NULL);
+
+	
+	status = setup_shared_memory(&(decoding_queue->queue_shm),sizeof(queue_t),decoding_queue->shm_file, pool);
 	if(status != 0){
-		//ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error creating shared memory!!!");
+		return status;
 	}
 
-	(*decoding_queue)->queue = (queue_t*)apr_shm_baseaddr_get((*decoding_queue)->queue_shm);
+	decoding_queue->queue = (queue_t*)apr_shm_baseaddr_get(decoding_queue->queue_shm);
 
-	(*decoding_queue)->queue->head = 0;
-	(*decoding_queue)->queue->tail = -1;
-	(*decoding_queue)->queue->working = 0ull;
-	(*decoding_queue)->queue->waiting = 0ull;
+	decoding_queue->queue->head = 0;
+	decoding_queue->queue->tail = -1;
+	decoding_queue->queue->working = 0ull;
+	decoding_queue->queue->waiting = 0ull;
 
 
-	rv = apr_global_mutex_create(&((*decoding_queue)->mutex),"/tmp/mp_decoding_queue_lock",APR_LOCK_DEFAULT,pool);
+	rv = apr_global_mutex_create(&(decoding_queue->mutex),"/tmp/mp_decoding_queue_lock",APR_LOCK_DEFAULT,pool);
 	if(rv != APR_SUCCESS){
 		return rv;
-		//ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error global mutex");
 	}
-	rv = ap_unixd_set_global_mutex_perms((*decoding_queue)->mutex);
+	rv = ap_unixd_set_global_mutex_perms(decoding_queue->mutex);
 	if(rv != APR_SUCCESS){
 		return rv;
-		//ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error setting permission for global mutex");
 	}
 
-	apr_pool_cleanup_register(pool, (*decoding_queue)->mutex,(void*) apr_global_mutex_destroy	, apr_pool_cleanup_null);
-	apr_pool_cleanup_register(pool, (*decoding_queue)->queue_shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
+	apr_pool_cleanup_register(pool, decoding_queue->mutex,(void*) apr_global_mutex_destroy	, apr_pool_cleanup_null);
+	apr_pool_cleanup_register(pool, decoding_queue->queue_shm,(void*) apr_shm_destroy	, apr_pool_cleanup_null);
 	return 0;
 }
 
 
-int reattach_decoding_queue(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages){
+int reattach_decoding_queue(music_globals_t* music_globals){
 	apr_status_t rv;
-
+	decoding_queue_t* decoding_queue = music_globals->decoding_queue;
 
 	//Initalize mpg123
 	mpg123_init();
 
 
-	if(queue_shm_file){
-		rv = apr_shm_attach(&(decoding_queue->queue_shm), queue_shm_file, pool);
+	if(decoding_queue->shm_file){
+		rv = apr_shm_attach(&(decoding_queue->queue_shm), decoding_queue->shm_file, music_globals->pool);
 		if(rv != APR_SUCCESS){
 			return rv;
 			//ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error reattaching shared memeory Decoding Queue");
 		}
 	}
 
-	decoding_queue->error_messages = error_messages;
+	decoding_queue->error_messages = music_globals->error_messages;
 	decoding_queue->queue = apr_shm_baseaddr_get(decoding_queue->queue_shm);
 
 
 	//Decoding queue requires a global lock
-	rv = apr_global_mutex_child_init(&(decoding_queue->mutex),"/tmp/mp_decoding_queue_lock",pool);
+	rv = apr_global_mutex_child_init(&(decoding_queue->mutex),"/tmp/mp_decoding_queue_lock",music_globals->pool);
 	if(rv != APR_SUCCESS){
 			//ap_log_error(__FILE__,__LINE__,0, APLOG_CRIT, rv, s, "Error reattaching to global mutex");
 		return rv;

@@ -35,6 +35,7 @@ int init_query_parameters(apr_pool_t* pool, query_parameters_t** query_parameter
 	(*query_parameters)->query_sql_clauses = apr_pcalloc(pool,sizeof(query_sql_clauses_t )* NUM_SQL_CLAUSES);
 	setup_sql_clause(&((*query_parameters)->query_sql_clauses),LIMIT,"limit");
 	setup_sql_clause(&((*query_parameters)->query_sql_clauses),OFFSET,"offset");
+	
 	//Group by has no friendly name because it cannot be accessed by client
 	setup_sql_clause(&((*query_parameters)->query_sql_clauses),GROUP_BY,NULL);
 	setup_sql_clause(&((*query_parameters)->query_sql_clauses),ORDER_BY,"sort_by");

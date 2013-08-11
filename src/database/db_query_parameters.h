@@ -43,6 +43,8 @@ typedef enum{
 }sql_clauses;
 
 #define NUM_SQL_CLAUSES 4
+
+
 //SQL Where conditions
 struct query_where_condition_{
 	column_table_t* column;
@@ -50,7 +52,7 @@ struct query_where_condition_{
 	const char* condition;
 };
 
-//SQL clauses struct (Row Count, Group By, ...)
+//SQL clauses struct (Limit, Group By, ...)
 struct query_sql_clasuses_{
 	const char* freindly_name;
 	const char* value;
@@ -70,10 +72,14 @@ struct query_parameters_{
 	//each query type. Each column gets one binary digit
 	//and 3 binary digits are reserved for row_count,
 	//row_offset, and group_by
-	uint64_t parameters_set;
+	//	uint64_t parameters_set;
+
 	char num_columns;
+
 	apr_array_header_t* query_where_conditions;
+
 	query_sql_clauses_t* query_sql_clauses;
+
 	char num_custom_parameters;
 	apr_array_header_t* query_custom_parameters;
 };

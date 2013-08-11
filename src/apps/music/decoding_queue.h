@@ -54,11 +54,14 @@ struct queue_{
 
 
 struct decoding_queue_{
-	apr_shm_t* queue_shm;
-
+	int num_decoding_threads;
 	//These pointers must be set in child proccess
 	error_messages_t* error_messages;
 	apr_global_mutex_t* mutex;
+	
+	const char* shm_file;
+	apr_shm_t* queue_shm;
+
 	queue_t* queue;
 };
 
@@ -68,8 +71,8 @@ struct decoding_queue_{
 #define UNLOCK_CHECK_ERRORS(lock, error_messages, error_header) if((rv = apr_global_mutex_unlock(lock) != APR_SUCCESS))add_error_list(error_messages,ERROR,error_header,apr_strerror(rv, error_message,512))
 
 
-int create_decoding_queue(apr_pool_t* pool, const char* queue_shm_file,decoding_queue_t** decoding_queue);
-int reattach_decoding_queue(apr_pool_t* pool,decoding_queue_t* decoding_queue, const char* queue_shm_file,error_messages_t* error_messages);
+int create_decoding_queue(music_globals_t* music_globals);
+int reattach_decoding_queue(music_globals_t* music_globals);
 
 decoding_job_t* get_decoding_job_queue(decoding_queue_t* decoding_queue, error_messages_t* error_messages);
 int add_decoding_job_queue(decoding_job_t* job,decoding_queue_t* decoding_queue);

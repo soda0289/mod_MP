@@ -55,21 +55,24 @@ int reattach_error_messages(apr_pool_t* pool,error_messages_t** error_messages, 
 	return 0;
 }
 
-int copy_error_messages(error_messages_t** new,error_messages_t* old, apr_pool_t* pool){
+int copy_error_messages(error_messages_t* new,error_messages_t* old, apr_pool_t* pool){
 	//Copy error messages from shared memory
 	int i = 0;
-	*new = apr_pcalloc(pool, sizeof(error_messages_t));
-	(*new)->num_errors = old->num_errors;
+	int offset = new->num_errors;
+
 	for(i = 0; i < old->num_errors; i++){
-		(*new)->messages[i] = old->messages[i];
+		new->messages[i + offset] = old->messages[i];
+		new->num_errors++;
 	}
 	return 0;
 }
+
+
+//Print out error messages to JSON
 int print_error_messages(apr_pool_t* pool,apr_bucket_brigade* bb,error_messages_t* error_messages){
 	int i;
 	apr_brigade_puts(bb, NULL,NULL,"\t\t\"Errors\" : [\n");
-				//Print Errors
-
+			//Print Errors
 			for (i =0;i < error_messages->num_errors; i++){
 				apr_brigade_printf(bb, NULL,NULL, "\t\t\t{\n\t\t\t\t\"type\" : %d,\n\t\t\t\t\"header\" : \"%s\",\n\t\t\t\t\"message\" : \"%s\"\n\t\t\t}\n", error_messages->messages[i].type,json_escape_char(pool,error_messages->messages[i].header), json_escape_char(pool,error_messages->messages[i].message));
 				if (i+1 != error_messages->num_errors){

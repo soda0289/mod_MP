@@ -11,10 +11,13 @@ Makefile.in
 /depcomp
 /install-sh
 /missing
-/*~
-/*.o
-/*.lo
+*~
+*.o
+*.lo
 /config.log
 /config.status
 /libtool
-
+*.Plo
+*.a
+*.swp
+*.swo

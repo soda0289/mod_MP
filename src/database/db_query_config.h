@@ -21,15 +21,19 @@
 #ifndef DB_QUERY_CONFIG_H_
 #define DB_QUERY_CONFIG_H_
 
+#include <apr_xml.h>
 #include "db_typedef.h"
 #include "apps/app_typedefs.h"
-
+#include "error_handler.h"
 
 
 #define SUCCESS 0
 
-int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config);
+int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_name,const char** attr_value);
+int generate_app_queries(apr_pool_t* pool, db_queries_t* db_queries,apr_xml_elem* queries, db_params_t* db_params, error_messages_t* error_messages);
 int find_query_by_id(db_query_t** element, apr_array_header_t*array, const char* id);
 int find_column_from_query_by_friendly_name(db_query_t* query,const char* friendly_name, column_table_t** column);
 int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id);
+
+
 #endif /* DB_QUERY_CONFIG_H_ */

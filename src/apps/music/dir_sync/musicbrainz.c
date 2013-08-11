@@ -65,6 +65,9 @@ int get_musicbrainz_release_id(apr_pool_t* pool, music_file* song, error_message
 	mb_result = mb5_query_get_lastresult(mb_query);
 	if(mb_result != eQuery_Success){
 		mb_httpcode = mb5_query_get_lasthttpcode(mb_query);
+		if(mb_httpcode != 200){
+			return -2;
+		}
 		mb5_query_get_lasterrormessage(mb_query, error_message, 512);
 
 		add_error_list(error_messages, WARN, "Musicbrainz http status", error_message);

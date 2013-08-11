@@ -52,6 +52,8 @@
 
 #include "apps/music/decoding_queue.h"
 
+#include "database/db_config.h"
+
 unixd_config_rec ap_unixd_config;
 
 
@@ -60,12 +62,6 @@ static void* mediaplayer_config_srv(apr_pool_t* pool, server_rec* s){
 	mediaplayer_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mediaplayer_srv_cfg));
 
 	srv_conf->errors_shm_file = "/tmp/mp_errors";
-
-	/*
-	srv_conf->dir_sync_shm_file = NULL;
-	srv_conf->errors_shm_file = NULL;
-	srv_conf->queue_shm_file = NULL;
-	*/
 
 	return srv_conf;
 }
@@ -85,18 +81,26 @@ static const char* mediaplayer_set_external_dir (cmd_parms* cmd, void* cfg, cons
 	return NULL;
 }
 
-static const char* mediaplayer_set_db_schema (cmd_parms* cmd, void* cfg, const char* arg){
+static const char* mediaplayer_set_db_config_dir (cmd_parms* cmd, void* cfg, const char* arg){
 
 	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(cmd->server->module_config, &mediaplayer_module);
 
-	srv_conf->db_schema_xml = arg;
+	srv_conf->db_xml_dir = arg;
+	return NULL;
+}
+
+static const char* mediaplayer_set_app_config_dir (cmd_parms* cmd, void* cfg, const char* arg){
+
+	mediaplayer_srv_cfg* srv_conf = ap_get_module_config(cmd->server->module_config, &mediaplayer_module);
+
+	srv_conf->apps_xml_dir = arg;
 	return NULL;
 }
 
 int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool){
 	apr_status_t rv;
-    apr_uid_t uid;
-    apr_gid_t gid;
+    apr_uid_t uid = 0;
+    apr_gid_t gid = 0;
     key_t shm_key;
     int shm_id;
     struct shmid_ds buf;
@@ -143,104 +147,49 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
 	return 0;
 }
 
-static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
-	mediaplayer_srv_cfg* srv_conf;
+int init_input(apr_pool_t* pool, const char* uri, int method_num, input_t** input_ptr){
+	input_t* input = *input_ptr = apr_pcalloc(pool, sizeof(input_t));
 
+	//Preapre Input Struct
+	input->pool = pool;
+	input->method = method_num;
+	input->uri = uri;
 
-    void *data = NULL;
-    const char *userdata_key = "mediaplayer_post_config";
-
-
-
-
-
-    /* Apache loads DSO modules twice. We want to wait until the second
-     * load before setting up our global mutex and shared memory segment.
-     * To avoid the first call to the post_config hook, we set some
-     * dummy userdata in a pool that lives longer than the first DSO
-     * load, and only run if that data is set on subsequent calls to
-     * this hook.
-     */
-	apr_pool_userdata_get(&data, userdata_key, s->process->pool);
-	if (data == NULL) {
-		apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
-		return OK;
-    }
-	//Scan through every server and determine which one has directories to be synchronized
-	do{
-		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
-		if(srv_conf->enable && srv_conf->external_directory != NULL){
-			apr_status_t rv = 0;
-			//int status;
-
-			init_error_messages(pconf,&(srv_conf->error_messages), srv_conf->errors_shm_file);
-			srv_conf->pid = getpid();
-
-
-			rv = apr_dbd_init(pconf);
-			if (rv != APR_SUCCESS){
-			  //Run error function
-			  return rv;
-			}
-
-
-			srv_conf->apps = apr_pcalloc(pconf,sizeof(app_list_t));
-			srv_conf->apps->pool = pconf;
-
-			config_app(srv_conf->apps,"music","music",init_music_query,reattach_music_query,run_music_query);
-			init_apps(srv_conf->apps,pconf, srv_conf->error_messages,srv_conf->external_directory);
-		}
-	}while ((s = s->next) != NULL);
-
-	return OK;
+	return 0;
 }
 
+int init_output(apr_pool_t* pool, ap_filter_t* out_filters,output_t** output_ptr){
+	output_t* output = *output_ptr = apr_pcalloc(pool, sizeof(output_t));
 
+	//Prepare Output
+	output->pool = pool;
+	output->filters = out_filters;
+	output->headers = apr_table_make(pool, 10);
+	output->content_type = apr_pcalloc(pool, sizeof(char) * 255);
+	output->bucket_allocator = apr_bucket_alloc_create(pool);
 
-static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
-	apr_status_t rv = 0;
-	mediaplayer_srv_cfg* srv_conf;
-	int status;
-	const char* dbd_error;
-	char dbd_error_message[256];
-	//Scan through every server and determine which one has directories to be synchronized
-	do{
-		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
-		if(srv_conf->enable){
+	output->error_messages = apr_pcalloc(pool, sizeof(error_messages_t));
+	output->error_messages->num_errors = 0;
 
-			//Reattach shared memory
-			if(getpid() != srv_conf->pid){
-				//Only when in new proccess do we re attach shared memory
-				//If we are in the same proccess we dont need shared memory do we.
-				//Reattach shared memory
+	output->bucket_brigade = apr_brigade_create(pool, output->bucket_allocator);
+	output->length = 0;
+	
+	return 0;
+}
 
-				reattach_error_messages(child_pool,&(srv_conf->error_messages), srv_conf->errors_shm_file);
-				//Were in a new process reattach decoding queue
+int finalize_output(output_t* output, apr_table_t* out_headers){
+	apr_status_t rv;
 
-				reattach_apps(srv_conf->apps,child_pool,srv_conf->error_messages);
+	apr_bucket* eos_bucket;
+	eos_bucket = apr_bucket_eos_create(output->bucket_allocator);
 
-				//Setup Database Connection
-				rv = connect_database(s->process->pconf, srv_conf->error_messages,&(srv_conf->dbd_config));
-				if(rv != APR_SUCCESS){
-					add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't connect", apr_strerror(rv, dbd_error_message, sizeof(dbd_error_message)));
-				}else{
-					status = prepare_database(srv_conf->apps,srv_conf->dbd_config, srv_conf->db_schema_xml);
-					if(status != 0){
-						dbd_error = apr_dbd_error(srv_conf->dbd_config->dbd_driver,srv_conf-> dbd_config->dbd_handle, status);
-						add_error_list(srv_conf->error_messages, ERROR, "Database error couldn't prepare",dbd_error);
-					}
-					apr_pool_cleanup_register(child_pool, srv_conf->dbd_config,(void*) close_database	, apr_pool_cleanup_null);
-				}
+	APR_BRIGADE_INSERT_TAIL(output->bucket_brigade, eos_bucket);
 
-			}else{
-				//WE ARE IN DEBUG MODE
-				//THERE WILL BE NO NEW PROCCESS
+	apr_table_overlap(out_headers, output->headers, APR_OVERLAP_TABLES_SET);
 
+	rv = apr_brigade_length(output->bucket_brigade,1,&(output->length));
 
-			}
-		}
-	}while ((s = s->next) != NULL);
-
+	return rv;
 }
 
 char* json_escape_char(apr_pool_t* pool, const char* string){
@@ -269,49 +218,127 @@ char* json_escape_char(apr_pool_t* pool, const char* string){
 	return escape_string;
 }
 
-int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages){
-	apr_table_add(output_headers,"Access-Control-Allow-Origin", "*");
-	apr_cpystrn((char*)output_content_type, "application/json", 255);
+int output_status_json(output_t* output){
+	apr_table_add(output->headers,"Access-Control-Allow-Origin", "*");
+	apr_cpystrn((char*)output->content_type, "application/json", 255);
 
-	apr_brigade_puts(output_bb, NULL,NULL, "{\n");
+	apr_brigade_puts(output->bucket_brigade, NULL,NULL, "{\n");
 
-	print_error_messages(pool,output_bb, error_messages);
+	print_error_messages(output->pool,output->bucket_brigade, output->error_messages);
 
-	apr_brigade_puts(output_bb, NULL,NULL,"\n}\n");
-		return 0;
+	apr_brigade_puts(output->bucket_brigade, NULL,NULL,"\n}\n");
+
+	return 0;
+}
+
+static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
+	mediaplayer_srv_cfg* srv_conf;
+
+
+    void *data = NULL;
+    const char *userdata_key = "mediaplayer_post_config";
+
+    /* Apache loads DSO modules twice. We want to wait until the second
+     * load before setting up our global mutex and shared memory segment.
+     * To avoid the first call to the post_config hook, we set some
+     * dummy userdata in a pool that lives longer than the first DSO
+     * load, and only run if that data is set on subsequent calls to
+     * this hook.
+     */
+	apr_pool_userdata_get(&data, userdata_key, s->process->pool);
+	if (data == NULL) {
+		apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
+		return OK;
+    }
+	//Scan through every server and determine which one has directories to be synchronized
+	do{
+		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
+		if(srv_conf->enable){
+			apr_status_t rv = 0;
+			int status = 0;
+			const char* music_file_path;
+
+			srv_conf->pid = getpid();
+
+
+			status = init_error_messages(pconf,&(srv_conf->error_messages), srv_conf->errors_shm_file);
+			if(status != APR_SUCCESS){
+				srv_conf->enable = 0;
+				continue;
+			}
+
+			//Init Database	
+			rv = apr_dbd_init(pconf);
+			if (rv != APR_SUCCESS){
+			  //Run error function
+			  return rv;
+			}
+			//Setup Database Parameters from XML files 
+			status = init_db_array(pconf,srv_conf->db_xml_dir, &(srv_conf->db_array), srv_conf->error_messages);
+			if(status != APR_SUCCESS){
+				srv_conf->enable = 0;
+				continue;
+			}
+			//Init app manager
+			status = init_app_manager(pconf, srv_conf->error_messages, &srv_conf->apps);	
+			if(status != APR_SUCCESS){
+				srv_conf->enable = 0;
+				continue;
+			}
+			//Config the music app
+			music_file_path = apr_pstrcat(pconf, srv_conf->apps_xml_dir, "/music.xml", NULL);
+			config_app(srv_conf->apps,"music",music_file_path,init_music_query,reattach_music_query,run_music_query);
+
+			status = init_apps(srv_conf->apps, srv_conf->db_array);
+			if(status != APR_SUCCESS){
+				srv_conf->enable = 0;
+				continue;
+			}
+		}
+	}while ((s = s->next) != NULL);
+
+	return OK;
 }
 
 
-int run_get_method(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri){
+
+static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
+
+	mediaplayer_srv_cfg* srv_conf;
+
+	//Scan through every server and determine which one has directories to be synchronized
+	do{
+		srv_conf = ap_get_module_config(s->module_config, &mediaplayer_module);
+		if(srv_conf->enable){
+
+			//Reattach shared memory
+			if(getpid() != srv_conf->pid){
+				//Only when in new proccess do we re attach shared memory
+				//If we are in the same proccess we dont need shared memory do we.
+				
+				//Reattach shared memory
+				reattach_error_messages(child_pool,&(srv_conf->error_messages), srv_conf->errors_shm_file);
+
+				//Were in a new process reattach apps 
+				reattach_apps(srv_conf->apps,child_pool,srv_conf->error_messages);
+
+			}else{
+				//WE ARE IN DEBUG MODE
+				//THERE WILL BE NO NEW PROCCESS
+
+
+			}
+		}
+	}while ((s = s->next) != NULL);
+
+}
+//This is handled by the app
+/*
+int run_get_method(apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config_t* dbd_config, error_messages_t* error_messages, const char* uri){
 	int error_num;
 	apr_status_t rv;
 	apr_pool_t* pool;
 
-	apr_bucket_alloc_t* output_bucket_allocator;
-
-	apr_bucket* eos_bucket;
-
-	app_t* app;
-	const char* error_header  = "Error With Query";
-
-	rv = apr_pool_create(&pool, req_pool);
-
-	output_bucket_allocator = apr_bucket_alloc_create(pool);
-
-	*output_bb = apr_brigade_create(pool, output_bucket_allocator);
-
-	if(dbd_config == NULL || dbd_config->connected != 1){
-		add_error_list(error_messages, ERROR,error_header,"Database is not connected.");
-		output_status_json(pool,*output_bb,output_headers, output_content_type,error_messages);
-	}else if((error_num = app_process_uri(req_pool,uri, apps,&app)) != 0){
-		add_error_list(error_messages, ERROR,error_header,"No app found!");
-		output_status_json(pool,*output_bb,output_headers, output_content_type,error_messages);
-	}else{
-		app->run_query(req_pool, global_pool, *output_bb,output_headers, output_content_type, error_messages,dbd_config, &(app->query_words),app->db_queries, app->global_context);
-	}
-
-	eos_bucket = apr_bucket_eos_create(output_bucket_allocator);
-	APR_BRIGADE_INSERT_TAIL(*output_bb, eos_bucket);
 
 	return OK;
 }
@@ -320,56 +347,62 @@ static int run_post_method(request_rec* r){
 	//output_status_json(r);
 	return OK;
 }
+*/
+
 
 static int mediaplayer_handler(request_rec* r) {
-	apr_status_t rv;
-	apr_table_t* output_headers;
-	const char* output_content_type;
-	mediaplayer_rec_cfg* rec_cfg;
+	int status = 0;	
 	mediaplayer_srv_cfg* srv_conf;
-	apr_off_t output_length;
 
-	apr_bucket_brigade* output_bb;
+	app_t* app = NULL;
+	const char* error_header  = "Error With Query";
+	
+	input_t* input;
+	output_t* output;
 
 
-	rec_cfg = apr_pcalloc(r->pool, sizeof(mediaplayer_rec_cfg));
 	srv_conf = ap_get_module_config(r->server->module_config, &mediaplayer_module);
 
-	if(srv_conf->enable != 1){
-		return DECLINED;
-	}
-	if(srv_conf->error_messages == NULL){
+	//Check if we got enough set
+	if(srv_conf->enable != 1 || srv_conf->error_messages == NULL){
 		//Error no error messages
 		return DECLINED;
 	}
 
-	copy_error_messages(&(rec_cfg->error_messages), srv_conf->error_messages, r->pool);
-	ap_set_module_config(r->request_config, &mediaplayer_module, rec_cfg) ;
+	//Prepare struct that are passed to app query handler
+	init_input(r->pool, r->uri, r->method_number, &input);
+	init_output(r->pool, r->output_filters, &output);
+	
+	//Copy server initalition error messages
+	copy_error_messages(output->error_messages, srv_conf->error_messages, r->pool);
 
-	//Prepare Output
-	output_headers = apr_table_make(r->pool, 10);
-	output_content_type = apr_pcalloc(r->pool, sizeof(char) * 256);
+	//Procces input for request
+	status = app_process_uri(input, srv_conf->apps,&app);
+	if(status != 0){
+		add_error_list(output->error_messages, ERROR,error_header,"No app found!");
+		output_status_json(output);
+	}else if(status == 0 && app != NULL){
+		app->run_query(input, output, app->global_context);
+	}
 
-	if ( r->method_number == M_GET){
-		run_get_method(r->pool,r->server->process->pool, &output_bb, output_headers, output_content_type,srv_conf->apps, srv_conf->dbd_config,rec_cfg->error_messages,r->uri);
-		apr_table_overlap(r->headers_out, output_headers,APR_OVERLAP_TABLES_SET);
-		ap_set_content_type(r, output_content_type);
-		apr_brigade_length(output_bb,1,&output_length);
-		ap_set_content_length(r, output_length);
-		rv = ap_pass_brigade(r->output_filters, output_bb);
-		return OK;
+	//Prepare and send output
+	status = finalize_output(output, r->headers_out);
+	if(status != 0){
+		return DECLINED;
 	}
-	if (r->method_number == M_POST) {
-		return run_post_method(r);
-	}
-  return DECLINED;
+
+	ap_set_content_length(r, output->length);
+	ap_pass_brigade(output->filters, output->bucket_brigade);
+
+  return OK;
 }
 
 /*Define Configuration file parameters*/
 static const command_rec mediaplayer_cmds[] = {
-	AP_INIT_FLAG("Mediaplayer", mediaplayer_set_enable, NULL, RSRC_CONF, "Enable mod_mediaplayer on server(On/Off"),
-	AP_INIT_TAKE1("Music_Dir", mediaplayer_set_external_dir, NULL, RSRC_CONF, "Directory containing media files") ,
-	AP_INIT_TAKE1("DB_Schema", mediaplayer_set_db_schema, NULL, RSRC_CONF, "XML File of DB Schema used by apps to locate data in DB") ,
+	AP_INIT_FLAG("Mediaplayer", mediaplayer_set_enable, NULL, RSRC_CONF, "Enable mod_mediaplayer on server(On/Off)"),
+	AP_INIT_TAKE1("Music_Dir", mediaplayer_set_external_dir, NULL, RSRC_CONF, "Directory containing music files") ,
+	AP_INIT_TAKE1("DB_Config_Dir", mediaplayer_set_db_config_dir, NULL, RSRC_CONF, "The Directory of the database config xml file(s)") ,
+	AP_INIT_TAKE1("App_Config_Dir", mediaplayer_set_app_config_dir, NULL, RSRC_CONF, "The directory of app config xml files") ,
 	{ NULL }
 };
 
@@ -389,4 +422,4 @@ module AP_MODULE_DECLARE_DATA mediaplayer_module = {
 	NULL,
 	mediaplayer_cmds,
 	mediaplayer_hooks
-} ;
+};

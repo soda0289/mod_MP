@@ -53,18 +53,27 @@ module AP_MODULE_DECLARE_DATA mediaplayer_module;
 
 typedef struct {
 	int enable;
+
+	//Output directory
 	const char* external_directory;
-	const char* db_schema_xml;
-	db_config* dbd_config;
 
+	//Database array holds database configurations
+	//stored in XML
+	apr_array_header_t* db_array;
+	//Directroy of XML database configuration files
+	const char* db_xml_dir;
 
+	//Proccess iD
 	pid_t pid;
 
+	//Error manager shared memory and file
 	apr_shm_t* errors_shm;
 	const char* errors_shm_file;
 	error_messages_t* error_messages;
 
+	//Variables for app manager
 	app_list_t* apps;
+	const char* apps_xml_dir;
 } mediaplayer_srv_cfg ;
 
 typedef struct{
@@ -72,9 +81,8 @@ typedef struct{
 	app_query appquery;
 }mediaplayer_rec_cfg;
 
+int output_status_json(output_t* output);
 char* json_escape_char(apr_pool_t* pool, const char* string);
-int output_status_json(apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages);
 int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, apr_pool_t* pool);
-int run_get_method(apr_pool_t* req_pool,apr_pool_t* global_pool, apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config* dbd_config, error_messages_t* error_messages, const char* uri);
 
 #endif

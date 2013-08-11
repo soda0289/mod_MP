@@ -30,22 +30,35 @@
 #include "apps/music/music_typedefs.h"
 
 
-
-typedef struct dir_sync_{
+//Directory sync stats is stored in shared memory
+typedef struct dir_shared_{
 	int* num_files;
-
-	db_config* dbd_config;
-	apr_pool_t * pool;
-	error_messages_t* error_messages;
-	const char* dir_path;
-	//This is the only variable that can be accessed by all processes
 	float sync_progress;
 	int files_scanned;
+}dir_sh_stats_t;
 
-	app_list_t* app_list;
-}dir_sync_t;
+typedef struct dir_{
+	//Shared memory
+	apr_shm_t* shm;
+	const char* shm_file;
+
+	dir_sh_stats_t* stats;
+
+	char* path;
+}dir_t;
+
+typedef struct dir_sync_thread_{
+	db_params_t* db_params;
+	apr_pool_t * pool;
+	error_messages_t* error_messages;
+
+	dir_t* dir;
+}dir_sync_thread_t;
 
 void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr);
-int output_dirsync_status(music_query_t* music_query,apr_pool_t* pool, apr_bucket_brigade* output_bb,apr_table_t* output_headers, const char* output_content_type,error_messages_t* error_messages);
+int output_dirsync_status(music_query_t* music_query);
+int init_dir_sync(music_globals_t* music_globals);
+int reattach_dir_sync(music_globals_t* music_globals);
+
 
 #endif /* DIR_SYNC_H_ */

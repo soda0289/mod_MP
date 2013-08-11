@@ -25,7 +25,7 @@
 #include "db_typedef.h"
 
 
-static int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_name,const char** attr_value){
+int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_name,const char** attr_value){
 	apr_xml_attr* attr;
 	for(attr = elem->attr;attr != NULL;attr = attr->next){
 		if(apr_strnatcmp(attr->name,attr_name) == 0){
@@ -36,98 +36,19 @@ static int get_xml_attr(apr_pool_t* pool,apr_xml_elem* elem,const char* attr_nam
 	return -1;
 }
 
-static int read_columns(table_t* table,apr_xml_elem* table_elem, db_config* dbd_config){
-	apr_xml_elem* column_elem;
-	apr_xml_elem* column_elem_child;
-	column_table_t* column;
-	apr_size_t max_element_size = 255;
-
-	int status;
-
-	table->columns = apr_array_make(dbd_config->pool,10,sizeof(column_table_t));
-	for(column_elem = table_elem->first_child;column_elem != NULL;column_elem = column_elem->next){
-		if(apr_strnatcmp(column_elem->name,"column") == 0){
-			column = apr_array_push(table->columns);
-			column->table = table;
-			//Set column id
-			status = get_xml_attr(dbd_config->pool,column_elem,"id",&column->id);
-			if(status != 0){
-				//No ID given
-				return -5;
+int find_query_by_id(db_query_t** query, apr_array_header_t* db_queries_arr, const char* id){
+	int j, i;
+	
+	//Find db_queries with query
+	for(j = 0; j < db_queries_arr->nelts; j++){
+		db_queries_t* db_queries = &(((db_queries_t*)db_queries_arr->elts)[j]);
+		apr_array_header_t* array = db_queries->queries;
+		//Find Query
+		for(i = 0;i < array->nelts;i++){
+			if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, db_query_t).id,id)==0){
+				*query = &(APR_ARRAY_IDX(array, i, db_query_t));
+				return 0;
 			}
-
-			for(column_elem_child = column_elem->first_child;column_elem_child != NULL;column_elem_child = column_elem_child->next){
-				if(apr_strnatcmp(column_elem_child->name,"name") == 0){
-					 apr_xml_to_text(dbd_config->pool,column_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(column->name),&max_element_size);
-				}else if(apr_strnatcmp(column_elem_child->name,"fname") == 0){
-					apr_xml_to_text(dbd_config->pool,column_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(column->freindly_name),&max_element_size);
-				}else if(apr_strnatcmp(column_elem_child->name,"type") == 0){
-					const char* type_string;
-					apr_xml_to_text(dbd_config->pool,column_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(type_string),&max_element_size);
-					if(apr_strnatcmp(type_string, "int") == 0){
-						column->type = INT;
-					}else if(apr_strnatcmp(type_string, "varchar") == 0){
-						column->type = VARCHAR;
-					}else if(apr_strnatcmp(type_string, "datetime") == 0){
-						column->type = DATETIME;
-					}else if(apr_strnatcmp(type_string, "bigint") == 0){
-						column->type = BIGINT;
-					}
-
-				}
-			}
-
-			//Set column foreign key for joining tables in queries
-			status = get_xml_attr(dbd_config->pool,column_elem,"fk", &table->foreign_key);
-			if (status == 0){
-				table->foreign_key = apr_pstrcat(dbd_config->pool,table->foreign_key," = ",table->name,".",column->name,NULL);
-			}
-		}
-	}
-	return 0;
-}
-
-
-static int read_tables(apr_xml_elem* tables,db_config* dbd_config){
-	apr_xml_elem* table_elem;
-	apr_xml_elem* table_elem_child;
-	table_t* table;
-
-	int status;
-
-	apr_size_t max_element_size = 255;
-
-	if(apr_strnatcmp(tables->name,"tables")!=0){
-		//Not a tables element
-		return -1;
-	}
-	dbd_config->tables = apr_array_make(dbd_config->pool,10,sizeof(table_t));
-	for (table_elem = tables->first_child;table_elem != NULL; table_elem = table_elem->next){
-		if(apr_strnatcmp(table_elem->name,"table") == 0){
-				table = apr_array_push(dbd_config->tables);
-				get_xml_attr(dbd_config->pool,table_elem,"id",&table->id);
-				for(table_elem_child = table_elem->first_child;table_elem_child != NULL; table_elem_child = table_elem_child->next){
-					if(apr_strnatcmp(table_elem_child->name,"name") == 0){
-						apr_xml_to_text(dbd_config->pool,table_elem_child,APR_XML_X2T_INNER,NULL,NULL,&(table->name),&max_element_size);
-					}else if(apr_strnatcmp(table_elem_child->name,"columns") == 0){
-						status = read_columns(table,table_elem_child,dbd_config);
-						if(status != 0){
-							return -7;
-						}
-					}
-				}
-		}
-	}
-
-	return 0;
-}
-
-int find_query_by_id(db_query_t** element, apr_array_header_t*array, const char* id){
-	int i;
-	for(i = 0;i < array->nelts;i++){
-		if(apr_strnatcasecmp(APR_ARRAY_IDX(array, i, db_query_t).id,id)==0){
-			*element = &(APR_ARRAY_IDX(array, i, db_query_t));
-			return 0;
 		}
 	}
 	return -1;
@@ -154,7 +75,7 @@ static int find_column_by_id(column_table_t** element, apr_array_header_t*array,
 	}
 	return -1;
 }
-
+/*
 static int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){
 	app_node_t* app_node;
 	for(app_node = app_list->first_node;app_node != NULL;app_node = app_node->next){
@@ -165,6 +86,7 @@ static int find_app_by_id(app_list_t* app_list,const char* id,app_t** app){
 	}
 	return -1;
 }
+*/
 
 int find_select_column_from_query_by_table_id_and_query_id(column_table_t** select_column,db_query_t* query, const char* table_id, const char* column_id){
 	int column_index;
@@ -207,218 +129,150 @@ int find_column_from_query_by_friendly_name(db_query_t* query,const char* friend
 	return -1;
 }
 
-static int generate_queries(app_list_t* app_list,apr_xml_elem* queries,db_config* dbd_config){
+int generate_app_queries(apr_pool_t* pool, db_queries_t* db_queries,apr_xml_elem* queries, db_params_t* db_params, error_messages_t* error_messages){
 	apr_xml_elem* query_elem;
 	apr_xml_elem* table_elem;
 	apr_xml_elem* col_elem;
-	apr_xml_elem* app_elem;
+
 	apr_xml_elem* query_child_elem;
 	apr_xml_elem* parameter_elem;
 	apr_xml_elem* parameter_child_elem;
 
 	const char* table_id = NULL;
 	const char* column_id = NULL;
-	const char* app_id = NULL;
+
 
 	db_query_t* query;
 
 
 	int status;
 
-	app_t* app = NULL;
-
 	apr_size_t max_element_size = 512;
 
 
-	//Read each app query and custom parameters
-	for(app_elem = queries->first_child; app_elem != NULL;app_elem = app_elem->next){
-		status = get_xml_attr(dbd_config->pool,app_elem,"id",&app_id);
-		if(status != 0){
-			return -1;
-		}
-		status = find_app_by_id(app_list,app_id,&app);
-		if(status != 0){
-			return -2;
-		}
-		app->db_queries = apr_array_make(dbd_config->pool,10,sizeof(db_query_t));
-		//Read queries
-		for(query_elem=app_elem->first_child;query_elem != NULL; query_elem = query_elem->next){
-			if(apr_strnatcmp(query_elem->name,"query") == 0){
-				query = apr_array_push(app->db_queries);
-				status = get_xml_attr(dbd_config->pool,query_elem,"id",&query->id);
-				if(status != 0){
-					return -2;
-				}
-				query->select_columns = apr_array_make(dbd_config->pool,10,sizeof(column_table_t*));
-				query->tables = apr_array_make(dbd_config->pool,10,sizeof(table_t*));
+	for(query_elem=queries->first_child;query_elem != NULL; query_elem = query_elem->next){
+		if(apr_strnatcmp(query_elem->name,"query") == 0){
+			//Init Query
+			query = apr_array_push(db_queries->queries);
+			status = get_xml_attr(pool,query_elem,"id",&query->id);
+			if(status != 0){
+				return -2;
+			}
+			query->select_columns = apr_array_make(pool,10,sizeof(column_table_t*));
+			query->tables = apr_array_make(pool,10,sizeof(table_t*));
+			query->db_params = db_params;
 
-				//Read tables used in query
-				for(query_child_elem = query_elem->first_child;query_child_elem != NULL; query_child_elem =query_child_elem->next){
-					if(apr_strnatcmp(query_child_elem->name,"table") == 0){
-						table_t* table;
-						table_t** table_ptr;
+			//Read tables used in query
+			for(query_child_elem = query_elem->first_child;query_child_elem != NULL; query_child_elem =query_child_elem->next){
+				if(apr_strnatcmp(query_child_elem->name,"table") == 0){
+					table_t* table;
+					table_t** table_ptr;
 
-						table_elem = query_child_elem;
-						get_xml_attr(dbd_config->pool,table_elem,"id",&table_id);
-						if(status != APR_SUCCESS){
-								return -1;
-							}
-						//Find table id in known tables
-						status = find_table_by_id(&table,dbd_config->tables,table_id);
-						if(status != APR_SUCCESS){
-							//no table found
+					table_elem = query_child_elem;
+					get_xml_attr(pool,table_elem,"id",&table_id);
+					if(status != APR_SUCCESS){
 							return -1;
 						}
-						//Add table to query
+					//Find table id in known tables
+					status = find_table_by_id(&table,db_queries->db_params->tables,table_id);
+					if(status != APR_SUCCESS){
+						//no table found
+						return -1;
+					}
+					//Add table to query
 
-						//Create table join string
-						query->table_join_string = (query->table_join_string) ? apr_pstrcat(dbd_config->pool,query->table_join_string,  " LEFT JOIN ", table->name," ON ", table->foreign_key, NULL) : table->name;
-						//Add table point to table list
-						table_ptr = (table_t**)apr_array_push(query->tables);
-						*table_ptr = table;
+					//Create table join string
+					query->table_join_string = (query->table_join_string) ? apr_pstrcat(pool,query->table_join_string,  " LEFT JOIN ", table->name," ON ", table->foreign_key, NULL) : table->name;
+					//Add table point to table list
+					table_ptr = (table_t**)apr_array_push(query->tables);
+					*table_ptr = table;
 
-						//Read columns used in Select statement of Query
-						for(col_elem = table_elem->first_child;col_elem != NULL;col_elem = col_elem->next){
-							if(apr_strnatcmp(col_elem->name,"column") == 0){
-								column_table_t* column;
-								column_table_t** column_ptr;
-								const char* table_column_name;
+					//Read columns used in Select statement of Query
+					for(col_elem = table_elem->first_child;col_elem != NULL;col_elem = col_elem->next){
+						if(apr_strnatcmp(col_elem->name,"column") == 0){
+							column_table_t* column;
+							column_table_t** column_ptr;
+							const char* table_column_name;
 
 
-								status = get_xml_attr(dbd_config->pool,col_elem,"id",&column_id);
-								if(status != APR_SUCCESS){
-									//no column id found
-									return -2;
-								}
-								status = find_column_by_id(&column,table->columns,column_id);
-								if(status != APR_SUCCESS){
-									//no column found
-									add_error_list(dbd_config->database_errors,ERROR,"Database Query Config", apr_psprintf(dbd_config->pool,"Couldn't find coulmn with id:%s",column_id));
-									return -3;
-								}
-								//Add column to column select array
-								column_ptr = (column_table_t**)apr_array_push(query->select_columns);
-								*column_ptr = column;
+							status = get_xml_attr(pool,col_elem,"id",&column_id);
+							if(status != APR_SUCCESS){
+								//no column id found
+								return -2;
+							}
+							status = find_column_by_id(&column,table->columns,column_id);
+							if(status != APR_SUCCESS){
+								//no column found
+								add_error_list(error_messages,ERROR,"Database Query Config", apr_psprintf(pool,"Couldn't find coulmn with id:%s",column_id));
+								return -3;
+							}
+							//Add column to column select array
+							column_ptr = (column_table_t**)apr_array_push(query->select_columns);
+							*column_ptr = column;
 
-								//Append column name to Select Columns String
-								table_column_name = apr_pstrcat(dbd_config->pool,table->name,".",column->name,NULL);
-								 query->select_columns_string = (query->select_columns_string) ? apr_pstrcat(dbd_config->pool,query->select_columns_string,",",table_column_name,NULL) : table_column_name;
+							//Append column name to Select Columns String
+							table_column_name = apr_pstrcat(pool,table->name,".",column->name,NULL);
+							 query->select_columns_string = (query->select_columns_string) ? apr_pstrcat(pool,query->select_columns_string,",",table_column_name,NULL) : table_column_name;
+						}
+					}
+				}else if(apr_strnatcmp(query_child_elem->name,"group_by") == 0){
+					apr_xml_to_text(pool,query_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(query->group_by_string),&max_element_size);
+				}else if(apr_strnatcmp(query_child_elem->name,"custom_parameters") == 0){
+
+					query->custom_parameters =  apr_array_make(pool,5,sizeof(custom_parameter_t));
+
+					for(parameter_elem = query_child_elem->first_child;parameter_elem  != NULL; parameter_elem  = parameter_elem ->next){
+						custom_parameter_t* custom_parameter = apr_array_push(query->custom_parameters);
+						for(parameter_child_elem = parameter_elem->first_child;parameter_child_elem != NULL; parameter_child_elem = parameter_child_elem->next){
+							if(apr_strnatcmp(parameter_child_elem->name, "fname") == 0){
+								apr_xml_to_text(pool,parameter_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(custom_parameter->freindly_name),&max_element_size);
+							}else if(apr_strnatcmp(parameter_child_elem->name, "type") == 0){
+								apr_xml_to_text(pool,parameter_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(custom_parameter->type),&max_element_size);
 							}
 						}
-					}else if(apr_strnatcmp(query_child_elem->name,"group_by") == 0){
-						apr_xml_to_text(dbd_config->pool,query_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(query->group_by_string),&max_element_size);
-					}else if(apr_strnatcmp(query_child_elem->name,"custom_parameters") == 0){
+					}
+				}else if(apr_strnatcmp(query_child_elem->name,"count") == 0){
+					const char* select_count;
+					apr_xml_elem* count_child_elem;
+					for(count_child_elem = query_child_elem->first_child;count_child_elem != NULL; count_child_elem = count_child_elem->next){
+						if(apr_strnatcmp(count_child_elem->name,"table") == 0){
+							table_t* table;
+						
+							column_table_t* column;
+							column_table_t** column_ptr;
 
-						query->custom_parameters =  apr_array_make(dbd_config->pool,5,sizeof(custom_parameter_t));
-
-						for(parameter_elem = query_child_elem->first_child;parameter_elem  != NULL; parameter_elem  = parameter_elem ->next){
-							custom_parameter_t* custom_parameter = apr_array_push(query->custom_parameters);
-							for(parameter_child_elem = parameter_elem->first_child;parameter_child_elem != NULL; parameter_child_elem = parameter_child_elem->next){
-								if(apr_strnatcmp(parameter_child_elem->name, "fname") == 0){
-									apr_xml_to_text(dbd_config->pool,parameter_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(custom_parameter->freindly_name),&max_element_size);
-								}else if(apr_strnatcmp(parameter_child_elem->name, "type") == 0){
-									apr_xml_to_text(dbd_config->pool,parameter_child_elem,APR_XML_X2T_INNER,NULL,NULL,&(custom_parameter->type),&max_element_size);
-								}
-							}
-						}
-					}else if(apr_strnatcmp(query_child_elem->name,"count") == 0){
-						const char* select_count;
-						apr_xml_elem* count_child_elem;
-						for(count_child_elem = query_child_elem->first_child;count_child_elem != NULL; count_child_elem = count_child_elem->next){
-							if(apr_strnatcmp(count_child_elem->name,"table") == 0){
-								table_t* table;
-								table_t** table_ptr;
-								column_table_t* column;
-								column_table_t** column_ptr;
-
-								table_elem = count_child_elem;
-								get_xml_attr(dbd_config->pool,table_elem,"id",&table_id);
-								if(status != APR_SUCCESS){
-										return -1;
-								}
-								//Find table id in known tables
-								status = find_table_by_id(&table,dbd_config->tables,table_id);
-								if(status != APR_SUCCESS){
-									//no table found
+							table_elem = count_child_elem;
+							get_xml_attr(pool,table_elem,"id",&table_id);
+							if(status != APR_SUCCESS){
 									return -1;
-								}
-								//Add table to query
-
-								//Add table point to table list
-								//if we add to list we will create select from
-								//table_ptr = (table_t**)apr_array_push(query->tables);
-								//*table_ptr = table;
-
-								column = apr_pcalloc(dbd_config->pool, sizeof(column_table_t));
-
-								column->freindly_name=apr_pstrcat(dbd_config->pool, table->name, " Count", NULL);
-
-								column_ptr = (column_table_t**)apr_array_push(query->select_columns);
-								*column_ptr = column;
-
-
-								//Create Select string
-								//In this special case the columns are derived from select
-								//statements. For example SELECT (SELECT COUNT(*) FROM Table1) as "Table 1 Count");
-								select_count = apr_pstrcat(dbd_config->pool, "(SELECT COUNT(*) FROM ", table->name,")",  NULL);
-								query->select_columns_string = (query->select_columns_string) ? apr_pstrcat(dbd_config->pool, query->select_columns_string,",",select_count,NULL)  : select_count;
 							}
+							//Find table id in known tables
+							status = find_table_by_id(&table,db_params->tables,table_id);
+							if(status != APR_SUCCESS){
+								//no table found
+								return -1;
+							}
+
+							column = apr_pcalloc(pool, sizeof(column_table_t));
+
+							column->freindly_name=apr_pstrcat(pool, table->name, " Count", NULL);
+
+							column_ptr = (column_table_t**)apr_array_push(query->select_columns);
+							*column_ptr = column;
+
+
+							//Create Select string
+							//In this special case the columns are derived from select
+							//statements. For example SELECT (SELECT COUNT(*) FROM Table1) as "Table 1 Count");
+							select_count = apr_pstrcat(pool, "(SELECT COUNT(*) FROM ", table->name,")",  NULL);
+							query->select_columns_string = (query->select_columns_string) ? apr_pstrcat(pool, query->select_columns_string,",",select_count,NULL)  : select_count;
 						}
 					}
 				}
 			}
 		}
 	}
+	
 	return 0;
 }
 
-
-int init_db_schema(app_list_t* app_list,const char* file_path, db_config* dbd_config){
-	apr_xml_parser* xml_parser;
-	apr_xml_doc* xml_doc;
-	apr_xml_elem* xml_elem;
-
-	apr_file_t* xml_file;
-
-	apr_status_t status;
-
-	int error_num;
-
-	 status = apr_file_open(&xml_file, file_path,APR_READ,APR_OS_DEFAULT ,dbd_config->pool);
-	 if(status != APR_SUCCESS){
-		 	add_error_list(dbd_config->database_errors,ERROR,"Error opening DB XML file","ERRRORROROOROR");
-		 	return -1;
-	 }
-	 xml_parser = apr_xml_parser_create(dbd_config->pool);
-
-	status = apr_xml_parse_file(dbd_config->pool, &xml_parser,&xml_doc,xml_file,20480);
-	 if(status != APR_SUCCESS){
-		 add_error_list(dbd_config->database_errors,ERROR,"Error parsing DB XML file","ERRRORROROOROR");
-		 return -1;
-	 }
-
-	 if(apr_strnatcmp(xml_doc->root->name, "db") != 0){
-		 add_error_list(dbd_config->database_errors,ERROR,"Invalid XML FILE","ERRRORROROOROR");
-		 return -1;
-	 }
-
-	 for(xml_elem = xml_doc->root->first_child;xml_elem != NULL;xml_elem = xml_elem->next){
-		 //Set up Database table first
-		 if(apr_strnatcmp(xml_elem->name,"tables") ==0){
-			 error_num = read_tables(xml_elem, dbd_config);
-			 if(error_num != 0){
-				 return error_num;
-			 }
-		 }
-		 //Then process multi column queries
-		 if(apr_strnatcmp(xml_elem->name,"queries") ==0){
-		 	error_num = generate_queries(app_list,xml_elem, dbd_config);
-		 	if(error_num != 0){
-		 		return error_num;
-		 	}
-		 }
-	 }
-
-	 apr_file_close(xml_file);
-	return 0;
-}

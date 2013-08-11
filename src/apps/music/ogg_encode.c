@@ -31,7 +31,10 @@
 #include "apps/music/transcoder.h"
 #include "database/db_query_config.h"
 
-int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){
+int play_song(music_query_t* music){
+	apr_pool_t* pool = music->pool;
+//	error_messages_t* error_messages = music->error_messages;
+//	db_config_t* db_config = music->db_query->db_params->db_config;
 	const char* file_path;
 	int status;
 	apr_status_t rv;
@@ -83,11 +86,11 @@ int play_song(apr_pool_t* pool, db_config* dbd_config, music_query_t* music){
 	 rv = apr_stat(&file_info,file_path,APR_FINFO_SIZE,pool);
 	 //TEMPORARY FILE EXSITS USE IT
 
-	apr_cpystrn((char*)music->output_content_type ,apr_psprintf(pool,"audio/%s",file_type),255) ;
+	apr_cpystrn((char*)music->output->content_type ,apr_psprintf(pool,"audio/%s",file_type),255) ;
 
-	apr_table_add(music->output_headers, "Accept-Ranges", "bytes");
+	apr_table_add(music->output->headers, "Accept-Ranges", "bytes");
 
-	apr_brigade_insert_file(music->output_bb, file_desc,0,file_info.size,pool);
+	apr_brigade_insert_file(music->output->bucket_brigade, file_desc,0,file_info.size,pool);
 	//apr_file_close(file_desc);
 	return 0;
 }
