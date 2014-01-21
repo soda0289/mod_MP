@@ -40,13 +40,19 @@
 int init_dir_sync(music_globals_t* music_globals){
 	int status = 0;
 	apr_status_t rv = 0;
+
 	int i = 0;
+
 	db_query_t* db_query;
 	db_params_t* db_params;
+
 	char dbd_error_message[255];
 	const char* dbd_error;
 
 	apr_thread_t* thread_sync_dir;
+
+	//Init MP3 support
+	mpg123_init();
 
 	//Find db_params by finding a query we need and connecting to the database that query depends on
 	status = find_query_by_id(&db_query, music_globals->db_queries, "song_id");
@@ -129,7 +135,7 @@ int reattach_dir_sync(music_globals_t* music_globals){
 }
 
 int output_dirsync_status(music_query_t* music_query){
-	//int i = 0;
+	int i = 0;
 
 
 	apr_bucket_brigade* output_bb = music_query->output->bucket_brigade;
@@ -142,20 +148,22 @@ int output_dirsync_status(music_query_t* music_query){
 	apr_brigade_puts(music_query->output->bucket_brigade, NULL,NULL, "{\n");
 
 	//Print Status
-/*
-	if(music_query->globals->dir_sync){
-		apr_brigade_puts(output_bb, NULL,NULL,"\t\"dir_sync_status\" : [\n");
+	if(music_query->globals->music_dirs != NULL){
+		apr_brigade_puts(output_bb, NULL,NULL,"\t\"dir_sync_status\" : {\n");
+			for(i = 0; i < music_query->globals->music_dirs->nelts; i++){
+				dir_t* dir = &(((dir_t*)music_query->globals->music_dirs->elts)[i]);
+				apr_brigade_printf(output_bb, NULL, NULL, "\t\t\"%s\" : {\n",dir->path);	
+				apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Progress\" :  \"%.2f\",\n",dir->stats->sync_progress);
+				apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Files Scanned\" :  \"%d\"\n", dir->stats->files_scanned);
+				apr_brigade_printf(output_bb, NULL, NULL, "\t\t}");
+				if(i < (music_query->globals->music_dirs->nelts - 1)){
+					apr_brigade_printf(output_bb, NULL, NULL, ",");
+				}
+			}
 
-		for(i = 0; i < music_query->music_globals->music_dirs->nelts; i++){
-			dir_t* dir = &(((dir_t*)music_query->music_globals->music_dirs->elts)[i]);
-
-			apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Progress\" :  \"%.2f\",\n",dir->stats->sync_progress);
-			apr_brigade_printf(output_bb, NULL,NULL, "\t\t\"Files Scanned\" :  \"%d\"\n", dir->stats->files_scanned);
-		}
-
-		apr_brigade_puts(output_bb, NULL,NULL,"\t],\n");
+		apr_brigade_puts(output_bb, NULL,NULL,"\t},\n");
 	}
-*/
+
 	apr_brigade_puts(output_bb, NULL,NULL,"\t\"db_status\" : ");
 	output_db_result_json(music_query->results,music_query->db_query,music_query->output);
 	apr_brigade_puts(output_bb, NULL,NULL,"\n,");
@@ -193,9 +201,6 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		add_error_list(dir_sync->error_messages, ERROR ,"Memory Pool Error", apr_strerror(rv, error_message, sizeof(error_message)));
 		return 0;
 	}
-
-	//Init MP3 support
-	mpg123_init();
 
 	file_list = apr_pcalloc(pool, sizeof(List));
 	dir_sync->dir->stats->num_files = apr_pcalloc(pool, sizeof(int));
@@ -282,7 +287,6 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		return 0;
 	}
 
-	close_database(db_config);
 	apr_pool_clear(pool);
 	return 0;
 }

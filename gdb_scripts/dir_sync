@@ -1,5 +1,5 @@
-source main_proccess
+source gdb_scripts/main_proccess
 #Stay here dont fork
 set follow-fork-mode parent
-break read_flac_level1
+break sync_dir 
 continue

@@ -29,7 +29,10 @@
 enum FILE_TYPE{
 	MP3 = 0,
 	FLAC = 1,
-	OGG = 2
+	OGG = 2,
+	M4A,
+	ACC,
+	WAV
 };
 
 typedef struct song_tags{

@@ -5,6 +5,7 @@
 	<parameters>
 		<music_dirs>
 			<dir>/home/reyad/Music</dir>
+			<dir>/home/reyad/Music OLD</dir>
 		</music_dirs>
 	</parameters>
 	<!-- Authoriztion parameters-->

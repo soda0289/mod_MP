@@ -16,7 +16,9 @@ function music_ui(domain) {
 		var obj = {"name" : "songs", "index" : "song_id"};
 
 		var parameters = new query_parameters("songs",obj);
-		parameters.num_results = 1000;
+
+		//Num of results to fetch every request
+		parameters.num_results = 10000;
 
 		parameters.sort_by = 
 		[{

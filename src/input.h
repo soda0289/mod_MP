@@ -1,7 +1,7 @@
 /*
- * output.h
+ * input.h
  *
- *  Created on: Aug 7, 2013
+ *  Created on: Aug 13, 2013
  *      Author: Reyad Attiyat
  *      Copyright 2013 Reyad Attiyat
  *
@@ -17,8 +17,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
 */
-#ifndef OUTPUT_H_
-#define OUTPUT_H_
+#ifndef INPUT_H_ 
+#define INPUT_H_
 
 #include <httpd.h>
 #include <http_protocol.h>
@@ -29,16 +29,28 @@
 #include <stdlib.h>
 #include "error_handler.h"
 #include "apps/app_typedefs.h"
-typedef struct output_{
-	apr_pool_t* pool;
-	apr_bucket_brigade* bucket_brigade;
-	apr_bucket_alloc_t* bucket_allocator;
-	apr_table_t* headers;
-	const char* content_type;
-	apr_off_t length;
 
+typedef struct input_{
+	apr_pool_t* pool;
+	error_messages_t* error_messages;
+
+	int method;
+	query_words_t* query_words;
+	const char* uri;
+
+	//Used for uploading
 	ap_filter_t* filters;
-	error_messages_t* error_messages;	
-}output_t;
+
+	int eos; // 0 if not seen end of stream bucket
+
+	const char* boundary;
+
+	apr_array_header_t* files;
+
+	apr_file_t* file_d;
+	int headers_over;
+}input_t;
+
+int init_input(apr_pool_t* pool, const char* uri, int method_num, input_t** input_ptr);
 
 #endif

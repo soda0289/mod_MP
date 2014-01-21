@@ -3,11 +3,16 @@
 Makefile.in
 
 # http://www.gnu.org/software/autoconf
-
+/autoscan.log
 /autom4te.cache
 /aclocal.m4
 /compile
 /configure
+/confiure.in
+/configure.scan
+/config.in
+/config.nice
+/configure.scan
 /depcomp
 /install-sh
 /missing
@@ -21,3 +26,10 @@ Makefile.in
 *.a
 *.swp
 *.swo
+/.settings
+/config
+/.autotools
+/.cproject
+/Makefile
+/Makefile.in
+.deps

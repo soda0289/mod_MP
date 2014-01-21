@@ -19,8 +19,11 @@
 */
 
 #include <httpd.h>
+#include <http_connection.h>
 #include <http_protocol.h>
 #include <http_config.h>
+#include <http_request.h>
+
 #include "apr_file_io.h"
 #include "apr_file_info.h"
 #include "apr_errno.h"
@@ -54,6 +57,7 @@
 
 #include "database/db_config.h"
 
+#include "upload.h"
 unixd_config_rec ap_unixd_config;
 
 
@@ -147,16 +151,6 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
 	return 0;
 }
 
-int init_input(apr_pool_t* pool, const char* uri, int method_num, input_t** input_ptr){
-	input_t* input = *input_ptr = apr_pcalloc(pool, sizeof(input_t));
-
-	//Preapre Input Struct
-	input->pool = pool;
-	input->method = method_num;
-	input->uri = uri;
-
-	return 0;
-}
 
 int init_output(apr_pool_t* pool, ap_filter_t* out_filters,output_t** output_ptr){
 	output_t* output = *output_ptr = apr_pcalloc(pool, sizeof(output_t));
@@ -332,6 +326,27 @@ static void mediaplayer_child_init(apr_pool_t *child_pool, server_rec *s){
 	}while ((s = s->next) != NULL);
 
 }
+
+int mediaplayer_pre_connection (conn_rec *c, void *csd){
+	//ap_add_input_filter("upload-filter", NULL, NULL, c);
+	return 0;
+
+}
+
+int mediaplayer_fixups(request_rec* r){
+	int status = 0;
+	
+	input_t* input;
+
+	init_input(r->pool, r->uri, r->method_number, &input);
+
+	ap_set_module_config(r->request_config, &mediaplayer_module, input);
+
+	ap_add_input_filter("upload-filter", NULL, r, r->connection);
+
+
+	return status;
+}
 //This is handled by the app
 /*
 int run_get_method(apr_bucket_brigade** output_bb, apr_table_t* output_headers, const char* output_content_type,app_list_t* apps,db_config_t* dbd_config, error_messages_t* error_messages, const char* uri){
@@ -357,7 +372,7 @@ static int mediaplayer_handler(request_rec* r) {
 	app_t* app = NULL;
 	const char* error_header  = "Error With Query";
 	
-	input_t* input;
+	input_t* input = ap_get_module_config(r->request_config, &mediaplayer_module);
 	output_t* output;
 
 
@@ -368,9 +383,11 @@ static int mediaplayer_handler(request_rec* r) {
 		//Error no error messages
 		return DECLINED;
 	}
-
+	
+	if(input == NULL){
+		init_input(r->pool, r->uri, r->method_number, &input);
+	}
 	//Prepare struct that are passed to app query handler
-	init_input(r->pool, r->uri, r->method_number, &input);
 	init_output(r->pool, r->output_filters, &output);
 	
 	//Copy server initalition error messages
@@ -390,7 +407,6 @@ static int mediaplayer_handler(request_rec* r) {
 	if(status != 0){
 		return DECLINED;
 	}
-
 	ap_set_content_length(r, output->length);
 	ap_pass_brigade(output->filters, output->bucket_brigade);
 
@@ -408,6 +424,10 @@ static const command_rec mediaplayer_cmds[] = {
 
 /* Hook our handler into Apache at startup */
 static void mediaplayer_hooks(apr_pool_t* pool) {
+	//Filters
+	ap_register_input_filter("upload-filter", upload_filter, NULL, AP_FTYPE_RESOURCE);
+
+	ap_hook_fixups(mediaplayer_fixups, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_post_config(mediaplayer_post_config, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_child_init(mediaplayer_child_init, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_handler(mediaplayer_handler, NULL, NULL, APR_HOOK_MIDDLE) ;

@@ -28,6 +28,7 @@
 #include "app_typedefs.h"
 #include "error_handler.h"
 #include "output.h"
+#include "input.h"
 
 typedef int (*init_app_fnt)(apr_pool_t* global_pool,apr_array_header_t* db_queries, apr_xml_elem* xml_params, const void** global_context, error_messages_t* error_messages);
 typedef int (*reattach_app_fnt)(apr_pool_t* child_pool, error_messages_t* error_messages,const void* global_context);
