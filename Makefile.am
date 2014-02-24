@@ -6,4 +6,4 @@ EXTRA_DIST = m4/apache.m4 \
              LICENSE \
 	     README
 
-SUBDIRS = src tools
+SUBDIRS = src
