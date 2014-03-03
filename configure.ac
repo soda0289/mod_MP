@@ -35,7 +35,59 @@ AC_FUNC_CHOWN
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memchr memset strchr strerror strstr])
 
+#Check for MusicBrainz
+AC_ARG_WITH([musicbrainz], AS_HELP_STRING([--with-musicbrainz], ["Build with musicbrainz support"]))
+AS_IF(test "x$with_musicbrainz" = "xyes"],[
+	PKG_CHECK_MODULES([MUSICBRAINZ], 
+					   [musicbrainz], 
+					   WITH_MUSICBRAINZ = true \
+					   AC_DEFINE([WITH_MUSICBRAINZ],1,["Compile with MusicBrainz support"])
+					   PLUGINS_LDFLAGS = MUSICBRAINZ_LDFLAGS
+					 )
+	]
+)
+AM_CONDITIONAL([WITH_MUSICBRAINZ], $WITH_MUSICBRAINZ)
 
+#Check for FLAC
+AC_ARG_WITH([flac], AS_HELP_STRING([--with-flac], ["Build with the FLAC support"]))
+AS_IF(test "x$with_flac" = "xyes"],[
+	PKG_CHECK_MODULES([FLAC], 
+					   [flac], 
+					   WITH_FLAC = true \
+					   AC_DEFINE([WITH_FLAC],1,["Compile with FLAC support"])
+					   CODECS_LDFLAGS = FLAC_LDFLAGS
+					 )
+	]
+)
+AM_CONDITIONAL([WITH_FLAC], [test "xwith_flac" = "xyes"])
+
+#Check for OGG/Vorbis
+AC_ARG_WITH([ogg], AS_HELP_STRING([--with-ogg], ["Build with the OGG/Vorbis support"]))
+AS_IF(test "x$with_ogg" = "xyes"],[
+	PKG_CHECK_MODULES([OGG], 
+					   [ogg vorbis], 
+					   WITH_OGG = true \
+					   AC_DEFINE([WITH_OGG],1,["Compile with OGG/Vorbis support"])
+					   CODECS_LDFLAGS = OGG_LDFLAGS
+					 )
+	]
+)
+AM_CONDITIONAL([WITH_OGG], [test "xwith_ogg" = "xyes"])
+
+
+
+#Check for MP3 (mpg123) 
+AC_ARG_WITH([mp3], AS_HELP_STRING([--with-mp3], ["Build with the MP3 support"]))
+AS_IF(test "x$with_mp3" = "xyes"],[
+	PKG_CHECK_MODULES([MP3], 
+					   [mpg123], 
+					   WITH_MP3 = true \
+					   AC_DEFINE([WITH_MP3],1,["Compile with MP3 support"])
+					   CODECS_LDFLAGS = MP3_LDFLAGS
+					 )
+	]
+)
+AM_CONDITIONAL([WITH_MP3], [test "xwith_mp3" = "xyes"])
 
 
 #if you are using a different version of apache, or don't want to require
@@ -62,7 +114,9 @@ AC_SUBST(BIN_LDFLAGS)
 
 #this should be a list to all of the makefiles you expect to be generated
 AC_CONFIG_FILES([Makefile
-				src/Makefile])
+				src/Makefile
+				src/apps/music/Makefile
+				src/apps/music/codecs/flac/Makefile])
 AC_OUTPUT
 
 #whatever you want here, or nothing

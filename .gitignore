@@ -19,6 +19,9 @@ Makefile.in
 *~
 *.o
 *.lo
+*.la
+.libs/
+.dirstamp
 /config.log
 /config.status
 /libtool
@@ -35,4 +38,5 @@ Makefile.in
 .deps
 stamp-h1
 src/mod_mediaplayer_config.h
-m4/config_nice.m4
+config_nice.m4
+libtool.m4

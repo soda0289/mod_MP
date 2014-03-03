@@ -34,8 +34,10 @@
 #include "mod_mediaplayer.h"
 #include "error_handler.h"
 #include "dir_sync.h"
-#include "apps/music/mpg123.h"
 
+#ifdef WITH_MP3
+#include "apps/music/mpg123.h"
+#endif
 
 int init_dir_sync(music_globals_t* music_globals){
 	int status = 0;
@@ -51,8 +53,10 @@ int init_dir_sync(music_globals_t* music_globals){
 
 	apr_thread_t* thread_sync_dir;
 
+#ifdef WITH_MP3
 	//Init MP3 support
 	mpg123_init();
+#endif
 
 	//Find db_params by finding a query we need and connecting to the database that query depends on
 	status = find_query_by_id(&db_query, music_globals->db_queries, "song_id");
@@ -230,6 +234,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  song = apr_pcalloc(pool, sizeof(music_file));
 		  song->file = &(file_list->file);
 		  switch(song->file->type){
+#ifdef WITH_FLAC
 		  	  case FLAC:{
 		  		status = read_flac_level1(pool, song);
 		  		if (status == 0){
@@ -237,6 +242,8 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  		}
 		  		break;
 		  	  }
+#endif
+#ifdef WITH_OGG
 		  	  case OGG:{
 		  		status = read_ogg(pool, song);
 		  		if (status == 0){
@@ -244,6 +251,8 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 		  		}
 		  		break;
 		  	  }
+#endif
+#ifdef WITH_MP3
 		  	  case MP3:{
 		  		  status = read_id3(pool,song);
 			  	if (status == 0){
@@ -251,6 +260,7 @@ void * APR_THREAD_FUNC sync_dir(apr_thread_t* thread, void* ptr){
 			  	}
 			  	break;
 		  	  }
+#endif
 		  	 default:{
 		  		  status = -1;
 		  		  break;

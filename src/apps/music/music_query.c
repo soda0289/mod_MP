@@ -19,8 +19,11 @@
  */
 
 #include "mod_mediaplayer.h"
-#include "ogg_encode.h"
+
+#include "pull_song.h"
+
 #include "apps/music/dir_sync/dir_sync.h"
+
 #include "database/dbd.h"
 #include "music_query.h"
 #include <inttypes.h>
@@ -159,7 +162,7 @@ int get_music_query(music_query_t* music_query){
 		music_query->type = ARTISTS;
 	}else if (apr_strnatcasecmp(query_nouns[1], "sources") == 0){
 		music_query->type = SOURCES;
-	}else if(apr_strnatcasecmp(query_nouns[1], "play") == 0){
+	}else if(apr_strnatcasecmp(query_nouns[1], "pull") == 0){
 		music_query->type = PLAY;
 	}else if(apr_strnatcasecmp(query_nouns[1], "transcode") == 0){
 		music_query->type = TRANSCODE;
@@ -374,7 +377,7 @@ int run_music_query(input_t* input, output_t* output, const void* global_context
 				break;
 			}
 			case PLAY:{
-				error_num = play_song(music_query);
+				error_num = pull_song(music_query);
 				 if(error_num != 0){
 					 add_error_list(music_query->error_messages, ERROR, "Error playing audio", apr_itoa(music_query->pool, error_num));
 					 output_status_json(output);

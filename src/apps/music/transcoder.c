@@ -20,13 +20,22 @@
 
 #include "apr.h"
 #include "apr_errno.h"
+
 #include "apps/music/music_query.h"
-#include "apps/music/ogg_encode.h"
+
+#ifdef WITH_OGG
+#include "codecs/ogg/ogg_encode.h"
+#endif
+
+#ifdef WITH_FLAC
+#include "codecs/flac/flac.h"
+#endif
+
+#ifdef WITH_MP3
+#include "codecs/mp3/mpg123.h"
+#endif
+
 #include "database/db_query_config.h"
-
-#include "apps/music/flac.h"
-#include "apps/music/mpg123.h"
-
 #include "database/dbd.h"
 #include "database/db_query_parameters.h"
 #include <stdio.h>
@@ -112,21 +121,34 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 	while((decoding_job = get_decoding_job_queue(transcode_thread->decoding_queue, transcode_thread->decoding_queue->error_messages)) != NULL){
 		input_file_t input_file;
 
-		int (*encoder_function)(apr_pool_t*, input_file_t*,encoding_options_t*,const char*);
+		int (*encoder_function)(apr_pool_t*, input_file_t*,encoding_options_t*,const char*) = NULL;
 
 		uint64_t index_flag = (1ull << (63 - decoding_job->index));
 
 		//Determine proper decoder
+		//TODO
+		//Should really load these dynamicly somewhere and set a dynamic varible
+		//instead of ugly ifdef
+		
+		#ifdef WITH_FLAC
 		if(apr_strnatcmp(decoding_job->input_file_type,"flac") == 0){
 			input_file.open_input_file = read_flac_file;
 			input_file.close_input_file = close_flac;
 			input_file.process_input_file = process_flac_file;
-		}else if(apr_strnatcmp(decoding_job->input_file_type,"mp3") == 0){
+		}else 
+		#endif
+
+		#ifdef WITH_MP3
+		if(apr_strnatcmp(decoding_job->input_file_type,"mp3") == 0){
 			input_file.open_input_file = read_mp3_file;
 			input_file.close_input_file = close_mp3_file;
 			input_file.process_input_file = process_mp3_file;
 
-		}else{
+		}else
+		#endif
+
+
+		{
 
 			//No decoder found
 			goto remove_from_queue;
@@ -144,11 +166,17 @@ void * APR_THREAD_FUNC encoder_thread(apr_thread_t* thread, void* ptr){
 			goto remove_from_queue;
 		}
 		enc_opt.progress = &((decoding_job)->progress);
+
+		#ifdef WITH_OGG
 		if(apr_strnatcmp(decoding_job->output_file_type,"ogg") == 0){
 			encoder_function = ogg_encode;
 		}
+		#endif
 
-
+		if(encoder_function == NULL){
+			add_error_list(transcode_thread->error_messages,ERROR,apr_pstrcat(pool,"Error encoding input file", decoding_job->input_file_path,NULL),"No encoder found");
+			goto remove_from_queue;
+		}
 
 		status = encoder_function(pool,&input_file,&enc_opt,decoding_job->output_file_path);
 		if(status != 0){

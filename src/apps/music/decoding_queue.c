@@ -33,7 +33,9 @@
 #include "apr_global_mutex.h"
 #include "apr_proc_mutex.h"
 
+#ifdef WITH_MP3
 #include <mpg123.h>
+#endif
 
 int create_decoding_queue(music_globals_t* music_globals){
 	apr_pool_t* pool = music_globals->pool;
@@ -77,9 +79,10 @@ int reattach_decoding_queue(music_globals_t* music_globals){
 	apr_status_t rv;
 	decoding_queue_t* decoding_queue = music_globals->decoding_queue;
 
+#ifdef WITH_MP3
 	//Initalize mpg123
 	mpg123_init();
-
+#endif
 
 	if(decoding_queue->shm_file){
 		rv = apr_shm_attach(&(decoding_queue->queue_shm), decoding_queue->shm_file, music_globals->pool);

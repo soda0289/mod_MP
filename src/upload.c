@@ -1,4 +1,5 @@
 #include <apr.h>
+#include <apr_tables.h>
 #include <httpd.h>
 #include "input.h"
 #include "mod_mediaplayer.h"
@@ -198,7 +199,7 @@ int process_input_data(input_t* in,const char* data, apr_size_t length){
 	return status;
 }
 
-int content_type_header(input_t* input, apt_table_t* headers_in){
+int content_type_header(input_t* input, apr_table_t* headers_in){
 	char* content_type;
 	char* semicolon;
 	char* equal;
