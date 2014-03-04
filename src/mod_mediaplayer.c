@@ -129,7 +129,7 @@ int setup_shared_memory(apr_shm_t** shm,apr_size_t size,const char* file_path, a
 	}
 
 	shm_key = ftok(file_path,1);
-	shm_id = shmget(shm_key,size,0);
+	shm_id = shmget(shm_key,size,IPC_CREAT | 0666);
 
 	status = shmctl(shm_id, IPC_STAT, &buf);
 	if(status != 0){
@@ -225,6 +225,18 @@ int output_status_json(output_t* output){
 	return 0;
 }
 
+int dump_error_messages_to_ap_log(error_messages_t* error_messages, server_rec* server){
+	int i = 0;
+	
+	for (i = 0;i < error_messages->num_errors; i++){
+		char* err_header = error_messages->messages[i].header;
+		char* err_message = error_messages->messages[i].message;
+		ap_log_error(APLOG_MARK, APLOG_ERR, 0, server, "%s: %s", err_header, err_message);
+	}
+
+	return 0;
+}
+
 static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
 	mediaplayer_srv_cfg* srv_conf;
 
@@ -257,6 +269,7 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 
 			status = init_error_messages(pconf,&(srv_conf->error_messages), srv_conf->errors_shm_file);
 			if(status != APR_SUCCESS){
+				ap_log_error(APLOG_MARK, APLOG_ERR, status, s, "Failed to initalize Error Messages.");
 				srv_conf->enable = 0;
 				continue;
 			}
@@ -264,27 +277,34 @@ static int mediaplayer_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool
 			//Init Database	
 			rv = apr_dbd_init(pconf);
 			if (rv != APR_SUCCESS){
+				ap_log_error(APLOG_MARK, APLOG_ERR, status, s, "Failed to initalize APR DBD.");
 			  //Run error function
 			  return rv;
 			}
+
 			//Setup Database Parameters from XML files 
 			status = init_db_array(pconf,srv_conf->db_xml_dir, &(srv_conf->db_array), srv_conf->error_messages);
 			if(status != APR_SUCCESS){
+				dump_error_messages_to_ap_log(srv_conf->error_messages, s);
 				srv_conf->enable = 0;
 				continue;
 			}
+
 			//Init app manager
 			status = init_app_manager(pconf, srv_conf->error_messages, &srv_conf->apps);	
 			if(status != APR_SUCCESS){
+				dump_error_messages_to_ap_log(srv_conf->error_messages, s);
 				srv_conf->enable = 0;
 				continue;
 			}
+
 			//Config the music app
 			music_file_path = apr_pstrcat(pconf, srv_conf->apps_xml_dir, "/music.xml", NULL);
 			config_app(srv_conf->apps,"music",music_file_path,init_music_query,reattach_music_query,run_music_query);
 
 			status = init_apps(srv_conf->apps, srv_conf->db_array);
 			if(status != APR_SUCCESS){
+				dump_error_messages_to_ap_log(srv_conf->error_messages, s);
 				srv_conf->enable = 0;
 				continue;
 			}

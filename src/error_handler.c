@@ -97,4 +97,3 @@ int add_error_list(error_messages_t* error_messages, enum error_type type, const
 	return 0;
 }
 
-
