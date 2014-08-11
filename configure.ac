@@ -1,8 +1,8 @@
 #adjust for the name and version of your 
 AC_PREREQ([2.69])
-AC_INIT([mod_mediaplayer],[0.0.1])
+AC_INIT([mod_MP],[0.0.1])
 #adjust for your main source file name
-AC_CONFIG_SRCDIR([src/mod_mediaplayer.c])
+AC_CONFIG_SRCDIR([src/mod_mp.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -11,7 +11,7 @@ AM_MAINTAINER_MODE
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE()
 #adjust here (should be obvious what to change)
-AM_CONFIG_HEADER([src/mod_mediaplayer_config.h:config.in])
+AM_CONFIG_HEADER([src/mod_mp_config.h:config.in])
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -103,7 +103,7 @@ prefix=${AP_PREFIX}
 LIBTOOL="`${APR_CONFIG} --apr-libtool`"
 AC_SUBST(LIBTOOL)
 
-MODULE_CFLAGS="${APXS_CFLAGS} ${AP_INCLUDES} ${APR_INCLUDES} ${APU_INCLUDES}"
+MODULE_CFLAGS="${APXS_CFLAGS} ${AP_INCLUDES} ${APR_INCLUDES} ${APU_INCLUDES} -Werror -fno-inline"
 AC_SUBST(MODULE_CFLAGS)
 
 MODULE_LDFLAGS=" `${APR_CONFIG} --link-libtool` $APU_LDFLAGS"
@@ -114,14 +114,15 @@ AC_SUBST(BIN_LDFLAGS)
 
 #this should be a list to all of the makefiles you expect to be generated
 AC_CONFIG_FILES([Makefile
-				src/Makefile
-				src/apps/music/Makefile
-				src/apps/music/codecs/flac/Makefile])
+		src/Makefile
+		src/indexers/file/Makefile
+		src/indexers/music/Makefile
+		src/indexers/music/codecs/flac/Makefile])
 AC_OUTPUT
 
 #whatever you want here, or nothing
 echo "---"
-echo "Configuration summary for mod_mediaplayer"
+echo "Configuration summary for mod_MP"
 echo ""
 echo "   * Apache Modules Directory:    $AP_LIBEXECDIR"
 echo ""

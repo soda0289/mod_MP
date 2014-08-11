@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<indexer id="file">
+	<fname>file</fname>
+	<!-- Custom settings passed to the indexer -->
+	<settings>
+
+	</settings>
+
+	<!-- Authoriztion parameters-->
+	<auth>
+		<!-- TODO: Authorization settings go here eventually  -->
+	</auth>
+
+
+	<db_objects db_id="localhost_mysql">
+		<db_object name="directory">
+			<value name="name" type="string" />
+			<value name="path" type="string" />
+			<value name="recurse" type="boolean" />
+		</db_object>
+
+		<db_object name="file">
+			<value name="path" type="string" />
+			<value name="last_update" type="datetime" />
+			<value name="created_on" type="datetime" />
+		</db_object>
+	</db_objects>
+</indexer>
+

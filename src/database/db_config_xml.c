@@ -1,9 +1,9 @@
 /*
- * input.h
+ *  params.c
  *
- *  Created on: Aug 13, 2013
- *      Author: Reyad Attiyat
- *      Copyright 2013 Reyad Attiyat
+ *  Created on: Aug 4, 2013
+ *  Author: Reyad Attiyat
+ *	Copyright 2013 Reyad Attiyat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,33 +16,10 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
-#ifndef INPUT_H_ 
-#define INPUT_H_
+ */
 
+#include <apr_xml.h>
 #include <stdlib.h>
-#include <util_filter.h>
-#include "error_messages.h"
-#include "indexers/indexer_typedefs.h"
 
-typedef void* query_words_t;
+#include "database/db_config.h"
 
-typedef struct input_{
-	apr_pool_t* pool;
-	error_messages_t* error_messages;
-
-	int method;
-
-	const char* uri;
-
-	//Used for uploading
-	ap_filter_t* filters;
-
-	const char* indexer_string;
-
-	const char* command_string;
-}input_t;
-
-int input_init(apr_pool_t* pool, const char* uri, int method_num, input_t** input_ptr);
-
-#endif

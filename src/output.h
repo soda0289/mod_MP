@@ -27,8 +27,9 @@
 #include "apr_buckets.h"
 #include "apr_strings.h"
 #include <stdlib.h>
-#include "error_handler.h"
-#include "apps/app_typedefs.h"
+#include "error_messages.h"
+#include "indexers/indexer_typedefs.h"
+
 typedef struct output_{
 	apr_pool_t* pool;
 	apr_bucket_brigade* bucket_brigade;
@@ -41,4 +42,7 @@ typedef struct output_{
 	error_messages_t* error_messages;	
 }output_t;
 
+int output_init_bb (apr_pool_t* pool, ap_filter_t* out_filters,output_t** output_ptr);
+int output_finalize_bb (output_t* output, apr_table_t* out_headers);
+int output_status_json(output_t* output);
 #endif

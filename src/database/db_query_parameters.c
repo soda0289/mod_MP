@@ -19,35 +19,40 @@
 */
 
 #include <stdlib.h>
-#include <database/db_query_parameters.h>
-#include "database/dbd.h"
+#include "database/db_typedefs.h"
+#include "database/db_query_parameters.h"
+#include "database/db_config.h"
+#include "database/db_query.h"
 #include <ctype.h>
 
-void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname){
+static void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname){
 	(*clauses)[type].freindly_name = fname;
 }
 
-int init_query_parameters(apr_pool_t* pool, query_parameters_t** query_parameters){
-	//INITALIZE query parameters
+int db_query_parameters_init (apr_pool_t* pool, db_query_parameters_t** db_query_parameters){
+	//INITIALIZE query parameters
 
-	*query_parameters = apr_pcalloc(pool,sizeof(query_parameters_t));
+	*db_query_parameters = apr_pcalloc(pool, sizeof(db_query_parameters_t));
 
-	(*query_parameters)->query_sql_clauses = apr_pcalloc(pool,sizeof(query_sql_clauses_t )* NUM_SQL_CLAUSES);
-	setup_sql_clause(&((*query_parameters)->query_sql_clauses),LIMIT,"limit");
-	setup_sql_clause(&((*query_parameters)->query_sql_clauses),OFFSET,"offset");
+	(*db_query_parameters)->sql_clauses = apr_pcalloc(pool, sizeof(query_sql_clauses_t )* NUM_SQL_CLAUSES);
+	setup_sql_clause(&((*db_query_parameters)->sql_clauses), LIMIT, "limit");
+	setup_sql_clause(&((*db_query_parameters)->sql_clauses), OFFSET, "offset");
 	
 	//Group by has no friendly name because it cannot be accessed by client
-	setup_sql_clause(&((*query_parameters)->query_sql_clauses),GROUP_BY,NULL);
-	setup_sql_clause(&((*query_parameters)->query_sql_clauses),ORDER_BY,"sort_by");
+	setup_sql_clause(&((*db_query_parameters)->sql_clauses), GROUP_BY, NULL);
+	setup_sql_clause(&((*db_query_parameters)->sql_clauses), ORDER_BY, "sort_by");
 
 
-	(*query_parameters)->query_where_conditions = apr_array_make(pool,10,sizeof(query_where_condition_t));
+	(*db_query_parameters)->where_conditions = apr_array_make(pool,10,sizeof(query_where_condition_t));
 
 	return 0;
 }
 
-int find_custom_parameter_by_friendly(apr_array_header_t* parameter_array,const char* friendly_name, custom_parameter_t** custom_parameter){
+int db_query_parameter_find_custom_by_friendly(db_query_parameters_t* db_query_parameters, const char* friendly_name, custom_parameter_t** custom_parameter){
 	int i;
+
+	apr_array_header_t* parameter_array = db_query_parameters->custom_parameters;
+
 	for(i =0;i < parameter_array->nelts;i++){
 		custom_parameter_t* cus_par = &(((custom_parameter_t*)parameter_array->elts)[i]);
 		if(apr_strnatcmp(cus_par->freindly_name,friendly_name) == 0){
@@ -55,10 +60,12 @@ int find_custom_parameter_by_friendly(apr_array_header_t* parameter_array,const 
 			return 0;
 		}
 	}
+
 	return -1;
 }
 
-int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition){
+int db_query_parameter_add_where(db_query_parameters_t* query_parameters, db_table_column_t* column, const char* condition){
+	apr_pool_t* pool = query_parameters->pool;
 	query_where_condition_t* query_where_condition;
 	condition_operator operator = EQUAL;
 
@@ -75,7 +82,7 @@ int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parame
 		}
 
 		//Check for * Wild Card
-		if(strchr(condition,'*') == NULL){
+		if(strchr((char*)condition,'*') == NULL){
 			operator = EQUAL;
 		}else{
 			//Query word contains asterisk
@@ -112,7 +119,7 @@ int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parame
 		//i think would work
 
 		//Check for , commas
-		if(strchr(condition, ',') != NULL){
+		if(strchr((char*)condition, ',') != NULL){
 			operator = IN;
 			//Add parentheses to create array
 			condition = apr_pstrcat(pool,"(", condition, ")", NULL);
@@ -120,7 +127,7 @@ int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parame
 	}
 
 	//No errors
-	query_where_condition = apr_array_push(query_parameters->query_where_conditions);
+	query_where_condition = apr_array_push(query_parameters->where_conditions);
 	query_where_condition->column = column;
 	query_where_condition->condition = condition;
 	query_where_condition->operator = operator;

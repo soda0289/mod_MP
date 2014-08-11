@@ -6,4 +6,10 @@ EXTRA_DIST = m4/apache.m4 \
              LICENSE \
 	     README
 
+ACLOCAL_AMFLAGS = "-Im4/"
+
+clean: 
+	rm -rf Makefile.in
+	rm -rf config.in
+
 SUBDIRS = src

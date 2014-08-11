@@ -7,18 +7,12 @@ file /usr/local/apache2/bin/httpd
 
 set breakpoint pending on
 set follow-fork-mode child
-
-break mediaplayer_post_config
+break ap_run_post_config
 run
 continue
-break read_id3
-break find_id3_tag_id
-break mpg123.c:123
-#break mediaplayer_child_init
 set follow-fork-mode parent
-continue 
-
-#break read_mp3_file
-#break ogg_encode
-#break process_mp3_file
+break mp_post_config
+continue
+set follow-fork-mode child
+break mp_child_init
 continue

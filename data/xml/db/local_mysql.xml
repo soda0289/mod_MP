@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<db id="mp_music">
+	<connection id="local">
+		<driver>mysql</driver>
+		<hostname>127.0.0.1</hostname>
+		<username>root</username>
+	</connection>
+
+ <!--  Define tables and columns must define links, artistid,albumid, songid, sourceid -->
+	<table id="links">
+		<name>links</name>
+		<columns>
+			<column id="songid">
+				<name>songid</name>
+				<fname>song_id</fname>
+				<type>int</type>
+			</column>
+			<column id="artistid">
+				<name>artistid</name>
+				<fname>artist_id</fname>
+				<type>int</type>
+			</column>
+			<column id="albumid">
+				<name>albumid</name>
+				<fname>album_id</fname>
+				<type>int</type>
+			</column>
+			<column id="sourceid">
+				<name>sourceid</name>
+				<fname>source_id</fname>
+				<type>int</type>
+			</column>
+			<column id="feature">
+				<name>feature</name>
+				<fname>feature</fname>
+				<type>int</type>
+			</column>
+			<column id="trackno">
+				<name>track_no</name>
+				<fname>track_no</fname>
+				<type>int</type>
+			</column>
+			<column id="discno">
+				<name>disc_no</name>
+				<fname>disc_no</fname>
+				<type>int</type>
+			</column>
+		</columns>
+	</table>
+	<table id="albums">
+		<name>Albums</name>
+		<columns>
+			<column id="id" fk="links.albumid">
+				<name>id</name>
+				<fname>album_id</fname>
+				<type>int</type>
+			</column>
+			<column id="name">
+				<name>name</name>
+				<fname>album_name</fname>
+				<type>varchar</type>
+			</column>
+			<column id="date">
+				<name>date_released</name>
+				<fname>album_release_date</fname>
+				<type>datetime</type>
+			</column>
+			<column id="album_artist">
+				<name>album_artist</name>
+				<fname>album_artist</fname>
+				<type>varchar</type>
+			</column>
+		</columns>
+	</table>
+	<table id="artists">
+		<name>Artists</name>
+		<columns>
+			<column id="id" fk="links.artistid">
+				<name>id</name>
+				<fname>artist_id</fname>
+				<type>int</type>
+			</column>
+			<column id="name">
+				<name>name</name>
+				<fname>artist_name</fname>
+				<type>varchar</type>
+			</column>
+			<column id="musicbrainz">
+				<name>musicbrainz_id</name>
+				<fname>artist_mb_id</fname>
+				<type>int</type>
+			</column>
+		</columns>
+	</table>
+	<table id="songs">
+		<name>Songs</name>
+		<columns>
+			<column id="id" fk="links.songid">
+				<name>id</name>
+				<fname>song_id</fname>
+				<type>int</type>
+			</column>
+			<column id="name">
+				<name>name</name>
+				<fname>song_title</fname>
+				<type>varchar</type>
+			</column>
+			<column id="musicbrainz">
+				<name>musicbrainz_id</name>
+				<fname>song_mb_id</fname>
+				<type>int</type>
+			</column>
+			<column id="length">
+				<name>length</name>
+				<fname>song_length</fname>
+				<type>int</type>
+			</column>
+			<column id="play_count">
+				<name>play_count</name>
+				<fname>song_play_count</fname>
+				<type>int</type>
+			</column>
+		</columns>
+	</table>
+	<table id="sources">
+		<name>Sources</name>
+		<columns>
+			<column id="id" fk="links.sourceid">
+				<name>id</name>
+				<fname>source_id</fname>
+				<type>int</type>
+			</column>
+			<column id="type">
+				<name>type</name>
+				<fname>source_type</fname>
+				<type>varchar</type>
+			</column>
+			<column id="path">
+				<name>path</name>
+				<fname>source_path</fname>
+				<type>varchar</type>
+			</column>
+			<column id="quality">
+				<name>quality</name>
+				<fname>source_quality</fname>
+				<type>varchar</type>
+			</column>
+			<column id="mtime">
+				<name>mtime</name>
+				<fname>source_mtime</fname>
+				<type>bigint</type>
+			</column>
+		</columns>
+	</table>
+
+</db>

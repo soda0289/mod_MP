@@ -23,4 +23,12 @@
 #define MAX_ERROR_SIZE 1024
 apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes);
 
+struct file_ {
+	const char* path;
+	const char* type_string;
+};
+
+typedef struct file_ file_t;
+
+
 #endif

@@ -1,22 +1,20 @@
 #include <apr.h>
 #include <apr_tables.h>
-#include <httpd.h>
 #include "input.h"
-#include "mod_mediaplayer.h"
-#include "error_handler.h"
-#include "apps/music/tag_reader.h"
+#include "upload.h"
+#include "mod_mp.h"
+#include "error_messages.h"
 #include <string.h>
 #include <stdio.h>
 
-extern module AP_MODULE_DECLARE_DATA mediaplayer_module;
-
+/*
 #define NO_BOUNDARY 0
 #define PART_BOUNDARY 1
 #define FINAL_BOUNDARY 2
 
 
 
-int check_line_boundary(const char* line, apr_size_t len, const char* boundary){
+static int check_line_boundary(const char* line, apr_size_t len, const char* boundary){
 		int i = 0;
 
 		//Check if boundry
@@ -36,7 +34,7 @@ int check_line_boundary(const char* line, apr_size_t len, const char* boundary){
 	return NO_BOUNDARY;	
 }
 
-int write_line_file(file_t* file, input_t* in, const char* line, apr_size_t len){
+static int write_line_file(file_t* file, input_t* in, const char* line, apr_size_t len){
 	const char* error_header = "Error writing line to file";
 	int status = 0;
 	apr_size_t length = len;
@@ -48,18 +46,18 @@ int write_line_file(file_t* file, input_t* in, const char* line, apr_size_t len)
 
 	if(in->file_d == NULL){
 		status = apr_file_open(&(in->file_d), file->path, APR_WRITE | APR_CREATE, APR_OS_DEFAULT, in->pool);
-		}else{
+	}else{
 		status = apr_file_open(&(in->file_d), file->path, APR_WRITE | APR_APPEND, APR_OS_DEFAULT, in->pool);
 	}
 	if (status != APR_SUCCESS) { 
-		add_error_list(in->error_messages, ERROR,error_header,"Error opening file");
+		error_messages_add(in->error_messages, ERROR,error_header,"Error opening file");
 	}
 
 	status = apr_file_write(in->file_d, line, &length);
 
 
 	if (status != APR_SUCCESS || length < len) { 
-		add_error_list(in->error_messages, ERROR,error_header,"Error writing to file");
+		error_messages_add(in->error_messages, ERROR,error_header,"Error writing to file");
 	}
 	status = apr_file_close(in->file_d);
 	in->file_d = (apr_file_t*)1; //NOT NULL
@@ -67,7 +65,7 @@ int write_line_file(file_t* file, input_t* in, const char* line, apr_size_t len)
 	return status;
 }
 
-int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t len){
+static int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t len){
 	int status = 0;
 
 	char* header_field;
@@ -75,7 +73,7 @@ int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t le
 
 	const char* colon;
 	//Check if header exsits would contain : (colon)
-	colon = strchr(line, ':');
+	colon = ap_strchr((char*)line, ':');
 	if(colon == NULL){
 		return -1;
 	}
@@ -88,7 +86,7 @@ int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t le
 	if(apr_strnatcasecmp("Content-Type", header_name) == 0){
 		char* slash;
 
-		slash = strchr(header_field, '/');
+		slash = ap_strchr((char*)header_field, '/');
 
 		if(slash != NULL){
 		
@@ -103,11 +101,11 @@ int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t le
 		const char* semicolon;
 		int field_len = strlen(field);
 
-		for(semicolon = strchr(field, ';'); field < field_len + header_field; field = (semicolon+1)){
+		for(semicolon = ap_strchr((char*)field, ';'); field < field_len + header_field; field = (semicolon+1)){
 			int str_len;
 
-			if((semicolon = strchr(field, ';')) == NULL){
-				semicolon = strchr(field, '\0');
+			if((semicolon = ap_strchr((char*)field, ';')) == NULL){
+				semicolon = ap_strchr((char*)field, '\0');
 			}
 			str_len = semicolon-field;
 			
@@ -118,7 +116,7 @@ int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t le
 				param++;
 			}
 
-			param_value = strchr(param, '=') + 1;
+			param_value = strchr((char*)param, '=') + 1;
 			if(param_value != NULL && param_value > param){
 				*(param_value -1) = '\0';
 			}
@@ -140,7 +138,7 @@ int read_line_headers(file_t* file, input_t* in, const char* line, apr_size_t le
 	return status;
 }
 
-int process_input_data(input_t* in,const char* data, apr_size_t length){
+static int process_input_data(input_t* in,const char* data, apr_size_t length){
 	int status = 0;
 	
 	apr_pool_t* pool;
@@ -156,7 +154,7 @@ int process_input_data(input_t* in,const char* data, apr_size_t length){
 	}
 
 	//Read data by line
-	for(line = data, end_line = strstr(line, "\r\n"); line < (data + length); line = (end_line + 2), end_line = strstr(line, "\r\n")){	
+	for(line = data, end_line = strstr((char*)line, "\r\n"); line < (data + length); line = (end_line + 2), end_line = strstr((char*)line, "\r\n")){	
 		apr_size_t str_len;
 
 		//Check if we couldn't find \r\n
@@ -198,9 +196,8 @@ int process_input_data(input_t* in,const char* data, apr_size_t length){
 
 	return status;
 }
-
-int content_type_header(input_t* input, apr_table_t* headers_in){
-	char* content_type;
+static int content_type_header(input_t* input, apr_table_t* headers_in){
+	const char* content_type;
 	char* semicolon;
 	char* equal;
 
@@ -209,7 +206,7 @@ int content_type_header(input_t* input, apr_table_t* headers_in){
 	content_type = apr_table_get(headers_in, "Content-Type");
 	if(content_type != NULL){
 		//Check if there is a subtype/boundry
-		if((semicolon = strchr(content_type, ';')) != NULL){
+		if((semicolon = strchr((char*)content_type, ';')) != NULL){
 			content_type = apr_pstrndup(input->pool, content_type, (int)(semicolon - content_type));
 			input->boundary = apr_pstrndup(input->pool, semicolon+1, 255);
 
@@ -217,7 +214,7 @@ int content_type_header(input_t* input, apr_table_t* headers_in){
 				(input->boundary)++;
 			}
 
-			if((equal = strchr(input->boundary, '=')) != NULL){
+			if((equal = strchr((char*)input->boundary, '=')) != NULL){
 				*equal = '\0';
 				
 				if(apr_strnatcmp(input->boundary,"boundary") == 0){
@@ -235,12 +232,14 @@ int content_type_header(input_t* input, apr_table_t* headers_in){
 
 	return -1;
 }
+*/
 
 apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes){
-
+	/*
 	int status = 0;	
-	mediaplayer_srv_cfg* srv_conf;
+	mp_srv_cfg* srv_conf;
 	apr_bucket *e = NULL;
+	apr_bucket_brigade* input_bb;
 
 	const char*  error_header = "Error uploading file";
 	char error_message[255];
@@ -248,14 +247,13 @@ apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_in
 	apr_size_t length;
 
 	apr_bucket* next_bucket;
-	input_t* input = ap_get_module_config(filter->r->request_config, &mediaplayer_module);
+	input_t* input = ap_get_module_config(filter->r->request_config, &mp_module);
 	
-	srv_conf = ap_get_module_config(filter->r->server->module_config, &mediaplayer_module);
+	srv_conf = ap_get_module_config(filter->r->server->module_config, &mp_module);
 
-	apr_bucket_brigade* input_bb = apr_brigade_create(filter->r->pool,filter->r->connection->bucket_alloc);
+	input_bb = apr_brigade_create(filter->r->pool,filter->r->connection->bucket_alloc);
 
 	input->error_messages = srv_conf->error_messages;
-
 	if(input->eos != 0){
     	APR_BRIGADE_INSERT_TAIL(bbout, apr_bucket_eos_create(bbout->bucket_alloc));
 
@@ -265,7 +263,7 @@ apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_in
 	do {
 		status = ap_get_brigade(filter->next, input_bb, mode, block, nbytes);
 		if(status != 0){
-			add_error_list(srv_conf->error_messages, ERROR, error_header, apr_strerror(status, &(error_message[0]), 255));
+			error_messages_add(srv_conf->error_messages, ERROR, error_header, apr_strerror(status, &(error_message[0]), 255));
 			return status;	
 		}
 
@@ -293,7 +291,7 @@ apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_in
 			//Read bucket
 			status = apr_bucket_read(e, &data, &length, APR_BLOCK_READ);
 			if (status != APR_SUCCESS && status != APR_EAGAIN) { 
-				add_error_list(srv_conf->error_messages, ERROR,error_header, "Error reading bucket from input bukcet brigade");
+				error_messages_add(srv_conf->error_messages, ERROR,error_header, "Error reading bucket from input bukcet brigade");
 			}
 
 			process_input_data(input, data, length);
@@ -301,8 +299,8 @@ apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_in
 
 		apr_brigade_cleanup(input_bb);
 	} while (input->eos == 0);
-
 	apr_brigade_destroy(input_bb);
+	*/
 
 	return 0;
  }

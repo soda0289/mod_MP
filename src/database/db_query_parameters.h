@@ -23,8 +23,9 @@
 
 #include "apr_dbd.h"
 #include "apr_tables.h"
-#include "db_typedef.h"
 #include "apr.h"
+
+#include "database/db_config.h"
 
 typedef enum{
 	EQUAL =0,
@@ -47,7 +48,7 @@ typedef enum{
 
 //SQL Where conditions
 struct query_where_condition_{
-	column_table_t* column;
+	db_table_column_t* column;
 	condition_operator operator;
 	const char* condition;
 };
@@ -67,27 +68,22 @@ struct custom_parameter_{
 
 
 //Query parameters including SQL Clauses and Custom parameters
-struct query_parameters_{
-	//Parameters set allows us to cache out queries for
-	//each query type. Each column gets one binary digit
-	//and 3 binary digits are reserved for row_count,
-	//row_offset, and group_by
-	//	uint64_t parameters_set;
+struct db_query_parameters_{
+	apr_pool_t* pool;
 
 	char num_columns;
 
-	apr_array_header_t* query_where_conditions;
+	apr_array_header_t* where_conditions;
 
-	query_sql_clauses_t* query_sql_clauses;
+	query_sql_clauses_t* sql_clauses;
 
 	char num_custom_parameters;
-	apr_array_header_t* query_custom_parameters;
+	apr_array_header_t* custom_parameters;
 };
 
 
-int init_query_parameters(apr_pool_t* pool, query_parameters_t** query_parameters);
-void setup_sql_clause(query_sql_clauses_t** clauses,sql_clauses type,const char* fname);
-int find_custom_parameter_by_friendly(apr_array_header_t*,const char* friendly_name, custom_parameter_t** custom_parameter);
-int add_where_query_parameter(apr_pool_t* pool, query_parameters_t* query_parameters,column_table_t* column,const char* condition);
+int db_query_parameters_init (apr_pool_t* pool, db_query_parameters_t** db_query_parameters);
+int db_query_parameters_add_where(db_query_parameters_t* db_query_parameters, db_table_column_t* column, const char* condition);
 
+int db_query_parameters_find_custom_by_friendly(db_query_parameters_t* db_query_parameters, const char* friendly_name, custom_parameter_t** custom_parameter);
 #endif /* DB_QUERY_PARAMETERS_H_ */
