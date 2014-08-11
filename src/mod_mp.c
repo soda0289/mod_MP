@@ -274,7 +274,7 @@ static int mp_fixups(request_rec* r){
 
 	ap_set_module_config(r->request_config, &mp_module, input);
 
-	ap_add_input_filter("upload-filter", NULL, r, r->connection);
+	//ap_add_input_filter("upload-filter", NULL, r, r->connection);
 
 
 	return status;
@@ -342,7 +342,7 @@ static const command_rec mp_cmds[] = {
 /* Hook our handler into Apache at startup */
 static void mp_hooks(apr_pool_t* pool) {
 	//Filters
-	ap_register_input_filter("upload-filter", upload_filter, NULL, AP_FTYPE_RESOURCE);
+	//ap_register_input_filter("upload-filter", upload_filter, NULL, AP_FTYPE_RESOURCE);
 
 	ap_hook_fixups(mp_fixups, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_post_config(mp_post_config, NULL, NULL, APR_HOOK_MIDDLE);
