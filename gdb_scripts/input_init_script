@@ -1,0 +1,4 @@
+source gdb_scripts/child_init_script
+break input_init 
+continue
+set follow-fork-mode parent

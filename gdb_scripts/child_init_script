@@ -1,0 +1,4 @@
+source gdb_scripts/post_config_script
+set follow-fork-mode child
+break mp_child_init
+continue

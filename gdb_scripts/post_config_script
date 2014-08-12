@@ -1,0 +1,15 @@
+#Handle signals
+handle SIGABRT nostop
+handle SIGTERM nostop
+handle SIGHUP nostop
+
+file /usr/local/apache2/bin/httpd
+
+set breakpoint pending on
+set follow-fork-mode child
+break ap_run_post_config
+run
+continue
+set follow-fork-mode parent
+break mp_post_config
+continue

@@ -1,0 +1,4 @@
+source gdb_scripts/child_init_script
+break mp_handler
+continue
+set follow-fork-mode parent
