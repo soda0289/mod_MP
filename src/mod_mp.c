@@ -182,7 +182,6 @@ static int init_mod_mp (mp_srv_cfg *srv_conf, apr_pool_t* pool) {
 	indexer_init(pool, srv_conf->error_messages, srv_conf->db_manager, "file", file_indexer_xml_config, &(file_indexer_callbacks), &file_indexer);
 	index_manager_add(srv_conf->index_manager, file_indexer);
 
-
 	/*
 	//Configure the Music indexer
 	indexer_t* music_indexer;
