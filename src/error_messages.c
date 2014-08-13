@@ -32,6 +32,8 @@ int error_messages_init (apr_pool_t* pool, error_messages_t** error_messages_ptr
 		return APR_ENOMEM;
 	}
 
+	error_messages->pool = pool;
+
 	error_messages->num_errors = 0;
 	return APR_SUCCESS;
 }
@@ -51,6 +53,8 @@ int error_messages_init_shared (apr_pool_t* pool, const char* errors_shm_file, e
 	if (error_messages == NULL) {
 		return APR_ENOMEM;
 	}
+
+	error_messages->pool = pool;
 	error_messages->num_errors = 0;
 	error_messages->shm_file = errors_shm_file;
 
@@ -77,9 +81,8 @@ int error_messages_on_fork (error_messages_t** error_messages, apr_pool_t* pool)
 	return APR_SUCCESS;
 }
 
-
+//Copy all error messages from one list to another
 int error_messages_duplicate (error_messages_t* new,error_messages_t* old, apr_pool_t* pool) {
-	//Copy error messages from shared memory
 	int i = 0;
 	int offset = new->num_errors;
 
@@ -122,6 +125,7 @@ int error_messages_to_ap_log(error_messages_t* error_messages, server_rec* serve
 
 	return 0;
 }
+
 int error_messages_add (error_messages_t* error_messages, enum error_type type, const char* error_header, const char* error_message) {
 	int error_num;
 
@@ -140,3 +144,21 @@ int error_messages_add (error_messages_t* error_messages, enum error_type type, 
 	return APR_SUCCESS;
 }
 
+int error_messages_addf (error_messages_t* error_messages, const enum error_type type, const char* error_header, const char* error_message_format,...) {
+	int status = APR_SUCCESS;
+	const char* error_message;
+	va_list arg_list;
+
+	va_start(arg_list, error_message_format);
+
+	error_message = apr_pvsprintf(error_messages->pool, error_message_format, arg_list);
+	if (error_message != NULL) {
+		status = error_messages_add (error_messages, type, error_header, error_message);
+	}else{
+		status = -1;
+	}
+
+	va_end(arg_list);
+
+	return status;
+}

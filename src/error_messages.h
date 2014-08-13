@@ -38,6 +38,8 @@ typedef struct {
 }error_message_t;
 
 typedef struct {
+	apr_pool_t* pool;
+
 	int num_errors;
 	//Create error memory table
 	error_message_t messages[1024];
@@ -50,6 +52,7 @@ int error_messages_init_shared(apr_pool_t* pool,const char* errors_shm_file, err
 int error_messages_init(apr_pool_t* pool, error_messages_t** error_messages);
 int error_messages_on_fork(error_messages_t** error_messages, apr_pool_t* new_pool);
 int error_messages_add(error_messages_t* error_messages, enum error_type type, const char*error_header, const char* error_message);
+int error_messages_addf (error_messages_t* error_messages, const enum error_type, const char* error_header, const char* error_message_format,...);
 int error_messages_duplicate(error_messages_t* new_obj,error_messages_t* old_obj, apr_pool_t* pool);
 int error_messages_print_json_bb(error_messages_t* error_messages, apr_pool_t* pool,apr_bucket_brigade* bb);
 int error_messages_to_ap_log(error_messages_t* error_messages, server_rec* server);
