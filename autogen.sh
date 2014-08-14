@@ -51,7 +51,7 @@ do
 done
 
 
-$ACLOCAL -I m4
+$ACLOCAL -Im4
 $AUTOHEADER
 $LIBTOOLIZE --force --copy
 $AUTOMAKE --add-missing --copy --foreign
