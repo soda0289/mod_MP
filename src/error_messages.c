@@ -18,12 +18,11 @@
  *  limitations under the License.
 */
 
-#include <httpd.h>
-#include <http_log.h>
-
-#include "mod_mp.h"
+#include <apr.h>
+#include <apr_strings.h>
 #include "error_messages.h"
 #include "util_json.h"
+#include "util_shmem.h"
 
 int error_messages_init (apr_pool_t* pool, error_messages_t** error_messages_ptr) {
 	error_messages_t* error_messages = *error_messages_ptr = apr_pcalloc(pool, sizeof(error_messages_t));
@@ -114,6 +113,7 @@ int error_messages_print_json_bb (error_messages_t* error_messages, apr_pool_t* 
 	return APR_SUCCESS;
 }
 
+/*
 int error_messages_to_ap_log(error_messages_t* error_messages, server_rec* server){
 	int i = 0;
 	
@@ -125,6 +125,7 @@ int error_messages_to_ap_log(error_messages_t* error_messages, server_rec* serve
 
 	return 0;
 }
+*/
 
 int error_messages_add (error_messages_t* error_messages, enum error_type type, const char* error_header, const char* error_message) {
 	int error_num;
