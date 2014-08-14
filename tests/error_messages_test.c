@@ -97,6 +97,35 @@ START_TEST(test_error_messages_addf_1_string)
 }
 END_TEST
 
+START_TEST(test_error_messages_fork)
+{
+	int status = 0;
+	apr_proc_t proc;
+	ck_assert(em_test);
+	
+	status = apr_proc_fork(&proc, pool);
+	switch (status) {
+	case APR_INCHILD:
+		status = error_messages_on_fork(&em_test, pool);
+		if (status != 0)
+			ck_abort_msg("Error messages failed to reinitialize in child process");
+		
+		error_messages_add(em_test, ERROR, "Test Header", "Test in child");
+		break;
+	case APR_INPARENT:
+		error_messages_add(em_test, ERROR, "Test Header", "Test in parent");
+		break;
+	default:
+		//Error
+		ck_abort_msg("Failed to fork process");
+		return;
+	}
+
+	ck_assert_int_eq(2, em_test->num_errors);
+
+}
+END_TEST
+
 static Suite *
 error_messages_suite (void) {
 	Suite *s = suite_create("Error Messages");
@@ -117,6 +146,8 @@ error_messages_suite (void) {
 	tcase_add_test(tc_add_shmem, test_error_messages_add);
 	tcase_add_test(tc_add_shmem, test_error_messages_addf);
 	tcase_add_test(tc_add_shmem, test_error_messages_addf_1_string);
+
+	tcase_add_test(tc_add_shmem, test_error_messages_fork);
 
 	suite_add_tcase(s, tc_add_shmem);
 

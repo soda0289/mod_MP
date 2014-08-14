@@ -40,3 +40,7 @@ stamp-h1
 src/mod_mediaplayer_config.h
 config_nice.m4
 libtool.m4
+
+tests/*.log
+tests/*.trl
+tests/check_error_messages
