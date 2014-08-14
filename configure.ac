@@ -35,6 +35,8 @@ AC_FUNC_CHOWN
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memchr memset strchr strerror strstr])
 
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4])
+PKG_CHECK_MODULES([APR], [apr-2])
 #Check for MusicBrainz
 AC_ARG_WITH([musicbrainz], AS_HELP_STRING([--with-musicbrainz], ["Build with musicbrainz support"]))
 AS_IF(test "x$with_musicbrainz" = "xyes"],[
@@ -114,6 +116,7 @@ AC_SUBST(BIN_LDFLAGS)
 
 #this should be a list to all of the makefiles you expect to be generated
 AC_CONFIG_FILES([Makefile
+		tests/Makefile
 		src/Makefile
 		src/indexers/file/Makefile
 		src/indexers/music/Makefile
