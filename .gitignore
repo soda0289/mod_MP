@@ -42,5 +42,5 @@ config_nice.m4
 libtool.m4
 
 tests/*.log
-tests/*.trl
+tests/*.trs
 tests/check_error_messages
