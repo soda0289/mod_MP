@@ -18,12 +18,12 @@
 *  limitations under the License.
 */
 
-#ifndef ERROR_HANDLER_H_
-#define ERROR_HANDLER_H_
-#define MAX_ERROR_SIZE 1024
+#ifndef ERROR_MESSAGES_H_
+#define ERROR_MESSAGES_H_
 
-#include "apr_shm.h"
-#include "httpd.h"
+#define MAX_ERROR_SIZE 1024
+#include <apr_buckets.h>
+#include <apr_shm.h>
 
 enum error_type{
 	ERROR = 0,
@@ -55,5 +55,4 @@ int error_messages_add(error_messages_t* error_messages, enum error_type type, c
 int error_messages_addf (error_messages_t* error_messages, const enum error_type, const char* error_header, const char* error_message_format,...);
 int error_messages_duplicate(error_messages_t* new_obj,error_messages_t* old_obj, apr_pool_t* pool);
 int error_messages_print_json_bb(error_messages_t* error_messages, apr_pool_t* pool,apr_bucket_brigade* bb);
-int error_messages_to_ap_log(error_messages_t* error_messages, server_rec* server);
 #endif /* ERROR_HANDLER_H_ */
