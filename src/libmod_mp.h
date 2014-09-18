@@ -1,5 +1,5 @@
 /*
- * mod_mediaplayer.h
+ * libmod_mp.h
  *
  *  Created on: Sep 26, 2012
  *      Author: Reyad Attiyat
@@ -17,21 +17,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
 */
-#ifndef MOD_MEDIAPLAYER_H_
-#define MOD_MEDIAPLAYER_H_
-
-#include <httpd.h>
-#include <http_protocol.h>
-#include <http_config.h>
-#include "apr_file_io.h"
-#include "apr_file_info.h"
-#include "apr_errno.h"
-#include "apr_general.h"
-#include "apr_lib.h"
-#include "apr_buckets.h"
-#include "apr_strings.h"
-#include "apr_dbd.h"
-#include <stdlib.h>
+#ifndef LIBMOD_MP_H_
+#define LIBMOD_MP_H_
 
 #include "indexers/indexer.h"
 #include "indexers/indexer_typedefs.h"
@@ -41,15 +28,13 @@
 #include "database/db_typedefs.h"
 #include "database/db_manager.h"
 
-module AP_MODULE_DECLARE_DATA mp_module;
-
 typedef struct {
 	int enable;
 
 	//Process ID
 	pid_t pid;
 
-	server_rec* server_rec;
+	void* web_server_data;
 
 	//Error manager shared memory and file
 	const char* errors_shm_file;
@@ -76,5 +61,9 @@ typedef struct{
 }mp_rec_cfg;
 
 int setup_shared_memory(apr_shm_t** shm, apr_size_t size, const char* file_path, apr_pool_t* pool);
+
+
+void mod_mp_set_data(mp_srv_cfg *srv_conf, void* data);
+int mod_mp_init (mp_srv_cfg *srv_conf, apr_pool_t* pool);
 
 #endif

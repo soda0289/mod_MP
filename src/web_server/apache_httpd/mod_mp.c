@@ -17,6 +17,7 @@
  *  See the License for the specific language governing permissions and
  *   limitations under the License.
 */
+#include "libmod_mp.h"
 
 #include <httpd.h>
 #include <http_connection.h>
@@ -45,7 +46,6 @@
 #include "indexers/indexer.h"
 #include "indexers/index_manager.h"
 
-#include "indexers/file/file_indexer.h"
 
 #include "unixd.h"
 
@@ -60,7 +60,7 @@ static void* mp_config_srv(apr_pool_t* pool, server_rec* s){
 	mp_srv_cfg* srv_conf = apr_pcalloc(pool, sizeof(mp_srv_cfg));
 
 	srv_conf->errors_shm_file = "/tmp/mp_errors";
-	srv_conf->server_rec = s;
+	mod_mp_set_data(srv_conf, s);
 
 	return srv_conf;
 }
@@ -88,60 +88,6 @@ static const char* mp_set_indexers_xml_config_dir (cmd_parms* cmd, void* cfg, co
 	return NULL;
 }
 
-
-
-
-
-static int init_mod_mp (mp_srv_cfg *srv_conf, apr_pool_t* pool) {
-	int status = 0;
-	indexer_t* file_indexer;
-	const char* file_indexer_xml_config;
-
-	srv_conf->pid = getpid();
-
-	//Initialize error messages
-	status = error_messages_init_shared(pool, srv_conf->errors_shm_file, &(srv_conf->error_messages));
-	if(status != APR_SUCCESS){
-		ap_log_error(APLOG_MARK, APLOG_ERR, status, srv_conf->server_rec, "Failed to initialize Error Messages.");
-		srv_conf->enable = 0;
-		return -1;
-	}
-
-	//Setup Database Parameters from XML files 
-	status = db_manager_init(pool, srv_conf->error_messages, srv_conf->db_xml_config_dir, &(srv_conf->db_manager));
-	if(status != APR_SUCCESS){
-		error_messages_to_ap_log(srv_conf->error_messages, srv_conf->server_rec);
-		srv_conf->enable = 0;
-		return -1;
-	}
-
-	//Initialize index manager
-	status = index_manager_init(pool, srv_conf->error_messages, &(srv_conf->index_manager));	
-	if(status != APR_SUCCESS){
-		error_messages_to_ap_log(srv_conf->error_messages, srv_conf->server_rec);
-		srv_conf->enable = 0;
-		return -1;
-	}
-
-	//Core file and directory based indexer
-	file_indexer_xml_config = apr_pstrcat(pool, srv_conf->indexer_xml_config_dir, "/file.xml", NULL);
-
-	indexer_init(pool, srv_conf->error_messages, srv_conf->db_manager, "file", file_indexer_xml_config, &(file_indexer_callbacks), &file_indexer);
-	index_manager_add(srv_conf->index_manager, file_indexer);
-
-	/*
-	//Configure the Music indexer
-	indexer_t* music_indexer;
-	music_xml_config = apr_pstrcat(pool, srv_conf->apps_xml_dir, "/music.xml", NULL);
-	index_manager_new(srv_conf->index_manager, "music", music_indexer_xml_config,
-				music_indexer_callbacks, &music_indexer);
-	index_manager_add(srv_conf->index_manager, music_indexer); 
-	*/
-
-
-	return 0;
-}
-
 static int mp_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp,server_rec *s){
 	mp_srv_cfg* srv_conf;
 
@@ -165,7 +111,7 @@ static int mp_post_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t* ptemp
 	do{
 		srv_conf = ap_get_module_config(s->module_config, &mp_module);
 		if(srv_conf->enable){
-			init_mod_mp (srv_conf, pconf);
+			mod_mp_init(srv_conf, pconf);
 		}
 	}while ((s = s->next) != NULL);
 

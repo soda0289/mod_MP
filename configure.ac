@@ -2,7 +2,7 @@
 AC_PREREQ([2.69])
 AC_INIT([mod_MP],[0.0.1])
 #adjust for your main source file name
-AC_CONFIG_SRCDIR([src/mod_mp.c])
+AC_CONFIG_SRCDIR([src/libmod_mp.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -99,20 +99,20 @@ CHECK_APACHE(,[$AP_VERSION],
     :,:,
     AC_MSG_ERROR([*** Apache version $AP_VERSION not found!])
 )
-
-prefix=${AP_PREFIX}
-
+prefix=/usr
+libdir=/usr/lib64
 LIBTOOL="`${APR_CONFIG} --apr-libtool`"
 AC_SUBST(LIBTOOL)
 
-MODULE_CFLAGS="${APXS_CFLAGS} ${AP_INCLUDES} ${APR_INCLUDES} ${APU_INCLUDES} -Werror -fno-inline"
-AC_SUBST(MODULE_CFLAGS)
 
-MODULE_LDFLAGS=" `${APR_CONFIG} --link-libtool` $APU_LDFLAGS"
-AC_SUBST(MODULE_LDFLAGS)
+AP_MODULE_CFLAGS="${APXS_CFLAGS} ${AP_INCLUDES} -Werror -fno-inline"
+AC_SUBST(AP_MODULE_CFLAGS)
 
-BIN_LDFLAGS=" `${APR_CONFIG} --link-libtool`  `${APR_CONFIG} --ldflags --libs` $APU_LDFLAGS" 
-AC_SUBST(BIN_LDFLAGS)
+AP_MODULE_LDFLAGS=" `${APR_CONFIG} --link-libtool` $APU_LDFLAGS"
+AC_SUBST(AP_MODULE_LDFLAGS)
+
+AP_BIN_LDFLAGS=" `${APR_CONFIG} --link-libtool`  `${APR_CONFIG} --ldflags --libs` $APU_LDFLAGS" 
+AC_SUBST(AP_BIN_LDFLAGS)
 
 #this should be a list to all of the makefiles you expect to be generated
 AC_CONFIG_FILES([Makefile
@@ -120,7 +120,9 @@ AC_CONFIG_FILES([Makefile
 		src/Makefile
 		src/indexers/file/Makefile
 		src/indexers/music/Makefile
-		src/indexers/music/codecs/flac/Makefile])
+		src/indexers/music/codecs/flac/Makefile
+		src/web_server/apache_httpd/Makefile
+		])
 AC_OUTPUT
 
 #whatever you want here, or nothing
