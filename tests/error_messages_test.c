@@ -1,30 +1,10 @@
 #include <check.h>
 #include <stdlib.h>
+#include <apr_thread_proc.h>
+#include "pool_allocator_setup.h"
 #include "../src/error_messages.h"
 
-
-
 static error_messages_t* em_test;
-static apr_allocator_t* allocator;
-static apr_pool_t* pool;
-
-static int
-abort_alloc (int retcode)
-{
-	return -1;
-}
-
-static int
-setup_pool (void)
-{
-	int status;
-	status = apr_allocator_create(&allocator);
-	if (status != 0) {
-		return status;
-	}
-	status = apr_pool_create_ex (&pool, NULL, abort_alloc, allocator);
-	return status;
-}
 
 static void
 setup (void)
@@ -53,8 +33,7 @@ setup_shmem (void)
 static void
 teardown (void)
 {
-	apr_pool_destroy(pool);
-	apr_allocator_destroy(allocator);
+	teardown_pool();
 }
 
 START_TEST(test_error_messages_add)
@@ -101,16 +80,22 @@ START_TEST(test_error_messages_fork)
 {
 	int status = 0;
 	apr_proc_t proc;
+	int exit_code;
+	apr_exit_why_e exit_why;
+
 	ck_assert(em_test);
 	
 	status = apr_proc_fork(&proc, pool);
 	switch (status) {
-	case APR_INCHILD:
+	case APR_INCHILD: {
 		status = error_messages_on_fork(&em_test, pool);
 		if (status != 0)
 			ck_abort_msg("Error messages failed to reinitialize in child process");
 		
 		error_messages_add(em_test, ERROR, "Test Header", "Test in child");
+		exit(0);
+		return;
+	}
 		break;
 	case APR_INPARENT:
 		error_messages_add(em_test, ERROR, "Test Header", "Test in parent");
@@ -120,14 +105,13 @@ START_TEST(test_error_messages_fork)
 		ck_abort_msg("Failed to fork process");
 		return;
 	}
-
+	apr_proc_wait(&proc, &exit_code, &exit_why, APR_WAIT);
 	ck_assert_int_eq(2, em_test->num_errors);
 
 }
 END_TEST
 
-static Suite *
-error_messages_suite (void) {
+static Suite * error_messages_suite (void) {
 	Suite *s = suite_create("Error Messages");
 
 	TCase *tc_add;
@@ -154,19 +138,19 @@ error_messages_suite (void) {
 	return s;
 }
 
-int
-main (int argc, char* argv[])
+int main (int argc, char* argv[])
 {
 	int failed = 0;
 
-	Suite *s = error_messages_suite();
-	SRunner *sr = srunner_create(s);
+	Suite *em = error_messages_suite();
+	SRunner *sr = srunner_create(em);
 
 	srunner_run_all(sr, CK_NORMAL);
+	failed = srunner_ntests_failed(sr);
 
 	srunner_free(sr);
 	
 	printf("Failed: %d tests\n", failed);
 
-	return 0;
+	return (failed == 0) ? 0 : -1;
 }

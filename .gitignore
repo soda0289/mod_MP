@@ -44,3 +44,4 @@ libtool.m4
 tests/*.log
 tests/*.trs
 tests/check_error_messages
+tests/check_mod_mp
