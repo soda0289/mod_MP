@@ -1,14 +1,12 @@
-
 #include "output.h"
 
 
-int output_init_bb (apr_pool_t* pool, ap_filter_t* out_filters,output_t** output_ptr){
+int output_init_bb (apr_pool_t* pool, output_t** output_ptr){
 
 	output_t* output = *output_ptr = apr_pcalloc(pool, sizeof(output_t));
 
 	//Prepare Output
 	output->pool = pool;
-	output->filters = out_filters;
 	output->headers = apr_table_make(pool, 10);
 	output->content_type = apr_pcalloc(pool, sizeof(char) * 255);
 	output->bucket_allocator = apr_bucket_alloc_create(pool);

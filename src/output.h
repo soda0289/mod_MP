@@ -20,12 +20,9 @@
 #ifndef OUTPUT_H_
 #define OUTPUT_H_
 
-#include <httpd.h>
-#include <http_protocol.h>
-#include <http_config.h>
-#include "apr_general.h"
-#include "apr_buckets.h"
-#include "apr_strings.h"
+#include <apr_general.h>
+#include <apr_buckets.h>
+#include <apr_strings.h>
 #include <stdlib.h>
 #include "error_messages.h"
 #include "indexers/indexer_typedefs.h"
@@ -38,11 +35,11 @@ typedef struct output_{
 	const char* content_type;
 	apr_off_t length;
 
-	ap_filter_t* filters;
+//	ap_filter_t* filters;
 	error_messages_t* error_messages;	
 }output_t;
 
-int output_init_bb (apr_pool_t* pool, ap_filter_t* out_filters,output_t** output_ptr);
+int output_init_bb (apr_pool_t* pool, output_t** output_ptr);
 int output_finalize_bb (output_t* output, apr_table_t* out_headers);
 int output_status_json(output_t* output);
 #endif

@@ -1,5 +1,5 @@
 /*
- * dbd.h
+ * db_config.h
  *
  *  Created on: Sep 20, 2012
  *      Author: Reyad Attiyat
@@ -23,10 +23,10 @@
 #define MAX_NUM_COLUMNS 10
 #define NUM_TABLES 5
 
-#include "mod_mp.h"
 #include "indexers/indexer.h"
 #include "db_query_parameters.h"
 #include "db_query_xml_config.h"
+#include "db_connection.h"
 
 
 enum column_types {

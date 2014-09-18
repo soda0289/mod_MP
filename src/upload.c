@@ -2,7 +2,7 @@
 #include <apr_tables.h>
 #include "input.h"
 #include "upload.h"
-#include "mod_mp.h"
+#include "libmod_mp.h"
 #include "error_messages.h"
 #include <string.h>
 #include <stdio.h>
@@ -232,10 +232,8 @@ static int content_type_header(input_t* input, apr_table_t* headers_in){
 
 	return -1;
 }
-*/
 
 apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes){
-	/*
 	int status = 0;	
 	mp_srv_cfg* srv_conf;
 	apr_bucket *e = NULL;
@@ -300,7 +298,7 @@ apr_status_t upload_filter(ap_filter_t *filter, apr_bucket_brigade *bbout, ap_in
 		apr_brigade_cleanup(input_bb);
 	} while (input->eos == 0);
 	apr_brigade_destroy(input_bb);
-	*/
 
 	return 0;
  }
+*/

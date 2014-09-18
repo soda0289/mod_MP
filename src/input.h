@@ -21,7 +21,6 @@
 #define INPUT_H_
 
 #include <stdlib.h>
-#include <util_filter.h>
 #include "error_messages.h"
 #include "indexers/indexer_typedefs.h"
 
@@ -36,11 +35,16 @@ typedef struct input_{
 	const char* uri;
 
 	//Used for uploading
-	ap_filter_t* filters;
+//	ap_filter_t* filters;
 
+	//Indexer used to handle input query
 	const char* indexer_string;
 
+	//Command sent to indexer
 	const char* command_string;
+
+	//HTTP query parameters
+	apr_table_t* parameter_strings;
 }input_t;
 
 int input_init(apr_pool_t* pool, const char* uri, int method_num, input_t** input_ptr);

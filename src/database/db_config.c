@@ -18,7 +18,6 @@
  *  limitations under the License.
 */
 
-#include "mod_mp.h"
 #include "database/db_typedefs.h"
 #include "database/db_query.h"
 #include "database/db_query_parameters.h"
